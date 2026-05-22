@@ -211,7 +211,7 @@ function setupCallbackWorkflow() {
       badge.style.display = "block";
       showToast("📞 Callback requested! Mrs. Tasnim Jahan will contact you shortly.", "💼");
       
-      // Simulate teacher writing back in chat portal after 4 seconds
+      // Simulate teacher writing back in chat portal after 5 seconds
       setTimeout(() => {
         const chatBadge = document.querySelector(".alert-nav-badge");
         if (chatBadge && document.getElementById("tab-chat").classList.contains("hide")) {
@@ -221,22 +221,55 @@ function setupCallbackWorkflow() {
         // Push notification in background
         showToast("💬 New message from Mrs. Tasnim Jahan regarding your callback.", "✉️");
         
-        // Append response into message array
-        const stream = document.getElementById("chatMessagesStream");
-        if (stream) {
-          const teacherMsg = document.createElement("div");
-          teacherMsg.className = "message-bubble teacher";
-          teacherMsg.innerHTML = `
-            <p>I have received your callback request regarding Aarif's math performance. I am free tomorrow during my 3rd period prep slot at 11:30 AM. Does that time suit you?</p>
-            <span class="message-time">${getCurrentTimeStr()}</span>
-          `;
-          stream.appendChild(teacherMsg);
-          stream.scrollTop = stream.scrollHeight;
-        }
+        // Append response to shared localStorage chat logs and reload
+        appendMessageToStorage("teacher", "I have received your callback request regarding Aarif's math performance. I am free tomorrow during my 3rd period prep slot at 11:30 AM. Does that time suit you?");
+        loadChatLogs();
       }, 5000);
 
     });
   }
+}
+
+/* ========================================================================
+   LOCAL STORAGE CHAT SYNC ENGINE (REAL-TIME BIDIRECTIONAL MFS)
+   ======================================================================== */
+const CHAT_STORAGE_KEY = "parent_teacher_chat";
+
+function appendMessageToStorage(sender, text) {
+  const logs = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+
+  logs.push({
+    sender: sender,
+    text: text,
+    time: `${hours}:${minutes}`
+  });
+
+  localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(logs));
+}
+
+function loadChatLogs() {
+  const stream = document.getElementById("chatMessagesStream");
+  if (!stream) return;
+
+  const logs = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+  stream.innerHTML = "";
+
+  logs.forEach(msg => {
+    const bubble = document.createElement("div");
+    bubble.className = `message-bubble ${msg.sender}`;
+    bubble.innerHTML = `
+      <p>${escapeHTML(msg.text)}</p>
+      <span class="message-time">${msg.time}</span>
+    `;
+    stream.appendChild(bubble);
+  });
+
+  stream.scrollTop = stream.scrollHeight;
 }
 
 /* ========================================================================
@@ -250,24 +283,40 @@ function setupChatMessenger() {
 
   if (!sendBtn || !input || !stream) return;
 
+  // Initialize localStorage logs if empty
+  if (!localStorage.getItem(CHAT_STORAGE_KEY)) {
+    const initialChats = [
+      { sender: "teacher", text: "Hello Mr. Al-Masoom! I am Aarif's class coordinator. Welcome to the direct Parent communication channel.", time: "14:02" },
+      { sender: "teacher", text: "While Aarif is making progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his student app today.", time: "14:04" }
+    ];
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(initialChats));
+  }
+
+  // Load chat messages
+  loadChatLogs();
+
+  // Listen to cross-window storage events!
+  window.addEventListener("storage", (e) => {
+    if (e.key === CHAT_STORAGE_KEY) {
+      loadChatLogs();
+      // Show alerts indicator if in a different tab
+      const chatPanel = document.getElementById("tab-chat");
+      if (chatPanel && chatPanel.classList.contains("hide")) {
+        const badge = document.querySelector(".alert-nav-badge");
+        if (badge) badge.style.display = "flex";
+      }
+    }
+  });
+
   function handleSend() {
     const text = input.value.trim();
     if (text === "") return;
 
-    // 1. Append Parent Message Bubble
-    const parentMsg = document.createElement("div");
-    parentMsg.className = "message-bubble parent";
-    parentMsg.innerHTML = `
-      <p>${escapeHTML(text)}</p>
-      <span class="message-time">${getCurrentTimeStr()}</span>
-    `;
-    stream.appendChild(parentMsg);
-    
-    // Clear Input and Scroll
+    appendMessageToStorage("parent", text);
     input.value = "";
-    stream.scrollTop = stream.scrollHeight;
+    loadChatLogs();
 
-    // 2. Trigger Smart Simulated Teacher Response
+    // Trigger Smart Simulated Teacher Response fallback (if teacher app tab is not open)
     simulateTeacherReply(text);
   }
 
@@ -298,7 +347,7 @@ function setupChatMessenger() {
     // Typing Delay Simulation
     setTimeout(() => {
       // Show typing indicator
-      if (typingIndicator) {
+      if (typingIndicator && stream) {
         typingIndicator.classList.add("active");
         stream.appendChild(typingIndicator); // Ensure it stays at bottom
         stream.scrollTop = stream.scrollHeight;
@@ -310,15 +359,9 @@ function setupChatMessenger() {
           typingIndicator.classList.remove("active");
         }
 
-        // Append Teacher Reply Bubble
-        const teacherMsg = document.createElement("div");
-        teacherMsg.className = "message-bubble teacher";
-        teacherMsg.innerHTML = `
-          <p>${replyText}</p>
-          <span class="message-time">${getCurrentTimeStr()}</span>
-        `;
-        stream.appendChild(teacherMsg);
-        stream.scrollTop = stream.scrollHeight;
+        // Append Teacher Reply Bubble to shared storage and reload
+        appendMessageToStorage("teacher", replyText);
+        loadChatLogs();
 
         // Sound alert
         showToast("💬 New reply from Mrs. Tasnim Jahan", "✉️");
