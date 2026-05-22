@@ -1,6 +1,6 @@
 /*
 ========================================================================
-   LEARNING SHAPER STUDENT COMPANION APP - CORE INTERACTIVE ENGINE
+   LEARNING SHAPER LEARNING MATE - CORE INTERACTIVE ENGINE
 ========================================================================
 */
 

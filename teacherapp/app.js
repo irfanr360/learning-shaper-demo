@@ -625,7 +625,7 @@ function setupChatSyncEngine() {
   if (!localStorage.getItem(CHAT_STORAGE_KEY)) {
     const initialChats = [
       { sender: "teacher", text: "Hello Mr. Al-Masoom! I am Aarif's class coordinator. Welcome to the direct Parent communication channel.", time: "14:02" },
-      { sender: "teacher", text: "While Aarif is making progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his student app today.", time: "14:04" }
+      { sender: "teacher", text: "While Aarif is making progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his Learning Mate app today.", time: "14:04" }
     ];
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(initialChats));
   }
