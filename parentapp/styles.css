@@ -1264,3 +1264,196 @@ body {
 .tab-content-panel.hide {
   display: none;
 }
+
+/* ========================================================================
+   MEGA EXPANSION ADDITIONS - PREMIUM DESIGN MODULES
+   ======================================================================== */
+
+/* Lego Tips Slide-up Bottom Drawer Overlay */
+.bottom-drawer {
+  position: absolute;
+  bottom: -450px;
+  left: 0;
+  right: 0;
+  height: 430px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-top: 1px solid var(--panel-border);
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  z-index: 190;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bottom-drawer.active {
+  bottom: 0;
+}
+
+.lego-grid-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin: 15px 0;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.lego-brick {
+  height: 35px;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.2);
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.lego-brick:hover {
+  transform: scale(1.03);
+}
+
+.lego-brick::before, .lego-brick::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  width: 6px;
+  height: 4px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 2px;
+}
+.lego-brick::before { left: 4px; }
+.lego-brick::after { right: 4px; }
+
+/* Timeline Alert Styles */
+.alerts-timeline-container {
+  margin-top: 20px;
+}
+
+.alerts-timeline-stream {
+  position: relative;
+  padding-left: 20px;
+  border-left: 2px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.timeline-alert-item {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--panel-border);
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: transform 0.2s, background-color 0.2s;
+  animation: slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.timeline-alert-item:hover {
+  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.timeline-alert-item::before {
+  content: '';
+  position: absolute;
+  left: -27px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  border: 3px solid var(--bg-color);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.timeline-alert-item.info::before {
+  background: var(--success-color);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+.timeline-alert-item.warning::before {
+  background: var(--warning-color);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+.timeline-alert-item.critical::before {
+  background: var(--error-color);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.timeline-alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.timeline-alert-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.timeline-alert-time {
+  font-size: 8px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.timeline-alert-body {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Donut detail box */
+.donut-detail-box {
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(244, 63, 94, 0.04);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-15px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Alignment Badge */
+.alignment-badge {
+  font-size: 9px;
+  font-weight: 800;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--error-color);
+  padding: 3px 8px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.alignment-badge.aligned {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--success-color);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+

@@ -20,6 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Callback Appointment Workflow
   setupCallbackWorkflow();
+
+  // --- MEGA EXPANSION COMPANION INITIALIZERS ---
+  setupDonutInteractiveFilter();
+  drawParentMilestones();
+  checkGoalAlignment();
+  initAlertsTimeline();
 });
 
 /* ========================================================================
@@ -305,6 +311,53 @@ function setupChatMessenger() {
         const badge = document.querySelector(".alert-nav-badge");
         if (badge) badge.style.display = "flex";
       }
+    } else if (e.key === 'weekly_milestones_state') {
+      drawParentMilestones();
+    } else if (e.key === 'active_lesson_plan_topic') {
+      checkGoalAlignment();
+    } else if (e.key === 'rfid_checkin_event') {
+      try {
+        const data = JSON.parse(e.newValue);
+        if (data && data.student === "Aarif Al-Masoom") {
+          showToast(`🔔 RFID: Aarif arrived at school at ${data.time}!`, "success");
+          appendAlert("RFID Check-In PRESENT", `Aarif arrived safely at St. Gregory High School. Gate-In RFID tap logged at ${data.time}.`, "info");
+        }
+      } catch(err) {}
+    } else if (e.key === 'released_grades_feedback') {
+      try {
+        const data = JSON.parse(e.newValue);
+        showToast("🧑‍🏫 Mrs. Tasnim Jahan released new OMR grades!", "warning");
+        appendAlert("OMR Performance Feedback Released", `Math Midterm results released: Aarif scored ${data.score || '12/15'}. Teacher comments: "${data.feedback || 'Good attempt'}"`, "warning");
+        
+        // Update Copilot brief
+        const briefing = document.getElementById("copilotBriefingText");
+        if (briefing) {
+          briefing.innerHTML = `Good morning! Aarif has successfully arrived at school. His latest Math Midterm OMR results are released (**${data.score || '12/15'}** marks, **quadratics mastery: 45%**). Teacher released feedback notes: <em>"${data.feedback || ''}"</em>`;
+        }
+      } catch(err) {
+        showToast("🧑‍🏫 Mrs. Tasnim Jahan released new OMR grades!", "warning");
+        appendAlert("OMR Performance Feedback Released", `Teacher released feedback notes: "${e.newValue}"`, "warning");
+      }
+    } else if (e.key === 'curator_resource_event') {
+      try {
+        const data = JSON.parse(e.newValue);
+        showToast("📚 New study resource recommended by coordinator!", "info");
+        appendAlert("Study Content Recommended", `Smart dispatcher suggested: "${data.title || 'Algebra worksheet'}" for target subject "${data.topic || 'Algebra'}"`, "info");
+      } catch(err) {}
+    } else if (e.key === 'student_tuition_paid') {
+      showToast("💳 Tuition fees of ৳3,500 settled successfully!", "success");
+      // Find tuition item in digest checklist and mark completed!
+      const items = document.querySelectorAll(".digest-task-item");
+      items.forEach(item => {
+        if (item.innerText.includes("Tuition")) {
+          item.classList.add("completed");
+        }
+      });
+      // Update Copilot briefing text to reflect paid tuition!
+      const briefing = document.getElementById("copilotBriefingText");
+      if (briefing) {
+        briefing.innerHTML = briefing.innerHTML.replace("Tuition bills of ৳3,500 are pending.", "Tuition bills have been settled successfully.");
+      }
     }
   });
 
@@ -395,3 +448,305 @@ function escapeHTML(str) {
     }[tag] || tag)
   );
 }
+
+/* ========================================================================
+   MEGA EXPANSION ADDITIONS - COMPANION SYSTEM FUNCTIONS
+   ======================================================================== */
+
+// --- FEATURE 3: Lego Tips Slide-up Drawer Toggles ---
+window.openLegoTipsDrawer = function() {
+  const drawer = document.getElementById("legoTipsDrawer");
+  if (drawer) drawer.classList.add("active");
+  showToast("🧱 Opened Lego Math factoring visualization sheet", "info");
+};
+
+window.closeLegoTipsDrawer = function() {
+  const drawer = document.getElementById("legoTipsDrawer");
+  if (drawer) drawer.classList.remove("active");
+};
+
+// --- FEATURE 5: Clickable legends/segments in SVG study pulse donut chart showing minute breakdowns ---
+function setupDonutInteractiveFilter() {
+  const donutDetailBox = document.getElementById("donutDetailBox");
+  const donutMinutesTotal = document.getElementById("donutMinutesTotal");
+  const legendAlgebra = document.getElementById("legendAlgebra");
+  const legendTrig = document.getElementById("legendTrig");
+  const legendPhysics = document.getElementById("legendPhysics");
+  
+  const defaultMinutes = 250;
+  let activeFilter = null;
+  
+  const detailsMap = {
+    algebra: {
+      minutes: 120,
+      title: "Algebra Drills",
+      color: "var(--accent-red)",
+      summary: "Factoring quadratic equations, vertex graphing, and polynomial expansion. Aarif spent 48% of his study time solving adaptive math drill sheets."
+    },
+    trig: {
+      minutes: 80,
+      title: "Trigonometry Evaluation",
+      color: "var(--accent-gold)",
+      summary: "Right-angle sines, cosine law derivations, and unit circle rotations. Aarif displays excellent retention with 88% mastery in geometry."
+    },
+    physics: {
+      minutes: 50,
+      title: "Physics & Science",
+      color: "var(--success-color)",
+      summary: "Newtonian mechanics, momentum vectors, and kinetic energy conversions. Aarif completed 3 homework files successfully."
+    }
+  };
+  
+  function applyFilter(key) {
+    if (!donutDetailBox || !donutMinutesTotal) return;
+    if (activeFilter === key) {
+      // Reset filter
+      activeFilter = null;
+      donutMinutesTotal.textContent = defaultMinutes;
+      donutDetailBox.style.display = "none";
+      resetHighlights();
+    } else {
+      activeFilter = key;
+      const data = detailsMap[key];
+      donutMinutesTotal.textContent = data.minutes;
+      donutDetailBox.style.display = "block";
+      donutDetailBox.innerHTML = `
+        <h4 style="font-size:11px; font-weight:800; color:${data.color}; margin-bottom:4px;">📊 Active Focus: ${data.title}</h4>
+        <p style="font-size:10px; color:var(--text-muted); line-height:1.45; margin:0;">${data.summary}</p>
+      `;
+      highlightLegend(key);
+    }
+  }
+  
+  function resetHighlights() {
+    [legendAlgebra, legendTrig, legendPhysics].forEach(el => {
+      if (el) el.style.background = "transparent";
+    });
+  }
+  
+  function highlightLegend(key) {
+    resetHighlights();
+    const map = { algebra: legendAlgebra, trig: legendTrig, physics: legendPhysics };
+    const target = map[key];
+    if (target) {
+      target.style.background = "rgba(255, 255, 255, 0.05)";
+    }
+  }
+  
+  if (legendAlgebra) legendAlgebra.addEventListener("click", () => applyFilter("algebra"));
+  if (legendTrig) legendTrig.addEventListener("click", () => applyFilter("trig"));
+  if (legendPhysics) legendPhysics.addEventListener("click", () => applyFilter("physics"));
+}
+
+// --- FEATURE 6: Weekend Family learning activity plans selector card ---
+window.activateWeekendQuest = function() {
+  const btn = document.getElementById("activateQuestBtn");
+  if (btn) {
+    btn.textContent = "Quest Active - Sync Sent!";
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+    btn.style.background = "var(--success-color)";
+  }
+  showToast("🚀 Weekend Family Quest activated! Study task dispatched to Aarif.", "info");
+  
+  // Send event to student app via localStorage
+  localStorage.setItem("weekend_quest_event", JSON.stringify({
+    active: true,
+    title: "Shopping Budget & Ratio Quest",
+    time: new Date().toLocaleTimeString()
+  }));
+};
+
+// --- FEATURE 7: Synced milestone goal checklist progress mapping (Real-time student checklist sync) ---
+function drawParentMilestones() {
+  const list = document.getElementById("parentMilestonesList");
+  if (!list) return;
+  
+  const raw = localStorage.getItem("weekly_milestones_state");
+  if (!raw) {
+    list.innerHTML = `<p style="font-size:10px; color:var(--text-muted); text-align:center; padding:10px;">No active milestones. Add them in Student/Parent goals!</p>`;
+    return;
+  }
+  
+  try {
+    const milestones = JSON.parse(raw);
+    list.innerHTML = "";
+    
+    if (milestones.length === 0) {
+      list.innerHTML = `<p style="font-size:10px; color:var(--text-muted); text-align:center; padding:10px;">No milestones found.</p>`;
+      return;
+    }
+    
+    milestones.forEach((m, idx) => {
+      const item = document.createElement("div");
+      item.className = `digest-task-item ${m.completed ? 'completed' : ''}`;
+      
+      item.innerHTML = `
+        <div class="task-checkbox"></div>
+        <div class="task-details">
+          <h4>${escapeHTML(m.text)}</h4>
+          <p>Sync reward: ${escapeHTML(m.reward || '+30 XP')}</p>
+        </div>
+        <span class="task-done-badge" style="background:${m.completed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.05)'}; color:${m.completed ? 'var(--success-color)' : 'var(--text-muted)'};">
+          ${m.completed ? 'Completed' : 'Pending'}
+        </span>
+      `;
+      
+      item.addEventListener("click", () => {
+        m.completed = !m.completed;
+        localStorage.setItem("weekly_milestones_state", JSON.stringify(milestones));
+        drawParentMilestones();
+        showToast(`Goal status updated for [${m.text}]!`, "success");
+      });
+      
+      list.appendChild(item);
+    });
+  } catch(e) {
+    console.error("Error drawing parent milestones:", e);
+  }
+}
+
+// --- FEATURE 8: AI-guided family dinner conversation prompts widget ---
+const dinnerPrompts = [
+  "\"Instead of asking 'How was school?', ask Aarif: 'What was the toughest bubble to fill in your mock OMR test today?'\"",
+  "\"Ask Aarif: 'If we had to model this dining table as a coordinate grid, where would the salt shaker be located relative to the vertex?'\"",
+  "\"Ask Aarif: 'What was the most surprising feedback note Mrs. Tasnim Jahan wrote on the Algebra dashboard today?'\"",
+  "\"Ask Aarif: 'If you had an infinite budget to design a learning game, what boss fight would quadratic equations represent?'\"",
+  "\"Ask Aarif: 'Tell me about one mistake you made in trigonometry and how you solved it on the second try.'\""
+];
+let currentPromptIdx = 0;
+window.rotateDinnerPrompt = function() {
+  const promptText = document.getElementById("dinnerPromptText");
+  if (!promptText) return;
+  
+  currentPromptIdx = (currentPromptIdx + 1) % dinnerPrompts.length;
+  
+  // Transition prompt with smooth visual styling
+  promptText.style.opacity = 0;
+  setTimeout(() => {
+    promptText.textContent = dinnerPrompts[currentPromptIdx];
+    promptText.style.opacity = 1;
+  }, 150);
+  
+  showToast("💡 Loaded new dinner dialogue prompt!", "info");
+};
+
+// --- FEATURE 9: Simulate preparation drills updates inside AI-predicted exam readiness gauges ---
+window.simulatePrepDrill = function() {
+  const percentageText = document.getElementById("mathReadinessPercentage");
+  const progressBar = document.getElementById("mathReadinessBar");
+  const adviceText = document.getElementById("mathReadinessAdvice");
+  const simulateBtn = document.getElementById("simulatePrepDrillBtn");
+  
+  if (!percentageText || !progressBar || !adviceText) return;
+  
+  percentageText.textContent = "68% Ready";
+  percentageText.classList.remove("critical");
+  percentageText.classList.add("stable");
+  percentageText.style.color = "var(--warning-color)";
+  
+  progressBar.style.width = "68%";
+  progressBar.classList.remove("critical");
+  progressBar.classList.add("stable");
+  progressBar.style.background = "var(--warning-color)";
+  
+  adviceText.innerHTML = "📈 <strong>Stable:</strong> Aarif finished simulated drills! Success forecast has been raised to stable margins.";
+  adviceText.classList.remove("warning");
+  
+  if (simulateBtn) {
+    simulateBtn.textContent = "Prep Drill Simulated!";
+    simulateBtn.disabled = true;
+    simulateBtn.style.opacity = "0.7";
+    simulateBtn.style.cursor = "not-allowed";
+  }
+  
+  showToast("🏆 Mathematics Exam readiness upgraded to 68%!", "success");
+  
+  // Update personalized Morning Briefing text to reflect this!
+  const briefing = document.getElementById("copilotBriefingText");
+  if (briefing) {
+    briefing.innerHTML = "Good morning! Aarif has successfully arrived at school. His latest Math Midterm OMR results are released (**12/15** marks). Tuition bills are settled. **His Algebra Exam readiness is raised to 68% after the Prep Drill simulation.**";
+  }
+};
+
+// --- FEATURE 10: Teacher alignment active indicator badge on parent goals panel ---
+window.checkGoalAlignment = function() {
+  const input = document.getElementById("parentGoalInput");
+  const badge = document.getElementById("teacherAlignmentBadge");
+  const helpText = document.getElementById("alignmentHelpText");
+  
+  if (!input || !badge) return;
+  
+  const val = input.value.trim().toLowerCase();
+  const teacherTopic = localStorage.getItem("active_lesson_plan_topic") || "quadratics";
+  
+  if (val === "") {
+    badge.textContent = "⚠️ Empty Goal";
+    badge.classList.remove("aligned");
+    badge.style.background = "rgba(239, 68, 68, 0.1)";
+    badge.style.color = "var(--error-color)";
+    if (helpText) helpText.textContent = "Enter a goal to coordinate with the teacher.";
+    return;
+  }
+  
+  if (val.includes(teacherTopic) || teacherTopic.includes(val) || (teacherTopic === "quadratics" && val.includes("algebra"))) {
+    badge.textContent = "✓ Teacher Aligned";
+    badge.classList.add("aligned");
+    if (helpText) helpText.innerHTML = `✨ <strong>Perfect Alignment!</strong> Mrs. Tasnim Jahan is currently teaching <strong>"${teacherTopic}"</strong> in class!`;
+  } else {
+    badge.textContent = "⚠️ Core Target";
+    badge.classList.remove("aligned");
+    badge.style.background = "rgba(245, 158, 11, 0.1)";
+    badge.style.color = "var(--warning-color)";
+    if (helpText) helpText.innerHTML = `💡 Core curriculum target. Teacher's active lesson topic is <strong>"${teacherTopic}"</strong>.`;
+  }
+};
+
+// --- FEATURE 2: Alerts history timeline repository logs in Alerts tab ---
+const ALERTS_STORAGE_KEY = "parent_alerts_timeline";
+
+window.initAlertsTimeline = function() {
+  const initialAlerts = [
+    { title: "RFID Gate Tap PRESENT", body: "Aarif Al-Masoom scanned check-in card at gate at 08:15 AM.", time: "Today 08:15 AM", type: "info" },
+    { title: "OMR Grading Released", body: "Math Midterm OMR graded: Scored 12/15 (80%). Conceptual alert for quadratics.", time: "Today 02:40 PM", type: "warning" },
+    { title: "Tuition Invoice Pending", body: "May tuition dues of ৳3,500 are pending payment via bKash/Nagad.", time: "Yesterday", type: "critical" }
+  ];
+  
+  if (!localStorage.getItem(ALERTS_STORAGE_KEY)) {
+    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(initialAlerts));
+  }
+  loadAlertsTimeline();
+};
+
+function loadAlertsTimeline() {
+  const stream = document.getElementById("alertsTimelineStream");
+  if (!stream) return;
+  
+  const alerts = JSON.parse(localStorage.getItem(ALERTS_STORAGE_KEY) || "[]");
+  stream.innerHTML = "";
+  
+  alerts.forEach(item => {
+    const node = document.createElement("div");
+    node.className = `timeline-alert-item ${item.type || 'info'}`;
+    node.innerHTML = `
+      <div class="timeline-alert-header">
+        <span class="timeline-alert-title">${escapeHTML(item.title)}</span>
+        <span class="timeline-alert-time">${escapeHTML(item.time)}</span>
+      </div>
+      <div class="timeline-alert-body">${escapeHTML(item.body)}</div>
+    `;
+    stream.appendChild(node);
+  });
+}
+
+window.appendAlert = function(title, body, type = "info") {
+  const alerts = JSON.parse(localStorage.getItem(ALERTS_STORAGE_KEY) || "[]");
+  alerts.unshift({
+    title: title,
+    body: body,
+    time: "Just Now",
+    type: type
+  });
+  localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts.slice(0, 10)));
+  loadAlertsTimeline();
+};

@@ -252,7 +252,7 @@ window.loadStudentOMRTemplate = function(studentId) {
   const pEl = document.querySelector("#viewfinderSheetMock p");
   const matrixEl = document.querySelector(".mock-omr-matrix");
 
-  if (titleEl) titleEl.textContent = studentId.toUpperCase() + " AL-MASOOM • MIDTERM EXAM";
+  if (titleEl) titleEl.textContent = studentId.toUpperCase() + " • MIDTERM EXAM";
   if (pEl) pEl.textContent = data.roll;
   if (matrixEl) matrixEl.innerHTML = data.htmlContent;
 
@@ -292,18 +292,48 @@ function displayScanResults(studentId) {
 
   if (!data || !resultsPanel || !scoreText || !masteryText || !pillsRow) return;
 
-  scoreText.textContent = data.score;
-  masteryText.textContent = data.mastery;
+  // Dynamically calculate correctness from configure OMR selectors for Q1-5
+  const keys = [
+    document.getElementById("keyQ1") ? document.getElementById("keyQ1").value : "A",
+    document.getElementById("keyQ2") ? document.getElementById("keyQ2").value : "B",
+    document.getElementById("keyQ3") ? document.getElementById("keyQ3").value : "A",
+    document.getElementById("keyQ4") ? document.getElementById("keyQ4").value : "A",
+    document.getElementById("keyQ5") ? document.getElementById("keyQ5").value : "D",
+    "D", "D", "A", "B", "C", "B", "D", "A", "B", "C" // Q6-15 default keys
+  ];
+
+  let correctCount = 0;
+  const dynamicAnswers = data.answers.map(ans => {
+    const correctAns = keys[ans.q - 1];
+    const isCorrect = ans.choice === correctAns;
+    if (isCorrect) correctCount++;
+    return {
+      q: ans.q,
+      choice: ans.choice,
+      correct: isCorrect
+    };
+  });
+
+  const finalScore = `${correctCount}/15`;
+  const masteryPercent = Math.round((correctCount / 15) * 100);
   
-  if (data.isCritical) {
-    masteryText.className = "critical-text";
-  } else {
-    masteryText.className = data.mastery.includes("Excellent") ? "success-text" : "warning-text";
+  let masteryClass = "stable-text";
+  let masteryDesc = "Stable";
+  if (masteryPercent < 50) {
+    masteryClass = "critical-text";
+    masteryDesc = "Critical Zone";
+  } else if (masteryPercent >= 80) {
+    masteryClass = "success-text";
+    masteryDesc = "Excellent";
   }
+  
+  scoreText.textContent = finalScore;
+  masteryText.textContent = `${masteryPercent}% (${masteryDesc})`;
+  masteryText.className = masteryClass;
 
   // Draw 15 pills
   pillsRow.innerHTML = "";
-  data.answers.forEach(ans => {
+  dynamicAnswers.forEach(ans => {
     const pill = document.createElement("span");
     pill.className = `score-pill ${ans.correct ? 'correct' : 'incorrect'}`;
     pill.textContent = `Q${ans.q}:${ans.choice}`;
@@ -321,14 +351,222 @@ function displayScanResults(studentId) {
 
 window.releaseGrades = function() {
   const studentSelect = document.getElementById("graderStudentSelect");
+  const studentId = studentSelect.value;
   const name = studentSelect.options[studentSelect.selectedIndex].text;
   
+  const feedbackSelect = document.getElementById("graderFeedbackSelect");
+  const feedbackVal = feedbackSelect ? feedbackSelect.value : "remedial";
+
+  const feedbackNotes = {
+    remedial: "Aarif needs immediate conceptual support in Algebra quadratic factorization. Recommended to practice visual rectangular grids at home.",
+    excellent: "Superb performance! Excelling in both Algebra and Trigonometry.",
+    pace: "Aarif is doing well but should increase his weekly home study focus above 45 minutes."
+  };
+
+  const selectedFeedbackText = feedbackNotes[feedbackVal] || feedbackNotes["remedial"];
+  const scoreText = document.getElementById("scanResultScoreText") ? document.getElementById("scanResultScoreText").textContent : "12/15";
+
+  const gradesData = {
+    student: studentId,
+    name: name,
+    score: scoreText,
+    feedback: selectedFeedbackText,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+
+  localStorage.setItem("released_grades_feedback", JSON.stringify(gradesData));
+  
+  // Send a coordinator system message in parent-teacher chat logs
+  pushCoordinatorSystemMessage(`📝 Scanned Math Midterm Released: ${scoreText}. Feedback: "${selectedFeedbackText}"`);
+
   showToast(`✅ Marks approved and published to ${name}'s portal!`, "🚀");
   document.getElementById("graderResultsPanel").style.display = "none";
 };
 
 window.flagGrades = function() {
   showToast("⚠️ Grade flagged for manual coordinate audit review.", "🛡️");
+};
+
+/* ========================================================================
+   RFID tap simulations, lesson planner compilers, smart recommendations
+   ======================================================================== */
+window.simulateRfidTap = function() {
+  const rfidStream = document.getElementById("rfidLogStream");
+  if (!rfidStream) return;
+
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  const timeStr = `${hours}:${minutes} AM`;
+
+  const newLog = document.createElement("div");
+  newLog.style.cssText = "font-size: 9px; padding: 5px 0; border-bottom:1px solid rgba(255,255,255,0.05); text-align:left; color: var(--text-main);";
+  newLog.innerHTML = `<span style="color:var(--accent-teal)">[${timeStr}]</span> <strong>Aarif Al-Masoom</strong> tapped at Gate 1 - PRESENT via RFID`;
+  
+  rfidStream.insertBefore(newLog, rfidStream.firstChild);
+
+  // Broadcast event
+  localStorage.setItem("rfid_checkin_event", JSON.stringify({
+    name: "Aarif Al-Masoom",
+    time: timeStr,
+    type: "RFID Gate-In"
+  }));
+
+  // Update Roster KPI Card
+  const rosterCount = document.getElementById("rosterAttendanceSub");
+  if (rosterCount) rosterCount.textContent = "24 Present";
+  const rosterPercent = document.getElementById("rosterAttendancePercent");
+  if (rosterPercent) rosterPercent.textContent = "96%";
+
+  showToast("📟 RFID Gate-In Tap broadcasted to Ecosystem!", "📟");
+};
+
+window.dispatchCuratorResource = function() {
+  const resourceSelect = document.getElementById("curatorResourceSelect");
+  if (!resourceSelect) return;
+
+  const val = resourceSelect.value;
+  const resourceNames = {
+    math_vids: "Video: Quadratic Parabola Roots (Level 12)",
+    worksheet: "Worksheet: Middle-Term Factorization Drills",
+    lego_guide: "Lego grid math family activity guide"
+  };
+
+  const resourceName = resourceNames[val] || "Mathematics Worksheet";
+  
+  localStorage.setItem("curator_resource_event", JSON.stringify({
+    resource: resourceName,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }));
+
+  pushCoordinatorSystemMessage(`🎯 Resource Dispatched: "${resourceName}" sent to Aarif's parenting copilot digest.`);
+  showToast(`🎯 Resource "${resourceName}" dispatched to Parent portal!`, "✏️");
+};
+
+window.generateLessonPlan = function() {
+  const resultDiv = document.getElementById("lessonPlanResult");
+  if (!resultDiv) return;
+
+  const now = new Date().toLocaleDateString();
+  resultDiv.innerHTML = `
+    <div style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:8px; font-weight:800; color:var(--accent-color);">
+      📋 Grade 8-C Algebra: Quadratic Functions & Area Scaffolding
+    </div>
+    <div style="font-size: 10px; color: var(--text-main); display:flex; flex-direction:column; gap:4px;">
+      <div><strong>📅 Generated Date:</strong> ${now}</div>
+      <div><strong>🎯 Objective:</strong> Identify roots and vertex coordinates for $y = ax^2 + bx + c$ visually.</div>
+      <div><strong>🔥 Warmup (5m):</strong> Solve $x^2 - 5x + 6 = 0$ using visual rectangle split. Find factors $(x-2)(x-3)$.</div>
+      <div><strong>🛠️ Active Practice (25m):</strong> 
+        <ul>
+          <li>Build visual grids using 1x1, 1x(x), and (x)x(x) area models.</li>
+          <li>Graph curves using real-time coordinates slider tool.</li>
+        </ul>
+      </div>
+      <div><strong>🚪 Exit Ticket (10m):</strong> Solve $x^2 + 5x + 6 = 0$. Plot roots.</div>
+    </div>
+  `;
+  resultDiv.style.display = "block";
+
+  localStorage.setItem("active_lesson_plan_topic", "quadratics");
+  showToast("✏️ AI Lesson plan generated and set as active curriculum focus!", "🧠");
+};
+
+window.useQuickTemplate = function(type) {
+  const input = document.getElementById("chatInputField");
+  if (!input) return;
+
+  const templates = {
+    conference: "Dear Mr. Al-Masoom, I would like to schedule a quick 10-minute parent-teacher conference tomorrow to discuss Aarif's Algebra progress. Please let me know if 11:30 AM works for you.",
+    improvement: "Hi! I am delighted to share that Aarif's Trigonometry scores have soared to 88%! His classroom engagement has been absolutely superb.",
+    alert: "Dear Mr. Al-Masoom, Aarif's latest mock Algebra scan recorded a 45% mastery. I've dispatched a quadratic quiz drill to his app; please ensure he completes it tonight."
+  };
+
+  input.value = templates[type] || "";
+  input.focus();
+  showToast("📝 Quick template loaded into input field!", "💬");
+};
+
+window.viewStudentPerformance = function(studentId) {
+  const drawer = document.getElementById("progressInsightsDrawer");
+  const title = document.getElementById("progressDrawerTitle");
+  const desc = document.getElementById("progressDrawerDesc");
+  const tip = document.getElementById("progressDrawerTip");
+  const path = document.getElementById("trendLinePath");
+  const svg = document.getElementById("studentTrendSvg");
+
+  if (!drawer || !title || !desc || !tip || !path || !svg) return;
+
+  drawer.style.display = "flex";
+
+  const studentData = {
+    aarif: {
+      name: "Aarif Al-Masoom",
+      desc: "Weekly Algebra progress shows severe regression in middle-term factoring during week 3, with a recovery trajectory started.",
+      tip: "Algebra mastery is currently at 45%. Settle doubt gap via remedial practice sheets & Lego grid visual activities.",
+      path: "M 40,65 L 100,68 L 160,82 L 220,72",
+      points: [
+        { cx: 40, cy: 65, color: "var(--accent-color)" },
+        { cx: 100, cy: 68, color: "var(--accent-color)" },
+        { cx: 160, cy: 82, color: "var(--error-color)" },
+        { cx: 220, cy: 72, color: "var(--accent-amber)" }
+      ]
+    },
+    samira: {
+      name: "Samira Hossain",
+      desc: "Weekly progress shows outstanding retention. Consistently leading class drills.",
+      tip: "Algebra mastery is excellent (88%). Highly receptive to advanced trigonometry challenge worksheets.",
+      path: "M 40,55 L 100,50 L 160,46 L 220,42",
+      points: [
+        { cx: 40, cy: 55, color: "var(--accent-teal)" },
+        { cx: 100, cy: 50, color: "var(--accent-teal)" },
+        { cx: 160, cy: 46, color: "var(--accent-teal)" },
+        { cx: 220, cy: 42, color: "var(--success-color)" }
+      ]
+    },
+    tanvir: {
+      name: "Tanvir Islam",
+      desc: "Weekly progress is stable. Demonstrates solid grasp of quadratic functions but slow execution speed.",
+      tip: "Algebra mastery is stable at 75%. Suggest reinforcing homework completion schedules.",
+      path: "M 40,58 L 100,56 L 160,54 L 220,51",
+      points: [
+        { cx: 40, cy: 58, color: "var(--accent-color)" },
+        { cx: 100, cy: 56, color: "var(--accent-color)" },
+        { cx: 160, cy: 54, color: "var(--accent-color)" },
+        { cx: 220, cy: 51, color: "var(--accent-teal)" }
+      ]
+    }
+  };
+
+  const data = studentData[studentId] || studentData.aarif;
+  title.textContent = `${data.name} - Progress Insights`;
+  desc.textContent = data.desc;
+  tip.textContent = data.tip;
+
+  // Set trend line path
+  path.setAttribute("d", data.path);
+
+  // Remove existing circle points
+  const circles = svg.querySelectorAll("circle");
+  circles.forEach(c => c.remove());
+
+  // Redraw circles
+  data.points.forEach((pt, idx) => {
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    c.setAttribute("cx", pt.cx);
+    c.setAttribute("cy", pt.cy);
+    c.setAttribute("r", idx === 3 ? "5" : "4");
+    c.setAttribute("fill", pt.color);
+    svg.appendChild(c);
+  });
+};
+
+window.closeProgressDrawer = function() {
+  const drawer = document.getElementById("progressInsightsDrawer");
+  if (drawer) {
+    drawer.style.display = "none";
+  }
 };
 
 /* ========================================================================

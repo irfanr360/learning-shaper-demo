@@ -231,6 +231,7 @@
             <div class="mini-badge">📐 Trig Wizard</div>
             <div class="mini-badge">📝 OMR Master</div>
           </div>
+          <button id="btnOpenBadgesShelf" style="background:transparent; border:none; color:var(--accent-color); font-size:10px; font-weight:800; cursor:pointer; text-decoration:underline; margin-top: 8px; display:block;">View Badges Shelf</button>
         </div>
 
         <!-- ========================================================================
@@ -273,8 +274,41 @@
             <p style="font-size:12px; line-height:1.5; color: var(--text-main); font-weight: 500;">
               Our AI analysis indicates you have a strong understanding of **Trigonometry** (88%) but need reinforcement in **Algebra (Quadratics)** (45%).
             </p>
-            <div style="margin-top: 10px; padding: 10px; background: rgba(139, 92, 246, 0.1); border-radius: 12px; font-size:11px; font-weight:700; color:var(--accent-color)">
+            <div style="margin-top: 10px; padding: 10px; background: rgba(139, 92, 246, 0.1); border-radius: 12px; font-size:11px; font-weight:700; color:var(--accent-color); margin-bottom:12px;">
               🎯 Target: Complete 3 drills in Quadratics to earn +150 XP & unlock Level 13!
+            </div>
+            
+            <!-- Curved SVG Roadmap Path -->
+            <div style="margin-top: 15px; position: relative; text-align: center;">
+              <svg viewBox="0 0 300 80" style="width: 100%; height: auto; display: block;">
+                <!-- Path line -->
+                <path d="M 30,40 Q 75,10 120,40 T 210,40 T 270,40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6" stroke-linecap="round"/>
+                <path d="M 30,40 Q 75,10 120,40" fill="none" stroke="var(--accent-color)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 6" class="glowing-path"/>
+                
+                <!-- Node 1: Algebra Base -->
+                <g class="roadmap-node" onclick="openRoadmapNode('Algebra Base', '100%', 'Passed', 'Fundamental algebraic rules, simplifying expressions, and linear equations equations.')" cursor="pointer">
+                  <circle cx="30" cy="40" r="8" fill="var(--success-color)" stroke="#fff" stroke-width="1.5"/>
+                  <text x="30" y="62" font-size="7" fill="var(--text-muted)" text-anchor="middle" font-weight="bold">Algebra I</text>
+                </g>
+
+                <!-- Node 2: Quadratics -->
+                <g class="roadmap-node active" onclick="openRoadmapNode('Quadratics', '45%', 'In Progress', 'Quadratic formula, factorizing trinomials, plotting parabolas, and identifying roots.')" cursor="pointer">
+                  <circle cx="120" cy="40" r="10" fill="var(--error-color)" stroke="#fff" stroke-width="2"/>
+                  <text x="120" y="62" font-size="7" fill="var(--text-main)" text-anchor="middle" font-weight="bold">Quadratics</text>
+                </g>
+
+                <!-- Node 3: Trigonometry -->
+                <g class="roadmap-node" onclick="openRoadmapNode('Trigonometry', '88%', 'Passed', 'Right-angle sine, cosine, tangent relations, unit circles, and trigonometric proofs.')" cursor="pointer">
+                  <circle cx="210" cy="40" r="8" fill="var(--success-color)" stroke="#fff" stroke-width="1.5"/>
+                  <text x="210" y="62" font-size="7" fill="var(--text-muted)" text-anchor="middle" font-weight="bold">Trig</text>
+                </g>
+
+                <!-- Node 4: Polynomials -->
+                <g class="roadmap-node locked" onclick="openRoadmapNode('Polynomials', '0%', 'Locked', 'Higher-degree polynomial functions, synthetic division, and remainder theorems.')" cursor="pointer">
+                  <circle cx="270" cy="40" r="8" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+                  <text x="270" y="62" font-size="7" fill="rgba(255,255,255,0.4)" text-anchor="middle" font-weight="bold">Polynomials</text>
+                </g>
+              </svg>
             </div>
           </div>
 
@@ -302,6 +336,12 @@
                 <span class="milestone-text">Finish Algebra Drills in AI Practice</span>
                 <span class="milestone-reward">+100 XP</span>
               </div>
+            </div>
+            
+            <!-- Custom Goal compiler input row -->
+            <div style="margin-top: 12px; display: flex; gap: 8px; border-top: 1px solid var(--panel-border); padding-top: 12px;">
+              <input type="text" id="customGoalInput" placeholder="Add custom study goal..." style="flex: 1; padding: 6px 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); color: #fff; font-size: 11px;">
+              <button onclick="compileCustomGoal()" style="background: var(--accent-color); border: none; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 10px; cursor: pointer;">Add</button>
             </div>
           </div>
 
@@ -341,6 +381,102 @@
               </div>
               <div class="skill-bar-outer">
                 <div class="skill-bar-inner" style="width: 45%; background: var(--error-color);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Weekly Study Tracker SVG Chart -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+              </svg>
+              Weekly Study Tracker
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+              Hover bars to inspect daily subject durations (Target: 60 mins/day).
+            </p>
+            <div style="position: relative; text-align: center;">
+              <svg viewBox="0 0 280 120" style="width:100%; height:auto;" id="weeklyStudySvg">
+                <!-- Grid Lines -->
+                <line x1="30" y1="20" x2="270" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="30" y1="50" x2="270" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="30" y1="80" x2="270" y2="80" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="30" y1="100" x2="270" y2="100" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+                
+                <!-- Y-Axis labels -->
+                <text x="22" y="23" font-size="8" fill="var(--text-muted)" text-anchor="end">90m</text>
+                <text x="22" y="53" font-size="8" fill="var(--text-muted)" text-anchor="end">60m</text>
+                <text x="22" y="83" font-size="8" fill="var(--text-muted)" text-anchor="end">30m</text>
+                <text x="22" y="103" font-size="8" fill="var(--text-muted)" text-anchor="end">0m</text>
+
+                <!-- Bars (Sat to Thu) -->
+                <!-- Sat: 45m -->
+                <rect x="45" y="65" width="18" height="35" rx="3" fill="var(--accent-color)" opacity="0.8" style="transition: transform 0.2s, fill 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Sat: 45 mins (Algebra practice & review)')" onmouseout="hideStudyTooltip()"/>
+                <text x="54" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Sat</text>
+                
+                <!-- Sun: 70m -->
+                <rect x="75" y="45" width="18" height="55" rx="3" fill="var(--success-color)" opacity="0.8" style="transition: transform 0.2s, fill 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Sun: 70 mins (Trigonometry mock drills)')" onmouseout="hideStudyTooltip()"/>
+                <text x="84" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Sun</text>
+                
+                <!-- Mon: 30m -->
+                <rect x="105" y="77" width="18" height="23" rx="3" fill="var(--accent-color)" opacity="0.8" style="transition: transform 0.2s, fill 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Mon: 30 mins (Physics equations)')" onmouseout="hideStudyTooltip()"/>
+                <text x="114" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Mon</text>
+
+                <!-- Tue: 85m -->
+                <rect x="135" y="32" width="18" height="68" rx="3" fill="var(--success-color)" opacity="0.8" style="transition: transform 0.2s, fill 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Tue: 85 mins (Trigonometry theorems)')" onmouseout="hideStudyTooltip()"/>
+                <text x="144" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Tue</text>
+
+                <!-- Wed: 50m -->
+                <rect x="165" y="60" width="18" height="40" rx="3" fill="var(--accent-color)" opacity="0.8" style="transition: transform 0.2s, fill 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Wed: 50 mins (Algebra homework)')" onmouseout="hideStudyTooltip()"/>
+                <text x="174" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Wed</text>
+
+                <!-- Thu: 90m -->
+                <rect x="195" y="20" width="18" height="80" rx="3" fill="var(--success-color)" opacity="0.8" style="transition: transform 0.2s, fill 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Thu: 90 mins (Mock Exam preparation)')" onmouseout="hideStudyTooltip()"/>
+                <text x="204" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Thu</text>
+
+                <!-- Fri: 0m -->
+                <rect x="225" y="98" width="18" height="2" rx="1" fill="rgba(255,255,255,0.2)" style="transition: transform 0.2s; cursor: pointer;" onmouseover="showStudyTooltip('Fri: Rest Day (0 mins)')" onmouseout="hideStudyTooltip()"/>
+                <text x="234" y="112" font-size="8" fill="var(--text-muted)" text-anchor="middle">Fri</text>
+              </svg>
+              
+              <!-- Tooltip block -->
+              <div id="studyChartTooltip" style="display:none; position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:#fff; font-size:9px; font-weight:700; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); pointer-events:none; z-index:10;">
+                Sat: 45 mins
+              </div>
+            </div>
+          </div>
+
+          <!-- Classmate Activity Feed (Peer Collaboration) -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 20M3 11.627a9.39 9.39 0 002.625.372 9.336 9.336 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M3 11.627v-.003c0-1.11-.285-2.16-.786-3.07M3 11.627v.11a11.386 11.386 0 01-4.911-3.606m15.482 1.397a3 3 0 11-5.997 0 3 3 0 015.997 0zM4 9a3 3 0 11-6 0 3 3 0 016 0zm3.498 12a3 3 0 11-5.997 0 3 3 0 015.997 0z" />
+              </svg>
+              Classmate Activity Feed
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,255,255,0.02); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.05)">
+                <div style="display:flex; align-items:center; gap:8px">
+                  <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=128&auto=format&fit=crop" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--accent-color)" alt="Samira">
+                  <div style="text-align:left">
+                    <h5 style="font-size:11px; font-weight:700; color:var(--text-main); margin:0;">Samira Sultana</h5>
+                    <p style="font-size:8px; color:var(--text-muted); margin:2px 0 0 0;">Just solved the Trig Quiz! 👑</p>
+                  </div>
+                </div>
+                <button class="peer-action-btn cheer" onclick="sendPeerAction('Samira', 'Cheer')">👏 Cheer</button>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,255,255,0.02); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.05)">
+                <div style="display:flex; align-items:center; gap:8px">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=128&auto=format&fit=crop" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--accent-color)" alt="Tanvir">
+                  <div style="text-align:left">
+                    <h5 style="font-size:11px; font-weight:700; color:var(--text-main); margin:0;">Tanvir Ahmed</h5>
+                    <p style="font-size:8px; color:var(--text-muted); margin:2px 0 0 0;">Offline for 2 days. 💤</p>
+                  </div>
+                </div>
+                <button class="peer-action-btn nudge" onclick="sendPeerAction('Tanvir', 'Nudge')">🔔 Nudge</button>
               </div>
             </div>
           </div>
@@ -385,7 +521,7 @@
               </div>
               
               <!-- Row 1: Correct (B) -->
-              <div class="omr-question-row">
+              <div class="omr-question-row" onclick="explainOMRQuestion(1)" style="cursor:pointer;">
                 <span class="omr-num">Q1</span>
                 <div class="omr-bubbles">
                   <div class="bubble">A</div>
@@ -396,7 +532,7 @@
               </div>
 
               <!-- Row 2: Incorrect marked A, correct was C -->
-              <div class="omr-question-row">
+              <div class="omr-question-row" onclick="explainOMRQuestion(2)" style="cursor:pointer;">
                 <span class="omr-num">Q2</span>
                 <div class="omr-bubbles">
                   <div class="bubble incorrect">A</div>
@@ -407,7 +543,7 @@
               </div>
 
               <!-- Row 3: Correct (A) -->
-              <div class="omr-question-row">
+              <div class="omr-question-row" onclick="explainOMRQuestion(3)" style="cursor:pointer;">
                 <span class="omr-num">Q3</span>
                 <div class="omr-bubbles">
                   <div class="bubble correct">A</div>
@@ -418,7 +554,7 @@
               </div>
 
               <!-- Row 4: Correct (D) -->
-              <div class="omr-question-row">
+              <div class="omr-question-row" onclick="explainOMRQuestion(4)" style="cursor:pointer;">
                 <span class="omr-num">Q4</span>
                 <div class="omr-bubbles">
                   <div class="bubble">A</div>
@@ -429,7 +565,7 @@
               </div>
 
               <!-- Row 5: Unmarked correctly shown missed in D -->
-              <div class="omr-question-row">
+              <div class="omr-question-row" onclick="explainOMRQuestion(5)" style="cursor:pointer;">
                 <span class="omr-num">Q5</span>
                 <div class="omr-bubbles">
                   <div class="bubble">A</div>
@@ -501,8 +637,53 @@
               <button class="submit-quiz-btn" id="submitQuizBtn">Submit Answer</button>
             </div>
             
-            <div class="hint-bubble" id="quizHintBubble">
-              💡 <strong>AI Hint:</strong> Remember, you are looking for two numbers that multiply to +6 (constant term) and add up to -5 (middle term). Since they multiply to a positive but add to a negative, both roots must be positive values!
+            <!-- 3-Tier Hint Systems -->
+            <div class="hint-bubble" id="quizHintBubble" style="display:none; padding:15px; margin-top:12px;">
+              <div style="display:flex; gap:6px; margin-bottom:10px;">
+                <button class="hint-tier-btn active" id="btnHintTier1" onclick="showHintTier(1)">Tier 1: Tip</button>
+                <button class="hint-tier-btn" id="btnHintTier2" onclick="showHintTier(2)">Tier 2: Formula</button>
+                <button class="hint-tier-btn" id="btnHintTier3" onclick="showHintTier(3)">Tier 3: Solution</button>
+              </div>
+              <div id="hintTierContent" style="font-size:11px; line-height:1.4; color:var(--text-main)">
+                Tier content...
+              </div>
+            </div>
+          </div>
+
+          <!-- Parabola Simulation Card -->
+          <div class="glass-card" style="margin-top: 20px;">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              </svg>
+              Algebra Quadratic Visualizer
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+              Adjust sliders below to see how coefficients reshape the quadratic equation parabola graph <strong>y = ax² + bx + c</strong>.
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px;">
+              <canvas id="parabolaCanvas" width="200" height="150" style="border: 1px solid var(--panel-border); border-radius: 8px; background: #000;"></canvas>
+            </div>
+            <div class="slider-control-row">
+              <div style="display:flex; justify-content:space-between;">
+                <label>Coefficient a: <span id="valA">1.0</span></label>
+              </div>
+              <input type="range" class="parabola-slider" id="sliderA" min="-3" max="3" step="0.5" value="1">
+            </div>
+            <div class="slider-control-row">
+              <div style="display:flex; justify-content:space-between;">
+                <label>Coefficient b: <span id="valB">0.0</span></label>
+              </div>
+              <input type="range" class="parabola-slider" id="sliderB" min="-6" max="6" step="1" value="0">
+            </div>
+            <div class="slider-control-row">
+              <div style="display:flex; justify-content:space-between;">
+                <label>Constant c: <span id="valC">0.0</span></label>
+              </div>
+              <input type="range" class="parabola-slider" id="sliderC" min="-20" max="20" step="2" value="0">
+            </div>
+            <div id="parabolaEquationText" style="text-align: center; margin-top: 12px; font-weight: 800; font-size: 13px; color: var(--accent-color);">
+              y = 1x² + 0x + 0
             </div>
           </div>
 
@@ -661,6 +842,81 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Adaptive Learning Path Node Explainer Drawer -->
+  <div class="roadmap-drawer" id="roadmapDetailDrawer">
+    <div class="drawer-sheet">
+      <div class="sheet-header">
+        <h3 id="roadmapNodeTitle">Algebra & Quadratics</h3>
+        <button class="sheet-close-btn" onclick="closeRoadmapDrawer()">✕</button>
+      </div>
+      <div style="padding: 16px 0; text-align: left; color: var(--text-main);">
+        <p style="font-size: 13px; line-height: 1.5; margin-bottom: 12px;" id="roadmapNodeDesc">Topic description goes here.</p>
+        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700">
+          <span>Status: <span id="roadmapNodeStatus" style="color:var(--accent-color)">In Progress</span></span>
+          <span>Mastery: <span id="roadmapNodeMastery" style="color:var(--success-color)">45%</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements & Badges Shelf Drawer -->
+  <div class="badges-shelf-drawer" id="badgesShelfDrawer">
+    <div class="drawer-sheet">
+      <div class="sheet-header">
+        <h3>Achievements Shelf</h3>
+        <button class="sheet-close-btn" onclick="closeBadgesDrawer()">✕</button>
+      </div>
+      <div class="badges-shelf-grid">
+        <div class="shelf-badge-item" onclick="showBadgeDetails('🔥 5 Day Streak', 'Maintain a study streak for 5 consecutive days.', 'Unlocked', '100 XP')">
+          <span class="badge-icon">🔥</span>
+          <h4>5 Day Streak</h4>
+          <span class="badge-xp-reward">+100 XP</span>
+        </div>
+        <div class="shelf-badge-item" onclick="showBadgeDetails('📐 Trig Wizard', 'Achieve >85% score in Trigonometry diagnostic assessments.', 'Unlocked', '150 XP')">
+          <span class="badge-icon">📐</span>
+          <h4>Trig Wizard</h4>
+          <span class="badge-xp-reward">+150 XP</span>
+        </div>
+        <div class="shelf-badge-item" onclick="showBadgeDetails('📝 OMR Master', 'Accurately grade sheets with zero scan correction requests.', 'Unlocked', '200 XP')">
+          <span class="badge-icon">📝</span>
+          <h4>OMR Master</h4>
+          <span class="badge-xp-reward">+200 XP</span>
+        </div>
+        <div class="shelf-badge-item locked" onclick="showBadgeDetails('🎯 Parabola Guru', 'Correctly model 5 quadratic graphs in the interactive practice simulation.', 'Locked', '250 XP')">
+          <span class="badge-icon">🎯</span>
+          <h4>Parabola Guru</h4>
+          <span class="badge-xp-reward">+250 XP</span>
+        </div>
+      </div>
+      <div class="badge-details-box" id="badgeDetailsBox" style="display:none">
+        <h4 id="detailBadgeName">Parabola Guru</h4>
+        <p id="detailBadgeDesc" style="font-size:11px; color:var(--text-muted); margin-top:4px">Solve Algebra quadratics drills perfectly.</p>
+        <span class="badge-reward" id="detailBadgeReward">Locked • +250 XP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OMR Click-to-Explain Drawer -->
+  <div class="omr-explainer-drawer" id="omrExplainerDrawer">
+    <div class="drawer-sheet">
+      <div class="sheet-header">
+        <h3 id="omrExplainerTitle">OMR Question Review</h3>
+        <button class="sheet-close-btn" onclick="closeOMRExplainer()">✕</button>
+      </div>
+      <div style="padding: 16px 0; text-align: left; color: var(--text-main);">
+        <h4 style="font-size: 13px; font-weight: 800; margin-bottom: 8px;" id="omrExplainerTopic">Topic: Quadratics</h4>
+        <p style="font-size: 12px; line-height: 1.5; margin-bottom: 12px;" id="omrExplainerDesc">Mistake analysis details...</p>
+        <div style="background: rgba(220, 38, 38, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(220, 38, 38, 0.2); font-size: 11px; margin-bottom: 12px; color: var(--error-color);" id="omrExplainerMistake">
+          Your Answer: A • Correct: C
+        </div>
+        <div style="background: rgba(30, 99, 245, 0.08); padding: 10px; border-radius: 8px; border: 1px solid var(--panel-border); font-size: 11px;">
+          <strong>AI Recommended Study:</strong><br>
+          <span id="omrExplainerRemedy">Practice middle-term factorization drills.</span>
+        </div>
+      </div>
     </div>
   </div>
 

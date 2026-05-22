@@ -1772,3 +1772,235 @@ body {
 .toast-item.warning {
   border-left-color: var(--warning-color);
 }
+
+/* Drawer style systems */
+.roadmap-drawer, .badges-shelf-drawer, .omr-explainer-drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 7, 30, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 250;
+  display: none;
+  justify-content: center;
+  align-items: flex-end;
+  animation: fadeIn 0.3s ease;
+}
+
+.roadmap-drawer.active, .badges-shelf-drawer.active, .omr-explainer-drawer.active {
+  display: flex;
+}
+
+.drawer-sheet {
+  background: var(--panel-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--panel-border);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 12px;
+}
+
+.sheet-header h3 {
+  font-family: var(--font-header);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.sheet-close-btn {
+  background: rgba(30, 99, 245, 0.08);
+  border: none;
+  color: var(--text-main);
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+/* Badges Shelf styling */
+.badges-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.shelf-badge-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.shelf-badge-item:hover {
+  transform: scale(1.03);
+  background: rgba(30, 99, 245, 0.05);
+}
+
+.shelf-badge-item.locked {
+  opacity: 0.5;
+}
+
+.badge-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.shelf-badge-item h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.badge-xp-reward {
+  font-size: 9px;
+  color: var(--accent-color);
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.badge-details-box {
+  background: rgba(30, 99, 245, 0.05);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.badge-reward {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--cosmic-gradient);
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+}
+
+/* Sliders & Canvas styling */
+.slider-control-row {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slider-control-row label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.parabola-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(30, 99, 245, 0.1);
+  border-radius: 3px;
+  outline: none;
+}
+
+.parabola-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+  box-shadow: 0 0 5px var(--accent-color);
+}
+
+/* Peer action buttons */
+.peer-action-btn {
+  border: none;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.peer-action-btn:active {
+  transform: scale(0.95);
+}
+
+.peer-action-btn.cheer {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--success-color);
+}
+
+.peer-action-btn.nudge {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--warning-color);
+}
+
+/* Hint Tier Styles */
+.hint-tier-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 6px 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.hint-tier-btn.active {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+}
+
+.hint-tier-btn.locked {
+  opacity: 0.6;
+}
+
+/* SVG roadmap pulses */
+@keyframes pulseGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent-color)); }
+  100% { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--accent-color)); }
+}
+
+.roadmap-node circle {
+  transform-origin: center;
+}
+
+.roadmap-node.active circle {
+  animation: pulseGlow 1.5s infinite alternate;
+}
+

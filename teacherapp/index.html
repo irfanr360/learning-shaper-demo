@@ -70,6 +70,14 @@
               <p>Principal's operational control deck</p>
             </div>
           </a>
+
+          <!-- FEATURE 10: AI Professional Development Micro Tips Card -->
+          <div class="glass-card" style="margin-top: 20px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1)); border-color: rgba(16, 185, 129, 0.25); text-align: left; padding: 12px; border-radius: 12px;">
+            <h4 style="font-size:11px; font-weight:800; color:var(--text-main); margin-bottom:4px;">💡 Daily Pedagogical PD Tip</h4>
+            <p style="font-size:9px; color:var(--text-muted); line-height:1.4;">
+              Aarif is currently struggling with quadratics. Try "Area Scaffolding": represent quadratic equations visually as rectangular grids (e.g. x² + 5x + 6 as a rectangle of sides (x+2) and (x+3)). This reduces vertex identification abstract load by 40%!
+            </p>
+          </div>
         </div>
       </div>
 
@@ -86,7 +94,7 @@
           </button>
         </div>
 
-        <!-- Monitored Coordinator Profile Summary -->
+        <!-- Monitored Profile Summary -->
         <div class="profile-card">
           <div class="profile-avatar-row">
             <div class="avatar-wrapper">
@@ -117,8 +125,89 @@
             </div>
             <div class="kpi-card">
               <span class="kpi-label">RFID Attendance</span>
-              <span class="kpi-value">92%</span>
-              <span class="kpi-sub green">23 Present</span>
+              <span class="kpi-value" id="rosterAttendancePercent">92%</span>
+              <span class="kpi-sub green" id="rosterAttendanceSub">23 Present</span>
+            </div>
+          </div>
+
+          <!-- FEATURE 5: Class Mastery Forecast Line Chart (Predictive Trajectory) -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+              </svg>
+              Class Mastery Forecast
+            </div>
+            <p class="section-desc">Grade 8 math historical average and predictive 4-week exam readiness trajectory.</p>
+            <div style="text-align: center; margin-top: 10px;">
+              <svg viewBox="0 0 280 110" style="width: 100%; height: auto;">
+                <!-- Grid -->
+                <line x1="30" y1="20" x2="270" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="30" y1="50" x2="270" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="30" y1="80" x2="270" y2="80" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                
+                <!-- Curve line (Historical Solid, Forecasted Dashed) -->
+                <path d="M 40,85 L 90,75 L 140,68 L 190,62" fill="none" stroke="var(--accent-color)" stroke-width="2.5"/>
+                <path d="M 190,62 L 215,50 L 240,40 L 265,30" fill="none" stroke="var(--accent-teal)" stroke-width="2.5" stroke-dasharray="4 4"/>
+                
+                <!-- Current Indicator dot -->
+                <circle cx="190" cy="62" r="5" fill="var(--accent-teal)"/>
+                <text x="190" y="52" font-size="8" fill="var(--accent-teal)" font-weight="bold" text-anchor="middle">Current</text>
+                
+                <!-- Axis Labels -->
+                <text x="40" y="98" font-size="7" fill="var(--text-muted)" text-anchor="middle">April</text>
+                <text x="140" y="98" font-size="7" fill="var(--text-muted)" text-anchor="middle">May (Mid)</text>
+                <text x="240" y="98" font-size="7" fill="var(--text-muted)" text-anchor="middle">June (Forecast)</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- FEATURE 6: Automated RFID Attendance check-ins feed -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+              </svg>
+              Live RFID Attendance Feed
+            </div>
+            <p class="section-desc">Real-time gate-in entry streams scanned via active RFID student badges:</p>
+            <div style="background: rgba(0,0,0,0.25); border-radius: 10px; padding: 10px; max-height: 100px; overflow-y: auto;" id="rfidLogStream">
+              <div style="font-size: 9px; padding: 5px 0; border-bottom:1px solid rgba(255,255,255,0.05); text-align:left; color: var(--text-main);">
+                <span style="color:var(--accent-teal)">[08:12 AM]</span> <strong>Aarif Al-Masoom</strong> tapped at Gate 1 - PRESENT via RFID
+              </div>
+              <div style="font-size: 9px; padding: 5px 0; border-bottom:1px solid rgba(255,255,255,0.05); text-align:left; color: var(--text-main);">
+                <span style="color:var(--accent-teal)">[08:08 AM]</span> <strong>Samira Hossain</strong> tapped at Gate 1 - PRESENT via RFID
+              </div>
+            </div>
+            <button class="small-action-btn" style="margin-top: 10px; width: 100%; font-weight:800;" onclick="simulateRfidTap()">Simulate Class Arrival Tap</button>
+          </div>
+
+          <!-- FEATURE 7: Real-Time Classroom Sentiment Exit Ring -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              Classroom Sentiment Pulse
+            </div>
+            <p class="section-desc">Yesterday's digital exit card sentiment distributions:</p>
+            <div style="display:flex; align-items:center; gap:24px; padding: 10px 0;">
+              <svg viewBox="0 0 100 100" style="width:65px; height:65px;">
+                <!-- Engaged (60%) -->
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-color)" stroke-width="12" stroke-dasharray="150 251" stroke-dashoffset="0"/>
+                <!-- Confused (30%) -->
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-amber)" stroke-width="12" stroke-dasharray="75 251" stroke-dashoffset="-150"/>
+                <!-- Tired (10%) -->
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-teal)" stroke-width="12" stroke-dasharray="26 251" stroke-dashoffset="-225"/>
+              </svg>
+              <div style="font-size: 10px; text-align: left; display:flex; flex-direction:column; gap:4px; color: var(--text-main);">
+                <div><span style="display:inline-block; width:8px; height:8px; background:var(--accent-color); border-radius:50%; margin-right:6px;"></span>Engaged: 60%</div>
+                <div><span style="display:inline-block; width:8px; height:8px; background:var(--accent-amber); border-radius:50%; margin-right:6px;"></span>Confused: 30%</div>
+                <div><span style="display:inline-block; width:8px; height:8px; background:var(--accent-teal); border-radius:50%; margin-right:6px;"></span>Tired: 10%</div>
+              </div>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2); font-size: 9px; color: var(--accent-amber); text-align:left; line-height:1.4;">
+              💡 Exit Slip Tip: 30% of students flagged confusion regarding factorization vertexes. Area model visual scaffold recommended.
             </div>
           </div>
 
@@ -143,9 +232,9 @@
           <div class="glass-card">
             <div class="card-title">
               <svg viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0 1 12.285 21H12.28a11.383 11.383 0 0 1-2.735-1.763v-.108c0-1.113.285-2.16.786-3.07M9 19.128a9.38 9.38 0 0 1-2.625.372 9.337 9.337 0 0 1-4.121-.952 4.125 4.125 0 0 1 7.533-2.493M9 19.128v-.003c0-1.113.285-2.16.786-3.07m-.786 3.07A11.386 11.386 0 0 0 12.285 21m-4.785-3.07H3.125A3.125 3.125 0 0 1 0 14.803v-.183A9.701 9.701 0 0 1 3.125 12h1.5A3.125 3.125 0 0 1 7.75 15.125v.183c0 1.177-.355 2.27-.96 3.185ZM12.285 21H12.28m0 0h6.125A3.125 3.125 0 0 0 21.5 17.875v-.183c0-1.177-.355-2.27-.96-3.185ZM12.285 21H6.155A3.125 3.125 0 0 1 3 17.875v-.183c0-1.177.355-2.27.96-3.185M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM19.5 8.25a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0ZM6.75 8.25a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0 1 12.285 21H12.28a11.383 11.383 0 0 1-2.735-1.763v-.108c0-1.113.285-2.16.786-3.07M9 19.128a9.38 9.38 0 0 1-2.625.372 9.337 9.337 0 0 1-4.121-.952 4.125 4.125 0 0 1 7.533-2.493M9 19.128v-.003c0-1.113.285-2.16.786-3.07m-.786 3.07A11.386 11.386 0 0 0 12.285 21m-4.785-3.07H3.125A3.125 3.125 0 0 1 0 14.803v-.183A9.701 9.701 0 0 1 3.125 12h1.5A3.125 3.125 0 0 1 7.75 15.125v.183c0 1.177-.355 2.27-.96 3.185ZM12.285 21H12.28m0 0h6.125A3.125 3.125 0 0 0 21.5 17.875v-.183c0-1.177-.355-2.27-.96-3.185ZM12.285 21H6.155A3.125 3.125 0 0 1 3 17.875v-.183c0-1.177 3.55-2.27.96-3.185M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM19.5 8.25a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0ZM6.75 8.25a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
               </svg>
-              Grade 8-C Student Rosters
+              Grade 8-C Student Roster
             </div>
             
             <div class="student-roster-list">
@@ -227,6 +316,18 @@
               </select>
             </div>
 
+            <!-- FEATURE 1: OMR Answer Key Custom Configuration -->
+            <div class="glass-card" style="margin-top: 12px; padding: 12px;">
+              <h4 style="font-size: 11px; font-weight:800; color:var(--text-main); margin-bottom: 8px;">⚙️ Configure OMR Answer Key</h4>
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; font-size: 9px; color: var(--text-main);">
+                <div>Q1: <select id="keyQ1" style="background:#000; color:#fff; border:1px solid var(--panel-border); font-size:9px;"><option selected>A</option><option>B</option><option>C</option><option>D</option></select></div>
+                <div>Q2: <select id="keyQ2" style="background:#000; color:#fff; border:1px solid var(--panel-border); font-size:9px;"><option>A</option><option selected>B</option><option>C</option><option>D</option></select></div>
+                <div>Q3: <select id="keyQ3" style="background:#000; color:#fff; border:1px solid var(--panel-border); font-size:9px;"><option selected>A</option><option>B</option><option>C</option><option>D</option></select></div>
+                <div>Q4: <select id="keyQ4" style="background:#000; color:#fff; border:1px solid var(--panel-border); font-size:9px;"><option selected>A</option><option>B</option><option>C</option><option>D</option></select></div>
+                <div>Q5: <select id="keyQ5" style="background:#000; color:#fff; border:1px solid var(--panel-border); font-size:9px;"><option>A</option><option>B</option><option>C</option><option selected>D</option></select></div>
+              </div>
+            </div>
+
             <!-- Visual Viewfinder Scanner Box -->
             <div class="viewfinder-container">
               <div class="viewfinder-corners">
@@ -248,30 +349,11 @@
                 
                 <!-- Tiny bubble sheet mockup -->
                 <div class="mock-omr-matrix">
-                  <div class="mock-omr-row">
-                    <span class="q-num">Q1</span>
-                    <div class="mock-bubble selected checked">A</div>
-                    <div class="mock-bubble">B</div>
-                    <div class="mock-bubble">C</div>
-                  </div>
-                  <div class="mock-omr-row">
-                    <span class="q-num">Q2</span>
-                    <div class="mock-bubble">A</div>
-                    <div class="mock-bubble selected checked">B</div>
-                    <div class="mock-bubble">C</div>
-                  </div>
-                  <div class="mock-omr-row">
-                    <span class="q-num">Q3</span>
-                    <div class="mock-bubble">A</div>
-                    <div class="mock-bubble">B</div>
-                    <div class="mock-bubble selected incorrect">C</div>
-                  </div>
-                  <div class="mock-omr-row">
-                    <span class="q-num">Q4</span>
-                    <div class="mock-bubble selected checked">A</div>
-                    <div class="mock-bubble">B</div>
-                    <div class="mock-bubble">C</div>
-                  </div>
+                  <div class="mock-omr-row"><span class="q-num">Q1</span><div class="mock-bubble selected checked">A</div><div class="mock-bubble">B</div><div class="mock-bubble">C</div></div>
+                  <div class="mock-omr-row"><span class="q-num">Q2</span><div class="mock-bubble">A</div><div class="mock-bubble selected checked">B</div><div class="mock-bubble">C</div></div>
+                  <div class="mock-omr-row"><span class="q-num">Q3</span><div class="mock-bubble">A</div><div class="mock-bubble">B</div><div class="mock-bubble selected incorrect">C</div></div>
+                  <div class="mock-omr-row"><span class="q-num">Q4</span><div class="mock-bubble selected checked">A</div><div class="mock-bubble">B</div><div class="mock-bubble">C</div></div>
+                  <div class="mock-omr-row"><span class="q-num">Q5</span><div class="mock-bubble">A</div><div class="mock-bubble">B</div><div class="mock-bubble selected checked">C</div></div>
                 </div>
                 
                 <div class="sheet-footer">Skew alignment: 0.2° • Shadows: Minimal</div>
@@ -288,7 +370,7 @@
                   <label>Extracted Score</label>
                 </div>
                 <div class="result-badge-details">
-                  <p>Mastery: <strong id="scanResultMasteryText" class="critical-text">45% (Critical)</strong></p>
+                  <p>Mastery: <strong id="scanResultMasteryText" class="critical-text">45% (Critical Zone)</strong></p>
                   <p>Scanned via: Companion Cam</p>
                 </div>
               </div>
@@ -299,6 +381,16 @@
                 <div class="score-pills-row" id="scanScorePillsRow">
                   <!-- Generated by JS -->
                 </div>
+              </div>
+
+              <!-- FEATURE 4: AI Feedback dropdown template attachers -->
+              <div style="margin-top: 12px; margin-bottom: 12px; text-align: left;">
+                <label style="font-size: 10px; font-weight:700; color:var(--text-muted);">Attach AI Feedback Note:</label>
+                <select class="grader-select" id="graderFeedbackSelect" style="width: 100%; margin-top: 4px; font-size:11px;">
+                  <option value="remedial">Conceptual Support Required (Algebra quadratics focus)</option>
+                  <option value="excellent">Excellent Retention (Trig honors & Algebra masteries)</option>
+                  <option value="pace">Pace Warning (Increase weekly study durations above 45m)</option>
+                </select>
               </div>
 
               <div class="grader-actions-row">
@@ -340,18 +432,7 @@
 
             <!-- Messages Stream -->
             <div class="chat-messages-stream" id="chatMessagesStream">
-              
-              <div class="message-bubble teacher">
-                <p>Hello Mr. Al-Masoom! I am Aarif's class coordinator. Welcome to the direct Parent communication channel.</p>
-                <span class="message-time">14:02</span>
-              </div>
-              
-              <div class="message-bubble teacher">
-                <p>While Aarif is making wonderful progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his student app today.</p>
-                <span class="message-time">14:04</span>
-              </div>
-
-              <!-- Shared messaging log placeholder -->
+              <!-- Loaded dynamically via storage logs -->
             </div>
 
             <!-- Live Typing Pulsing indicator (invisible by default) -->
@@ -359,6 +440,16 @@
               <span></span>
               <span></span>
               <span></span>
+            </div>
+
+            <!-- FEATURE 9: Quick Professional Messaging templates -->
+            <div style="padding: 8px 10px; border-top: 1px solid var(--panel-border); background: rgba(0,0,0,0.15);">
+              <label style="font-size: 10px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px; text-align:left;">Quick Templates:</label>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button onclick="useQuickTemplate('conference')" style="font-size:8px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--panel-border); padding:3px 6px; border-radius:5px; cursor:pointer;">📅 Schedule Conference</button>
+                <button onclick="useQuickTemplate('improvement')" style="font-size:8px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--panel-border); padding:3px 6px; border-radius:5px; cursor:pointer;">🎉 Celebrate Progress</button>
+                <button onclick="useQuickTemplate('alert')" style="font-size:8px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--panel-border); padding:3px 6px; border-radius:5px; cursor:pointer;">⚠️ Algebra Warning</button>
+              </div>
             </div>
 
             <!-- Chat Entry Footer -->
@@ -438,12 +529,50 @@
               </div>
 
               <!-- Dispatch Buttons -->
-              <div class="form-group" style="margin-top: 24px;">
+              <div class="form-group" style="margin-top: 16px;">
                 <button class="action-btn-primary success-btn" id="btnDispatchPractice" onclick="dispatchRemedialPractice()">Dispatch Practice Sheet</button>
               </div>
             </div>
 
           </div>
+
+          <!-- FEATURE 8: Smart Content Recommendations & Tuition Dispatcher -->
+          <div class="glass-card" style="margin-top: 20px;">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+              </svg>
+              Smart Curriculum Recommendations
+            </div>
+            <p class="section-desc">Instantly dispatch customized curriculum resources to Aarif's home alerts tab:</p>
+            <div class="curator-form" style="text-align: left;">
+              <div class="form-group" style="margin-bottom:12px;">
+                <select class="grader-select" id="curatorResourceSelect" style="width: 100%;">
+                  <option value="math_vids">Video: Quadratic Parabola Roots (Level 12)</option>
+                  <option value="worksheet">Worksheet: Middle-Term Factorization Drills</option>
+                  <option value="lego_guide">Lego grid math family activity guide</option>
+                </select>
+              </div>
+              <button class="action-btn-primary" onclick="dispatchCuratorResource()">Dispatch Resource</button>
+            </div>
+          </div>
+
+          <!-- FEATURE 2: AI Lesson Plan Suggestions Generator -->
+          <div class="glass-card" style="margin-top: 20px;">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              AI Lesson Plan Generator
+            </div>
+            <p class="section-desc">Generate a custom pedagogical outline optimized for Grade 8 Algebra (Quadratics):</p>
+            <button class="action-btn-primary" onclick="generateLessonPlan()">Generate Lesson Plan</button>
+            
+            <div id="lessonPlanResult" style="display:none; background: rgba(0,0,0,0.3); border:1px solid var(--panel-border); border-radius:12px; padding:12px; margin-top:12px; font-size:11px; text-align:left; color: var(--text-main); line-height:1.4;">
+              <!-- Plan content loads here -->
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -481,6 +610,49 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- FEATURE 3: Roster Progress Insights slide-up drawer overlay -->
+  <div class="progress-drawer" id="progressInsightsDrawer" style="position: absolute; top:0; left:0; right:0; bottom:0; background:rgba(11,7,30,0.6); backdrop-filter:blur(8px); z-index:250; display:none; justify-content:center; align-items:flex-end;">
+    <div class="drawer-sheet" style="background:var(--panel-bg); border-top-left-radius:28px; border-top-right-radius:28px; width:100%; padding:24px; box-shadow:var(--card-shadow); text-align:left; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+      <div class="sheet-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-border); padding-bottom:12px;">
+        <h3 id="progressDrawerTitle" style="margin:0; font-size:15px; font-weight:800; color:var(--text-main);">Student Progress Insights</h3>
+        <button class="sheet-close-btn" onclick="closeProgressDrawer()" style="background:rgba(255,255,255,0.08); border:none; color:#fff; font-size:14px; cursor:pointer; width:26px; height:26px; border-radius:50%;">✕</button>
+      </div>
+      <div style="padding:16px 0; color:var(--text-main);">
+        <p style="font-size:11px; line-height:1.4; margin-bottom:12px;" id="progressDrawerDesc">Weekly performance trends and topic breakdown.</p>
+        
+        <!-- Performance Trajectory SVG Graph -->
+        <div style="margin-top:10px; margin-bottom:12px; text-align:center;">
+          <svg viewBox="0 0 280 100" style="width:100%; height:auto;" id="studentTrendSvg">
+            <!-- Grid Lines -->
+            <line x1="30" y1="20" x2="270" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="30" y1="50" x2="270" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="30" y1="80" x2="270" y2="80" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            
+            <!-- Path trend line -->
+            <path d="M 40,80 L 100,75 L 160,82 L 220,50" fill="none" stroke="var(--accent-color)" stroke-width="3" id="trendLinePath"/>
+            
+            <!-- Data points -->
+            <circle cx="40" cy="80" r="4" fill="var(--accent-color)"/>
+            <circle cx="100" cy="75" r="4" fill="var(--accent-color)"/>
+            <circle cx="160" cy="82" r="4" fill="var(--error-color)"/>
+            <circle cx="220" cy="50" r="5" fill="var(--success-color)"/>
+            
+            <!-- X-Axis labels -->
+            <text x="40" y="95" font-size="8" fill="var(--text-muted)" text-anchor="middle">Wk 1</text>
+            <text x="100" y="95" font-size="8" fill="var(--text-muted)" text-anchor="middle">Wk 2</text>
+            <text x="160" y="95" font-size="8" fill="var(--text-muted)" text-anchor="middle">Wk 3</text>
+            <text x="220" y="95" font-size="8" fill="var(--text-muted)" text-anchor="middle">Wk 4</text>
+          </svg>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; border:1px solid var(--panel-border); font-size:11px;">
+          <strong>AI Insight Recommendation:</strong><br>
+          <span id="progressDrawerTip">Quadratics mastery is currently at 45%. Settle doubt gap via remedial practice sheets.</span>
+        </div>
+      </div>
     </div>
   </div>
 

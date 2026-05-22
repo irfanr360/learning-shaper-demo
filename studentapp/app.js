@@ -33,7 +33,9 @@ const algebraQuizDrills = {
         "D)  x = 5, x = -6"
       ],
       correctIndex: 1,
-      hint: "Find two numbers that multiply to +6 and add up to -5. Try factorizing: (x - 2)(x - 3) = 0.",
+      hint1: "Find two numbers that multiply to +6 (constant term) and add up to -5 (middle term). Since they multiply to a positive but add to a negative, both roots must be positive values!",
+      hint2: "Factor shape: (x - p)(x - q) = 0. We need -p * -q = +6 and -p - q = -5. These numbers are -2 and -3.",
+      hint3: "Factorized form is (x - 2)(x - 3) = 0. Solving each bracket for zero gives roots: x = 2 and x = 3.",
       explanation: "Break the middle term: x² - 2x - 3x + 6 = 0. Group terms: x(x - 2) - 3(x - 2) = 0. Therefore, (x - 2)(x - 3) = 0, which gives the roots x = 2 and x = 3."
     }
   ],
@@ -48,7 +50,9 @@ const algebraQuizDrills = {
         "D)  x = 1, x = -6"
       ],
       correctIndex: 0,
-      hint: "We need two numbers that multiply to -6 and add to -1. Hint: -3 and +2 satisfy both conditions.",
+      hint1: "We need two numbers that multiply to -6 (constant) and add to -1 (coefficient of x). Since the product is negative, the roots have opposite signs.",
+      hint2: "The numbers are -3 and +2 since (-3) * (+2) = -6 and (-3) + (+2) = -1. Use these to split the middle term.",
+      hint3: "Split: x² - 3x + 2x - 6 = 0. Group: x(x - 3) + 2(x - 3) = 0. Thus, (x - 3)(x + 2) = 0, which gives roots x = 3 and x = -2.",
       explanation: "Rewrite: x² - 3x + 2x - 6 = 0. Factorize by grouping: x(x - 3) + 2(x - 3) = 0. Thus, (x - 3)(x + 2) = 0, giving roots x = 3 and x = -2."
     }
   ],
@@ -63,7 +67,9 @@ const algebraQuizDrills = {
         "D)  x = 3, x = -2"
       ],
       correctIndex: 0,
-      hint: "Use the middle-term splitting: multiply 2 * -3 = -6. Find two numbers that multiply to -6 and add to -5.",
+      hint1: "Use middle-term splitting. Multiply the x² coefficient (2) by the constant (-3) to get -6. Find two numbers that multiply to -6 and add to -5.",
+      hint2: "The numbers are -6 and +1. Split the middle term: 2x² - 6x + x - 3 = 0. Now group and factor out terms.",
+      hint3: "Factor: 2x(x - 3) + 1(x - 3) = 0, giving (2x + 1)(x - 3) = 0. Roots are x = 3 and x = -1/2.",
       explanation: "Split the middle term: 2x² - 6x + x - 3 = 0. Group: 2x(x - 3) + 1(x - 3) = 0. This factors to (2x + 1)(x - 3) = 0. Roots are x = 3 and x = -1/2."
     }
   ]
@@ -80,9 +86,33 @@ document.addEventListener('DOMContentLoaded', () => {
   setupUIEventListeners();
   setupQuizEngine();
   setupTransportSimulation();
+  setupParabolaSimulation(); // Initialize parabola interactive visualizer!
+  loadSyncedMilestones();      // Initialize synced milestones!
 
   // Draw initial state UI elements
   updateXpBar();
+
+  // Listen for storage changes from Parent or Teacher app
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'weekly_milestones_state') {
+      loadSyncedMilestones();
+    } else if (e.key === 'rfid_checkin_event') {
+      try {
+        const checkin = JSON.parse(e.newValue);
+        if (checkin && checkin.student === 'Aarif Al-Masoom') {
+          showToast(`🔔 RFID Check-in recorded at ${checkin.time}: PRESENT`, 'warning');
+        }
+      } catch (err) {}
+    } else if (e.key === 'teacher_recheck_response') {
+      showToast('🧑‍🏫 Teacher updated re-evaluation request status!', 'success');
+      const statusBadge = document.getElementById('recheckStatusBadge');
+      if (statusBadge) {
+        statusBadge.innerText = `✅ Request Status: Approved (${e.newValue})`;
+        statusBadge.style.background = 'rgba(16, 185, 129, 0.1)';
+        statusBadge.style.color = 'var(--success-color)';
+      }
+    }
+  });
 });
 
 // Update top status bar time
@@ -166,6 +196,7 @@ function setupUIEventListeners() {
       recheckBtn.style.display = 'none';
       statusBadge.style.display = 'block';
       showToast('OMR sheet re-evaluation request submitted to coordinator!', 'success');
+      localStorage.setItem('student_recheck_filed', 'true');
       addXp(30); // XP reward for interacting
     }, 1500);
   });
@@ -210,11 +241,15 @@ function setupUIEventListeners() {
       // Update Tuition Tab UI
       const tuitionDueItem = document.getElementById('tuitionDueItem');
       const tuitionDueAmountText = document.getElementById('tuitionDueAmountText');
-      tuitionDueItem.style.background = "rgba(16, 185, 129, 0.04)";
-      tuitionDueItem.style.borderColor = "rgba(16, 185, 129, 0.2)";
-      tuitionDueItem.querySelector('p').innerHTML = `Paid via ${studentState.paymentGateway} on May 22, 2026`;
-      tuitionDueAmountText.innerText = "৳0 (PAID)";
-      tuitionDueAmountText.style.color = "var(--success-color)";
+      if (tuitionDueItem) {
+        tuitionDueItem.style.background = "rgba(16, 185, 129, 0.04)";
+        tuitionDueItem.style.borderColor = "rgba(16, 185, 129, 0.2)";
+        tuitionDueItem.querySelector('p').innerHTML = `Paid via ${studentState.paymentGateway} on May 22, 2026`;
+      }
+      if (tuitionDueAmountText) {
+        tuitionDueAmountText.innerText = "৳0 (PAID)";
+        tuitionDueAmountText.style.color = "var(--success-color)";
+      }
       payTuitionBtn.innerText = "Fees Settled";
       payTuitionBtn.disabled = true;
 
@@ -225,6 +260,9 @@ function setupUIEventListeners() {
       // Slide up receipt card
       receiptSuccessCard.style.display = 'flex';
       
+      // Sync payment state to localStorage so Parent App receives it
+      localStorage.setItem('student_tuition_paid', 'true');
+
       // Trigger milestone completion
       const milestoneItem = document.getElementById('milestoneDrill');
       if (milestoneItem && !milestoneItem.classList.contains('completed')) {
@@ -275,6 +313,15 @@ function setupUIEventListeners() {
     document.getElementById('levelUpModal').style.display = 'none';
     showToast('Weekly milestones refreshed! +50 XP bonus awarded.', 'success');
   });
+
+  // Open Achievements Shelf Drawer
+  const btnOpenBadgesShelf = document.getElementById('btnOpenBadgesShelf');
+  const badgesShelfDrawer = document.getElementById('badgesShelfDrawer');
+  if (btnOpenBadgesShelf && badgesShelfDrawer) {
+    btnOpenBadgesShelf.addEventListener('click', () => {
+      badgesShelfDrawer.classList.add('active');
+    });
+  }
 }
 
 // --- SECURE PAYMENT MFS GATEWAY SELECTOR ---
@@ -312,6 +359,8 @@ function toggleMilestone(element, xpReward) {
   if (element.classList.contains('completed')) return; // Avoid double rewards
   
   element.classList.add('completed');
+  syncMilestonesToLocalStorage(); // Sync to localStorage!
+  
   if (xpReward > 0) {
     showToast(`Milestone completed! +${xpReward} XP awarded.`, 'success');
     addXp(xpReward);
@@ -384,6 +433,9 @@ function setupQuizEngine() {
   hintBtn.addEventListener('click', () => {
     const isVisible = hintBubble.style.display === 'block';
     hintBubble.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) {
+      showHintTier(1); // Default to Tier 1 when opened
+    }
   });
 }
 
@@ -400,17 +452,22 @@ function handleQuizSubmit() {
   // Disable option modifications
   buttons.forEach(btn => btn.removeAttribute('onclick'));
   
+  // XP payouts scale based on difficulty
+  let xpReward = 30;
+  if (studentState.quizDifficulty === 'medium') xpReward = 50;
+  else if (studentState.quizDifficulty === 'hard') xpReward = 80;
+  
   if (studentState.selectedQuizOption === currentQuiz.correctIndex) {
     // Correct Action
     buttons[studentState.selectedQuizOption].classList.add('correct-reveal');
     feedbackPanel.className = 'drill-feedback correct';
-    feedbackPanel.innerHTML = `🌟 <strong>Correct!</strong> +50 XP Awarded.<br>${currentQuiz.explanation}`;
+    feedbackPanel.innerHTML = `🌟 <strong>Correct!</strong> +${xpReward} XP Awarded.<br>${currentQuiz.explanation}`;
     
     // Confetti Celebratory Burst
     triggerConfettiBurst();
     
     // Add XP reward
-    addXp(50);
+    addXp(xpReward);
     
     // Check milestones
     const milestoneMath = document.getElementById('milestoneMath');
@@ -514,6 +571,7 @@ function addXp(amount) {
   updateXpBar();
 }
 
+// Sync XP & Level values dynamically inside DOM
 function updateXpBar() {
   const progressFill = document.getElementById('xpProgressFill');
   const xpText = document.getElementById('xpTextIndicator');
@@ -536,6 +594,13 @@ function updateXpBar() {
   if (leaderboardXp) {
     leaderboardXp.innerText = `${studentState.level * 1000 + studentState.xp} XP`;
   }
+
+  // Broadcast student progress updates so parent dashboard reads it
+  localStorage.setItem('student_level_state', JSON.stringify({
+    level: studentState.level,
+    xp: studentState.xp,
+    maxXp: studentState.maxXp
+  }));
 }
 
 function triggerLevelUpTransition() {
@@ -556,7 +621,7 @@ function setupTransportSimulation() {
   let etaMinutes = 8;
   let progressPercentage = 40;
 
-  // Background ticker loop every 4.5 seconds simulates bus crawl
+  // Background ticker loop every 7 seconds simulates bus crawl
   setInterval(() => {
     if (etaMinutes > 0) {
       etaMinutes -= 1;
@@ -571,6 +636,12 @@ function setupTransportSimulation() {
       if (busMarker) busMarker.style.left = `${progressPercentage}%`;
       if (routeProgressFill) routeProgressFill.style.width = `${progressPercentage}%`;
       
+      // Sync bus state to localStorage for parent app to read
+      localStorage.setItem('bus_location_state', JSON.stringify({
+        eta: etaMinutes,
+        progress: progressPercentage
+      }));
+
       if (etaMinutes === 0) {
         showToast('🚌 Bus #14 has arrived at Dhanmondi stop perspective!', 'warning');
         if (busSubEtaText) busSubEtaText.innerText = `Arrived at stop!`;
@@ -598,6 +669,7 @@ function handleChatTextSubmit() {
 
 function appendChatBubble(text, sender) {
   const messagesBox = document.getElementById('chatBodyMessages');
+  if (!messagesBox) return;
   const bubble = document.createElement('div');
   bubble.className = `chat-msg ${sender}`;
   bubble.innerHTML = text;
@@ -654,9 +726,9 @@ function processChatResponse(query) {
     • (x - 2)(x - 3) = 0.<br>
     • Roots: <strong>x = 2, x = 3</strong>.`;
   } else if (normalized.includes('bus') || normalized.includes('eta') || normalized.includes('transport')) {
-    const etaTextVal = document.getElementById('busEtaText').innerText;
+    const etaTextVal = document.getElementById('busEtaText') ? document.getElementById('busEtaText').innerText : "8";
     botReply = `🚌 <strong>Live Transport Dispatch:</strong><br>
-    School Bus #14 is currently transit between City College stop and Dhanmondi stop.<br>
+    School Bus #14 is currently in transit between City College stop and Dhanmondi stop.<br>
     • ETA to your stop (Dhanmondi): <strong>${etaTextVal} minutes</strong>.<br>
     • Stop Status: Active route.`;
   } else if (normalized.includes('fees') || normalized.includes('tuition') || normalized.includes('outstanding')) {
@@ -673,7 +745,7 @@ function processChatResponse(query) {
     Mathematics Midterm Exam: <strong>12 / 15</strong>.<br>
     • Scanned: May 18, 2026.<br>
     • Incorrect marked: Q2 (marked A, correct C), Q5 (unmarked, correct D).<br>
-    • You can file a recheck file in the <strong>Exams Tab</strong>!`;
+    • You can file a recheck request in the <strong>Exams Tab</strong>!`;
   } else {
     botReply = `I've analyzed your question: "${query}". I can help you guide through active Math tasks! Let me know if you would like me to explain factorizing quadratic equations, outline midterm scores, or show school bus arrival timers!`;
   }
@@ -695,8 +767,367 @@ function showToast(message, type = 'success') {
 
   container.appendChild(toast);
 
-  // Auto remove toast after 3 seconds
+  // Auto remove toast after 4 seconds
   setTimeout(() => {
     toast.remove();
   }, 4000);
+}
+
+// --- FEATURE 1: PERSONALIZED ROADMAP DRAWER HANDLERS ---
+function openRoadmapNode(name, mastery, status, desc) {
+  const drawer = document.getElementById('roadmapDetailDrawer');
+  if (!drawer) return;
+  document.getElementById('roadmapNodeTitle').innerText = name;
+  document.getElementById('roadmapNodeMastery').innerText = mastery;
+  document.getElementById('roadmapNodeStatus').innerText = status;
+  document.getElementById('roadmapNodeDesc').innerText = desc;
+  
+  const statusSpan = document.getElementById('roadmapNodeStatus');
+  if (status === 'Passed') statusSpan.style.color = 'var(--success-color)';
+  else if (status === 'In Progress') statusSpan.style.color = 'var(--accent-color)';
+  else statusSpan.style.color = 'rgba(255,255,255,0.4)';
+
+  drawer.classList.add('active');
+}
+
+function closeRoadmapDrawer() {
+  const drawer = document.getElementById('roadmapDetailDrawer');
+  if (drawer) drawer.classList.remove('active');
+}
+
+// --- FEATURE 2: ACHIEVEMENTS & BADGES SHELF HANDLERS ---
+function closeBadgesDrawer() {
+  const drawer = document.getElementById('badgesShelfDrawer');
+  if (drawer) {
+    drawer.classList.remove('active');
+    const detailsBox = document.getElementById('badgeDetailsBox');
+    if (detailsBox) detailsBox.style.display = 'none';
+  }
+}
+
+function showBadgeDetails(name, desc, status, reward) {
+  const detailsBox = document.getElementById('badgeDetailsBox');
+  if (!detailsBox) return;
+  document.getElementById('detailBadgeName').innerText = name;
+  document.getElementById('detailBadgeDesc').innerText = desc;
+  document.getElementById('detailBadgeReward').innerText = `${status} • ${reward}`;
+  
+  const rewardSpan = document.getElementById('detailBadgeReward');
+  if (status === 'Unlocked') {
+    rewardSpan.style.color = 'var(--success-color)';
+  } else {
+    rewardSpan.style.color = 'var(--error-color)';
+  }
+
+  detailsBox.style.display = 'block';
+}
+
+// --- FEATURE 3: INTERACTIVE QUADRATIC PARABOLA CANVAS ---
+function setupParabolaSimulation() {
+  const canvas = document.getElementById('parabolaCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const sliderA = document.getElementById('sliderA');
+  const sliderB = document.getElementById('sliderB');
+  const sliderC = document.getElementById('sliderC');
+  
+  const valA = document.getElementById('valA');
+  const valB = document.getElementById('valB');
+  const valC = document.getElementById('valC');
+  const equationText = document.getElementById('parabolaEquationText');
+  
+  function drawParabola() {
+    const a = parseFloat(sliderA.value);
+    const b = parseFloat(sliderB.value);
+    const c = parseFloat(sliderC.value);
+    
+    // Update value displays
+    valA.innerText = a.toFixed(1);
+    valB.innerText = b.toFixed(1);
+    valC.innerText = c.toFixed(1);
+    
+    // Format equation text nicely
+    let eq = `y = ${a.toFixed(1)}x²`;
+    if (b >= 0) eq += ` + ${b.toFixed(1)}x`;
+    else eq += ` - ${Math.abs(b).toFixed(1)}x`;
+    if (c >= 0) eq += ` + ${c.toFixed(1)}`;
+    else eq += ` - ${Math.abs(c).toFixed(1)}`;
+    equationText.innerHTML = eq;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw Grid Lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    const gridSpacing = 20;
+    for (let x = 0; x < canvas.width; x += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+    
+    // Draw Axes (Origin in the middle)
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1.5;
+    
+    // X-Axis
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+    ctx.lineTo(canvas.width, cy);
+    ctx.stroke();
+    
+    // Y-Axis
+    ctx.beginPath();
+    ctx.moveTo(cx, 0);
+    ctx.lineTo(cx, canvas.height);
+    ctx.stroke();
+    
+    // Draw Parabola: y = ax^2 + bx + c
+    // Scale factor: 1 unit = 8 pixels
+    const scale = 8; 
+    ctx.beginPath();
+    ctx.strokeStyle = 'var(--accent-color)';
+    ctx.lineWidth = 2.5;
+    
+    let started = false;
+    for (let pixelX = 0; pixelX < canvas.width; pixelX++) {
+      // Convert canvas coordinate to graph coordinate
+      const graphX = (pixelX - cx) / scale;
+      
+      // Calculate graph Y
+      const graphY = a * graphX * graphX + b * graphX + c;
+      
+      // Convert graph Y back to canvas coordinate (Y axis is inverted in canvas)
+      const pixelY = cy - (graphY * scale);
+      
+      if (pixelY >= 0 && pixelY <= canvas.height) {
+        if (!started) {
+          ctx.moveTo(pixelX, pixelY);
+          started = true;
+        } else {
+          ctx.lineTo(pixelX, pixelY);
+        }
+      } else {
+        started = false; // reset when out of bounds
+      }
+    }
+    ctx.stroke();
+  }
+  
+  // Attach listeners
+  sliderA.addEventListener('input', drawParabola);
+  sliderB.addEventListener('input', drawParabola);
+  sliderC.addEventListener('input', drawParabola);
+  
+  // Initial draw
+  drawParabola();
+}
+
+// --- FEATURE 4: 3-TIER HINTS ENGINE ---
+function showHintTier(tierNum) {
+  const currentQuiz = algebraQuizDrills[studentState.quizDifficulty][studentState.currentQuizIndex];
+  const hintContent = document.getElementById('hintTierContent');
+  if (!hintContent) return;
+  
+  // Deactivate all tier buttons
+  document.getElementById('btnHintTier1').classList.remove('active');
+  document.getElementById('btnHintTier2').classList.remove('active');
+  document.getElementById('btnHintTier3').classList.remove('active');
+  
+  // Activate selected
+  document.getElementById(`btnHintTier${tierNum}`).classList.add('active');
+  
+  // Update content
+  if (tierNum === 1) {
+    hintContent.innerHTML = `<strong>Conceptual Tip:</strong><br>${currentQuiz.hint1}`;
+  } else if (tierNum === 2) {
+    hintContent.innerHTML = `<strong>Formula Prompt:</strong><br>${currentQuiz.hint2}`;
+  } else if (tierNum === 3) {
+    hintContent.innerHTML = `<strong>Step-by-step Solution:</strong><br>${currentQuiz.hint3}`;
+  }
+}
+
+// --- FEATURE 5: PEER ACTIVITY DISPATCHERS ---
+function sendPeerAction(name, action) {
+  if (action === 'Cheer') {
+    showToast(`You cheered for ${name}! 👏 +10 XP earned for collaboration!`, 'success');
+    addXp(10);
+  } else if (action === 'Nudge') {
+    showToast(`You sent a study nudge to ${name}! 🔔 +10 XP earned!`, 'success');
+    addXp(10);
+  }
+}
+
+// --- FEATURE 6: CLICK-TO-EXPLAIN OMR EXPLORATIONS ---
+const omrExplainerData = {
+  1: {
+    topic: "Linear Simplification",
+    desc: "You factorized correctly! Question 1 checked basic algebraic distributions. Expanding 3(x-2) yields 3x - 6 which perfectly matches the initial value.",
+    mistake: "Your Answer: B (Correct) • Scanned perfectly with solid bubble markings.",
+    remedy: "Review algebra foundations. You have 100% mastery in this sub-topic!"
+  },
+  2: {
+    topic: "Middle-Term Splitting Mistakes",
+    desc: "For x² - 5x + 6 = 0, you chose Option A (x=1, x=6). While 1 * 6 = 6, they add up to +7 instead of -5. Remember that both binomial factors must be negative (x-2)(x-3) to multiply to +6 and add to -5.",
+    mistake: "Your Answer: A (Incorrect) • Correct: C (marked as x=2, x=3 in answer key)",
+    remedy: "Try practicing 5 quadratic factoring drills in the AI Practice tab."
+  },
+  3: {
+    topic: "Inequality Interval Sign Errors",
+    desc: "You successfully computed the boundary values! Dividing linear components and tracking inequality signs has been done flawlessly.",
+    mistake: "Your Answer: A (Correct) • High contrast bubble scanned cleanly.",
+    remedy: "Keep up the excellent retention of sign properties!"
+  },
+  4: {
+    topic: "Quadratic Formula Vertex Identification",
+    desc: "Superb vertex matching! Identifying axis of symmetry x = -b/(2a) was calculated correctly.",
+    mistake: "Your Answer: D (Correct) • Perfect bubble alignment.",
+    remedy: "Excellent structural graphing comprehension!"
+  },
+  5: {
+    topic: "Faint Bubble Marks / Missed Mark Detection",
+    desc: "The digital carbon scanner failed to register a bubble for this question because the marking was extremely faint. Make sure to fill bubbles completely dark using 2B pencils.",
+    mistake: "Your Answer: Missed (Unmarked) • Correct: D",
+    remedy: "Review bubble sheet marking guidelines. Settle this doubt with a remedial quiz."
+  }
+};
+
+function explainOMRQuestion(qNum) {
+  const data = omrExplainerData[qNum];
+  if (!data) return;
+  
+  const drawer = document.getElementById('omrExplainerDrawer');
+  if (!drawer) return;
+  document.getElementById('omrExplainerTitle').innerText = `OMR Question ${qNum} Review`;
+  document.getElementById('omrExplainerTopic').innerText = `Topic: ${data.topic}`;
+  document.getElementById('omrExplainerDesc').innerText = data.desc;
+  document.getElementById('omrExplainerMistake').innerHTML = data.mistake;
+  document.getElementById('omrExplainerRemedy').innerText = data.remedy;
+  
+  const mistakeBox = document.getElementById('omrExplainerMistake');
+  if (data.mistake.includes('Correct')) {
+    mistakeBox.style.background = 'rgba(16, 185, 129, 0.1)';
+    mistakeBox.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+    mistakeBox.style.color = 'var(--success-color)';
+  } else {
+    mistakeBox.style.background = 'rgba(239, 68, 68, 0.1)';
+    mistakeBox.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+    mistakeBox.style.color = 'var(--error-color)';
+  }
+  
+  drawer.classList.add('active');
+}
+
+function closeOMRExplainer() {
+  const drawer = document.getElementById('omrExplainerDrawer');
+  if (drawer) drawer.classList.remove('active');
+}
+
+// --- FEATURE 7: CUSTOM GOALS & MILESTONES COMPILER ---
+function compileCustomGoal() {
+  const input = document.getElementById('customGoalInput');
+  if (!input) return;
+  const goalText = input.value.trim();
+  if (!goalText) {
+    showToast('Please type a goal to add!', 'warning');
+    return;
+  }
+  
+  const list = document.querySelector('.milestones-list');
+  if (!list) return;
+  
+  const newItem = document.createElement('div');
+  newItem.className = 'milestone-item';
+  const xpReward = 40;
+  newItem.innerHTML = `
+    <div class="milestone-checkbox"></div>
+    <span class="milestone-text">${goalText}</span>
+    <span class="milestone-reward">+${xpReward} XP</span>
+  `;
+  
+  newItem.addEventListener('click', () => {
+    toggleMilestone(newItem, xpReward);
+  });
+  
+  list.appendChild(newItem);
+  input.value = '';
+  showToast('Custom goal added and synced with Parent supervision!', 'success');
+  
+  // Sync to localStorage immediately
+  syncMilestonesToLocalStorage();
+}
+
+function syncMilestonesToLocalStorage() {
+  const listItems = document.querySelectorAll('.milestones-list .milestone-item');
+  const milestones = [];
+  listItems.forEach(item => {
+    milestones.push({
+      text: item.querySelector('.milestone-text').innerText,
+      completed: item.classList.contains('completed'),
+      reward: item.querySelector('.milestone-reward').innerText
+    });
+  });
+  localStorage.setItem('weekly_milestones_state', JSON.stringify(milestones));
+}
+
+function loadSyncedMilestones() {
+  const raw = localStorage.getItem('weekly_milestones_state');
+  if (!raw) {
+    syncMilestonesToLocalStorage();
+    return;
+  }
+  
+  try {
+    const milestones = JSON.parse(raw);
+    const list = document.querySelector('.milestones-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    milestones.forEach(m => {
+      const item = document.createElement('div');
+      item.className = `milestone-item ${m.completed ? 'completed' : ''}`;
+      
+      const xpVal = parseInt(m.reward.replace(/[^0-9]/g, '')) || 30;
+      item.innerHTML = `
+        <div class="milestone-checkbox"></div>
+        <span class="milestone-text">${m.text}</span>
+        <span class="milestone-reward">${m.reward}</span>
+      `;
+      
+      item.addEventListener('click', () => {
+        toggleMilestone(item, xpVal);
+      });
+      
+      list.appendChild(item);
+    });
+  } catch (e) {
+    console.error("Error loading synced milestones:", e);
+  }
+}
+
+// --- FEATURE 8: WEEKLY STUDY tracker CHART TOOLTIP HANDLERS ---
+function showStudyTooltip(text) {
+  const tooltip = document.getElementById('studyChartTooltip');
+  if (tooltip) {
+    tooltip.innerText = text;
+    tooltip.style.display = 'block';
+  }
+}
+
+function hideStudyTooltip() {
+  const tooltip = document.getElementById('studyChartTooltip');
+  if (tooltip) {
+    tooltip.style.display = 'none';
+  }
 }
