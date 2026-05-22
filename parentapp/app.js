@@ -1,6 +1,6 @@
 /* 
 ========================================================================
-   LEARNING SHAPER PARENT COMPANION APP - CORE INTERACTIVE ENGINE
+   PARENTING COPILOT - CORE INTERACTIVE ENGINE
 ========================================================================
 */
 
@@ -841,7 +841,7 @@ function updateParentPodcastUI(activity) {
 }
 
 // ========================================================================
-// 7.2 POMODORO REAL-TIME FOCUS MONITOR ENGINE (PARENT COMPANION)
+// 7.2 POMODORO REAL-TIME FOCUS MONITOR ENGINE (PARENTING COPILOT)
 // ========================================================================
 let parentFocusTimeout = null;
 

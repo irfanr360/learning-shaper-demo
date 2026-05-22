@@ -1967,7 +1967,7 @@ window.togglePomodoroTimer = function() {
         studentState.pomodoroSecondsLeft--;
         updatePomodoroTimerDOM();
         
-        // Push ticking status updates to parent companion app every 5 ticks
+        // Push ticking status updates to Parenting Copilot app every 5 ticks
         if (studentState.pomodoroSecondsLeft % 5 === 0) {
           syncPomodoroActivityToParent();
         }
