@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   drawParentMilestones();
   checkGoalAlignment();
   initAlertsTimeline();
+  setupParentPodcastListener();
 });
 
 /* ========================================================================
@@ -750,3 +751,91 @@ window.appendAlert = function(title, body, type = "info") {
   localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts.slice(0, 10)));
   loadAlertsTimeline();
 };
+
+/* ========================================================================
+   PREPCAST REAL-TIME PARENT STUDY SYNC TRACKER
+   ======================================================================== */
+let parentPodcastLiveTimeout = null;
+
+window.setupParentPodcastListener = function() {
+  // Try loading initial state from localStorage if active
+  const initialData = localStorage.getItem('student_podcast_activity');
+  if (initialData) {
+    try {
+      updateParentPodcastUI(JSON.parse(initialData));
+    } catch(e) {}
+  }
+
+  // Set up storage listener
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'student_podcast_activity' && e.newValue) {
+      try {
+        const activity = JSON.parse(e.newValue);
+        updateParentPodcastUI(activity);
+      } catch (err) {}
+    }
+  });
+};
+
+function updateParentPodcastUI(activity) {
+  const subjectEl = document.getElementById("parentPodcastSubject");
+  const statusEl = document.getElementById("parentPodcastLiveStatus");
+  const titleEl = document.getElementById("parentPodcastTitle");
+  const progressEl = document.getElementById("parentPodcastProgressBar");
+  const progressTextEl = document.getElementById("parentPodcastProgressText");
+  const timeTextEl = document.getElementById("parentPodcastTimeText");
+  const dialogueEl = document.getElementById("parentPodcastDinnerDialogue");
+  const dialogueTextEl = document.getElementById("parentPodcastDinnerPromptText");
+
+  if (!subjectEl || !statusEl || !titleEl || !progressEl || !progressTextEl || !timeTextEl) return;
+
+  // Set standard info
+  subjectEl.textContent = `${activity.subject.toUpperCase()} • PREPCAST`;
+  titleEl.textContent = activity.title;
+  progressEl.style.width = `${activity.progress}%`;
+  progressTextEl.textContent = `${activity.progress}% Complete`;
+  timeTextEl.textContent = `${activity.duration} mins listened`;
+
+  // Clear pending timeouts
+  if (parentPodcastLiveTimeout) clearTimeout(parentPodcastLiveTimeout);
+
+  if (activity.progress >= 100) {
+    statusEl.textContent = "Completed ✅";
+    statusEl.style.background = "rgba(16, 185, 129, 0.15)";
+    statusEl.style.color = "#10b981";
+    statusEl.style.borderColor = "rgba(16, 185, 129, 0.2)";
+  } else {
+    statusEl.textContent = "Listening 🎧";
+    statusEl.style.background = "rgba(59, 130, 246, 0.15)";
+    statusEl.style.color = "#3b82f6";
+    statusEl.style.borderColor = "rgba(59, 130, 246, 0.2)";
+
+    // Set timeout to transition to "Paused" if no updates for 2.5 seconds
+    parentPodcastLiveTimeout = setTimeout(() => {
+      statusEl.textContent = "Paused ⏸️";
+      statusEl.style.background = "rgba(245, 158, 11, 0.15)";
+      statusEl.style.color = "#f59e0b";
+      statusEl.style.borderColor = "rgba(245, 158, 11, 0.2)";
+    }, 2500);
+  }
+
+  // Dinner prompt generation based on subject/chapter
+  if (activity.progress > 0) {
+    dialogueEl.style.display = "block";
+    let prompt = `Ask Aarif over dinner: 'Aarif is listening to ${activity.title}! Ask him: what is a real-world example of this concept that you discussed today?'`;
+    
+    const titleLower = activity.title.toLowerCase();
+    if (titleLower.includes("quadratics") || titleLower.includes("math")) {
+      prompt = `Ask Aarif over dinner: 'What did Mrs. Tasnim Jahan say about splitting the middle term? Did you understand the signs of the quadratic roots positive 2 and positive 3?'`;
+    } else if (titleLower.includes("vectors") || titleLower.includes("force")) {
+      prompt = `Ask Aarif over dinner: 'Dr. Arif released Force & Velocity Vectors! Ask Aarif: what is the difference between a vector and a scalar?'`;
+    } else if (titleLower.includes("gravity") || titleLower.includes("newtonian")) {
+      prompt = `Ask Aarif over dinner: 'Dr. Arif released Newtonian Gravity! Ask Aarif over dinner: what did he say about gravitational attraction forces between two mass points?'`;
+    } else if (titleLower.includes("bond") || titleLower.includes("valency") || titleLower.includes("organic")) {
+      prompt = `Ask Aarif over dinner: 'Ask Aarif: what is carbon tetravallency and why does it form four covalent bonds in organic molecules?'`;
+    }
+
+    dialogueTextEl.textContent = `"${prompt}"`;
+  }
+}
+

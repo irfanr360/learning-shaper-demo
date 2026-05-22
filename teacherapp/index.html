@@ -573,6 +573,76 @@
             </div>
           </div>
 
+          <!-- FEATURE: AI PrepCast Studio -->
+          <div class="glass-card" style="margin-top: 20px;">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; width:18px; height:18px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              </svg>
+              AI PrepCast Studio
+            </div>
+            <p class="section-desc">Design custom chapter-wise podcasts with AI script synthesis, synthetic voices, and integrated Prep Check diagnostic checkpoints:</p>
+            
+            <div class="curator-form" style="text-align: left;">
+              <!-- Subject Selection -->
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">1. Target Subject</label>
+                <select class="grader-select" id="studioSubjectSelect" style="width: 100%;">
+                  <option value="math">Mathematics (Grade 8 Algebra)</option>
+                  <option value="physics">Physics (Mechanics)</option>
+                  <option value="chemistry">Chemistry (Organic/Inorganic)</option>
+                  <option value="english">English Literature (Grammar/Prose)</option>
+                </select>
+              </div>
+
+              <!-- Chapter Input -->
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">2. Chapter / Topic Title</label>
+                <input type="text" id="studioChapterInput" placeholder="e.g. Newtonian Gravity, Organic Bonds" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:8px; padding:10px; color:#fff; font-size:12px; outline:none;" value="Newtonian Gravity">
+              </div>
+
+              <!-- Voice selection -->
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">3. Synthetic Voice Avatar</label>
+                <select class="grader-select" id="studioVoiceSelect" style="width: 100%;">
+                  <option value="Tasnim">Mrs. Tasnim Jahan (Warm & Encouraging)</option>
+                  <option value="Arif">Dr. Arif Al-Hasan (Analytical & Measured)</option>
+                  <option value="Rahul">Mr. Rahul Amin (Empathetic & Conversational)</option>
+                </select>
+              </div>
+
+              <!-- AI Prompt -->
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">4. AI Script Prompt Instructions</label>
+                <textarea id="studioPromptInput" rows="2" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:8px; padding:10px; color:#fff; font-size:11px; outline:none; resize:none; line-height:1.4;">Explain the core concepts of Newtonian Gravity with real-world analogies, and include a critical diagnostic retention check.</textarea>
+              </div>
+
+              <!-- Compiler Action Buttons -->
+              <div class="form-group" style="margin-top: 16px;">
+                <button class="action-btn-primary" style="width:100%; margin:0;" onclick="generatePodcastScript()">🤖 Compile AI Educational Script</button>
+              </div>
+
+              <!-- Script Preview Area (Hidden initially) -->
+              <div id="studioCompilerPreview" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);">
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:var(--accent-color); font-weight:700;">📝 AI Synthesized Script & Teleprompter Transcript</label>
+                <textarea id="studioScriptEdit" rows="6" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; color:#fff; font-size:11px; outline:none; resize:vertical; line-height:1.4; font-family:monospace; margin-bottom:12px;"></textarea>
+
+                <div style="background:rgba(16,185,129,0.08); padding:10px; border-radius:8px; border:1px solid rgba(16,185,129,0.15); margin-bottom:12px;">
+                  <span style="font-size:10px; font-weight:800; color:#10b981; display:block; margin-bottom:4px;">🎯 Generated AI Active Listening Prep Check:</span>
+                  <div style="font-size:11px; line-height:1.4; color:var(--text-main);">
+                    <strong>Q:</strong> <span id="studioQuizQ"></span><br>
+                    <strong>Options:</strong> <span id="studioQuizOpt"></span><br>
+                    <strong>Correct Answer:</strong> <span id="studioQuizAns" style="color:#10b981; font-weight:700;"></span><br>
+                    <strong>Hint:</strong> <span id="studioQuizHint" style="font-style:italic;"></span>
+                  </div>
+                </div>
+
+                <button class="action-btn-primary success-btn" style="width:100%; margin:0;" onclick="publishPodcast()">🎙️ Publish PrepCast to Student App</button>
+              </div>
+
+            </div>
+          </div>
+
         </div>
 
       </div>

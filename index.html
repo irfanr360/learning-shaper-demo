@@ -560,6 +560,54 @@
               </div>
             </div>
           </div>
+
+          <!-- PrepCast Engagement Hub -->
+          <div class="glass-card panel-card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2>PrepCast Engagement Center</h2>
+              <span class="badge primary">Audio Study Analytics</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+              <div class="glass-card sub-panel" style="padding: 12px; text-align: center; background: rgba(255,255,255,0.02);">
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Active Listeners</span>
+                <h3 style="font-size: 22px; color: var(--primary); margin: 6px 0 0 0;" id="dashActiveListeners">124</h3>
+              </div>
+              <div class="glass-card sub-panel" style="padding: 12px; text-align: center; background: rgba(255,255,255,0.02);">
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Avg Prep Check Score</span>
+                <h3 style="font-size: 22px; color: var(--accent-green); margin: 6px 0 0 0;" id="dashRetentionScore">87.5%</h3>
+              </div>
+              <div class="glass-card sub-panel" style="padding: 12px; text-align: center; background: rgba(255,255,255,0.02);">
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Avg Speed Rate</span>
+                <h3 style="font-size: 22px; color: #f59e0b; margin: 6px 0 0 0;" id="dashSpeedRate">1.25x</h3>
+              </div>
+              <div class="glass-card sub-panel" style="padding: 12px; text-align: center; background: rgba(255,255,255,0.02);">
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total XP Disbursed</span>
+                <h3 style="font-size: 22px; color: var(--accent-rose); margin: 6px 0 0 0;" id="dashTotalXp">+4,250 XP</h3>
+              </div>
+            </div>
+
+            <div class="glass-card sub-panel" style="padding: 16px; background: rgba(0,0,0,0.1);">
+              <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #fff;">Trending Preparation PrepCast Tracks</h4>
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; color: var(--text-main);">
+                  <thead>
+                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--text-muted); font-weight: 700;">
+                      <th style="padding: 10px 12px;">Episode Title</th>
+                      <th style="padding: 10px 12px;">Subject</th>
+                      <th style="padding: 10px 12px;">Difficulty</th>
+                      <th style="padding: 10px 12px;">Author</th>
+                      <th style="padding: 10px 12px; text-align: right;">Total Listens</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashPodcastsTableBody">
+                    <!-- Dynamic rendering from localStorage -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </section>
         
         <!-- ================= FULL OPERATIONS TAB ================= -->

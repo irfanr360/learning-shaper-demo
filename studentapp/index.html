@@ -795,6 +795,95 @@
           </div>
         </div>
 
+        <!-- ========================================================================
+             TAB 6: PREPCAST PODCAST PANEL
+             ======================================================================== -->
+        <div class="tab-content-panel" id="tab-podcast">
+          <!-- Subject Filter Shelf -->
+          <div class="podcast-filter-container">
+            <span class="podcast-filter-chip active" onclick="filterPodcasts('all')">All</span>
+            <span class="podcast-filter-chip" onclick="filterPodcasts('math')">Math</span>
+            <span class="podcast-filter-chip" onclick="filterPodcasts('physics')">Physics</span>
+            <span class="podcast-filter-chip" onclick="filterPodcasts('chemistry')">Chemistry</span>
+            <span class="podcast-filter-chip" onclick="filterPodcasts('english')">English</span>
+          </div>
+
+          <!-- Active Playing Card Area (Hidden until a card is playing) -->
+          <div class="active-player-deck glass-card hide" id="podcastActivePlayer">
+            <div class="player-header">
+              <span class="now-playing-label">🎧 NOW PLAYING</span>
+              <button class="player-close-btn" onclick="minimizePlayer()">✕</button>
+            </div>
+            
+            <div class="player-cover-details">
+              <div class="glowing-cover" id="playerCoverArt">📐</div>
+              <div class="player-meta">
+                <h4 id="playerEpisodeTitle">Quadratics Demystified</h4>
+                <p id="playerEpisodeSubject">Mathematics • Chapter 4</p>
+              </div>
+            </div>
+
+            <!-- Dancing Audio Waveform Canvas -->
+            <div class="audio-wave-container">
+              <canvas id="audioVisualizerCanvas" width="220" height="40"></canvas>
+            </div>
+
+            <!-- Time codes & Progress bar slider -->
+            <div class="progress-bar-group">
+              <span class="time-label" id="playerTimeElapsed">00:00</span>
+              <input type="range" class="audio-progress-slider" id="podcastProgressSlider" min="0" max="180" value="0" oninput="seekPodcast(this.value)">
+              <span class="time-label" id="playerTimeTotal">03:00</span>
+            </div>
+
+            <!-- Playback controls -->
+            <div class="player-controls-row">
+              <!-- Speed selector -->
+              <select class="player-select" id="podcastSpeedSelect" onchange="changePodcastSpeed(this.value)" aria-label="Playback Speed">
+                <option value="1">1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2.0x</option>
+              </select>
+
+              <!-- Skip backward 15s -->
+              <button class="control-btn" onclick="skipPodcast(-15)" aria-label="Skip Backward 15 Seconds">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="10" y="15" font-size="7" font-weight="bold" fill="currentColor" text-anchor="middle">15</text></svg>
+              </button>
+
+              <!-- Play / Pause -->
+              <button class="play-pulse-btn" id="podcastPlayBtn" onclick="togglePodcastPlayback()" aria-label="Play / Pause">
+                <svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+              </button>
+
+              <!-- Skip forward 15s -->
+              <button class="control-btn" onclick="skipPodcast(15)" aria-label="Skip Forward 15 Seconds">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="14" y="15" font-size="7" font-weight="bold" fill="currentColor" text-anchor="middle">15</text></svg>
+              </button>
+
+              <!-- Sleep Timer -->
+              <select class="player-select" id="podcastTimerSelect" onchange="setSleepTimer(this.value)" aria-label="Sleep Timer">
+                <option value="off">Timer</option>
+                <option value="1">1 min</option>
+                <option value="5">5 min</option>
+                <option value="15">15 min</option>
+              </select>
+            </div>
+
+            <!-- Synchronized Transcript -->
+            <div class="transcript-drawer">
+              <h5 class="transcript-title">📜 Synchronized Study Transcript</h5>
+              <div class="transcript-scroll-panel" id="podcastTranscriptBox">
+                <p style="font-size:10px; color:var(--text-muted); text-align:center; padding:10px;">Select an episode to load the transcript.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Podcasts Browse Shelf Shelf -->
+          <div class="podcast-browse-list" id="podcastShelfList">
+            <!-- Episode cards will be injected dynamically -->
+          </div>
+        </div>
+
       </div>
 
       <!-- Floating Voice Assistant activation button -->
@@ -825,6 +914,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
           </svg>
           AI Practice
+        </div>
+
+        <div class="nav-item" onclick="switchTab('podcast')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+          </svg>
+          PrepCast
         </div>
 
         <div class="nav-item" onclick="switchTab('transport')">
@@ -916,6 +1012,31 @@
           <strong>AI Recommended Study:</strong><br>
           <span id="omrExplainerRemedy">Practice middle-term factorization drills.</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Podcast Active Listening Prep Check Quiz Modal -->
+  <div class="podcast-quiz-modal" id="podcastQuizModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">🧠 PrepCast Active Check!</h3>
+      </div>
+      <div class="modal-body" style="padding:16px; text-align:left;">
+        <p style="font-size:10px; font-weight:800; color:var(--accent-color); margin-bottom:6px; letter-spacing:0.5px;" id="podcastQuizChapter">MATH: QUADRATIC ROOTS</p>
+        <p style="font-size:12px; line-height:1.5; color:var(--text-main); margin-bottom:14px; font-weight:500;" id="podcastQuizQuestionText">Wait! To unlock the remaining audio, let's verify your retention. Answer this active prep check question:</p>
+        
+        <div class="podcast-options-list" id="podcastQuizOptionsContainer" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Options injected dynamically -->
+        </div>
+
+        <!-- AI Hint section -->
+        <div class="quiz-hint-box" id="podcastQuizHintBox" style="display:none; background:rgba(30, 99, 245, 0.08); padding:10px; border-radius:8px; border:1px solid rgba(30, 99, 245, 0.15); font-size:10px; margin-top:12px; line-height:1.4; color:var(--text-main);">
+          <span style="font-weight:800; color:var(--accent-color);">💡 AI Tutor Hint:</span> <span id="podcastQuizHintText">Remember the radical term!</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:12px 16px; display:flex; justify-content:flex-end;">
+        <button class="checkout-trigger-btn" id="podcastQuizSubmitBtn" onclick="submitPodcastQuizAnswer()" style="padding:8px 16px; font-size:11px; margin:0;" disabled>Verify Answer</button>
       </div>
     </div>
   </div>

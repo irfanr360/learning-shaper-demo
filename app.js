@@ -661,8 +661,144 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(updateTransportLoop, 90000);
 
 
+  // ================= PREPCAST DASHBOARD MODULE =================
+  const defaultPodcasts = [
+    {
+      id: "math_quad",
+      subject: "math",
+      subjectLabel: "Math",
+      chapter: "Quadratics Demystified",
+      chapterNumber: "Chapter 1",
+      difficulty: "Medium",
+      author: "Mrs. Tasnim Jahan",
+      listens: 84
+    },
+    {
+      id: "phys_vectors",
+      subject: "physics",
+      subjectLabel: "Physics",
+      chapter: "Force & Velocity Vectors",
+      chapterNumber: "Chapter 2",
+      difficulty: "Hard",
+      author: "Dr. Arif Al-Hasan",
+      listens: 112
+    }
+  ];
+
+  function renderDashboardPodcasts() {
+    const body = document.getElementById("dashPodcastsTableBody");
+    if (!body) return;
+    const raw = localStorage.getItem('school_podcasts_state');
+    let podcasts = [];
+    if (raw) {
+      try {
+        podcasts = JSON.parse(raw);
+      } catch(e) {}
+    }
+    if (podcasts.length === 0) {
+      podcasts = defaultPodcasts;
+    }
+    body.innerHTML = "";
+    podcasts.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+      tr.innerHTML = `
+        <td style="padding: 10px 12px; font-weight:600; color:#fff;">${p.chapter} <span style="font-size:9px; color:var(--text-muted);">${p.chapterNumber}</span></td>
+        <td style="padding: 10px 12px;"><span class="badge" style="background:rgba(30,99,245,0.1); color:var(--primary); font-size:10px; padding:2px 6px;">${p.subjectLabel}</span></td>
+        <td style="padding: 10px 12px; color:var(--text-muted);">${p.difficulty}</td>
+        <td style="padding: 10px 12px; color:var(--text-muted);">${p.author}</td>
+        <td style="padding: 10px 12px; text-align:right; font-weight:700; color:var(--accent-green);" id="dashListens_${p.id}">${p.listens}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  function initDashboardPrepCast() {
+    renderDashboardPodcasts();
+
+    // Listen to storage events
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'school_podcasts_state' || e.key === 'new_podcast_alert') {
+        renderDashboardPodcasts();
+      }
+
+      if (e.key === 'student_podcast_activity' && e.newValue) {
+        try {
+          const activity = JSON.parse(e.newValue);
+          
+          // Update Active Listeners metrics
+          const activeEl = document.getElementById("dashActiveListeners");
+          if (activeEl) {
+            if (activity.progress > 0 && activity.progress < 100) {
+              activeEl.textContent = "1 Active";
+              activeEl.style.color = "var(--primary)";
+            } else if (activity.progress >= 100) {
+              activeEl.textContent = "0 Active";
+              activeEl.style.color = "var(--text-muted)";
+            } else {
+              activeEl.textContent = "0 Active";
+            }
+          }
+
+          // Update avg speed
+          const speedEl = document.getElementById("dashSpeedRate");
+          if (speedEl) {
+            // When actively playing, let's reflect speed (student app updates can broadcast it or default to 1.25x)
+            // Let's read from localStorage to see what the active playback speed of the student app is
+            const studentStateRaw = localStorage.getItem('student_app_state');
+            let playbackSpeed = "1.25x";
+            if (studentStateRaw) {
+              try {
+                const s = JSON.parse(studentStateRaw);
+                if (s.playbackSpeed) playbackSpeed = `${s.playbackSpeed}x`;
+              } catch(e) {}
+            }
+            speedEl.textContent = playbackSpeed;
+          }
+
+          // Update XP disbursement if correct check passed
+          const xpEl = document.getElementById("dashTotalXp");
+          if (xpEl) {
+            if (activity.xpGained > 0) {
+              xpEl.textContent = "+4,300 XP";
+              xpEl.style.color = "var(--accent-green)";
+              
+              const retentionEl = document.getElementById("dashRetentionScore");
+              if (retentionEl) {
+                retentionEl.textContent = "100.0%";
+                retentionEl.style.color = "var(--accent-green)";
+              }
+            } else {
+              xpEl.textContent = "+4,250 XP";
+              xpEl.style.color = "var(--accent-rose)";
+            }
+          }
+
+          // Update listens cell dynamically in the table for this episode
+          const listenCell = document.getElementById(`dashListens_${activity.episodeId}`);
+          if (listenCell) {
+            // Retrieve current count and increment slightly if completed
+            if (activity.progress >= 100) {
+              // Read count from state
+              const rawPod = localStorage.getItem('school_podcasts_state');
+              if (rawPod) {
+                const pods = JSON.parse(rawPod);
+                const found = pods.find(p => p.id === activity.episodeId);
+                if (found) {
+                  listenCell.textContent = found.listens + 1;
+                }
+              }
+            }
+          }
+
+        } catch(err) {}
+      }
+    });
+  }
+
   // ================= INITIALIZATION EXECUTION =================
   initDashboardOMR();
   initFullOMR();
+  initDashboardPrepCast();
 
 });

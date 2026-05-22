@@ -742,9 +742,225 @@ function simulateParentReplyFallback(teacherText) {
       
       showToast("💬 New message from Mr. Al-Masoom (Parent)", "✉️");
     }, 1800);
-
   }, 1000);
 }
+
+/* ========================================================================
+   AI PREPCAST STUDIO MODULE
+   ======================================================================== */
+let currentGeneratedQuiz = null;
+
+window.generatePodcastScript = function() {
+  const subject = document.getElementById("studioSubjectSelect").value;
+  const chapterName = document.getElementById("studioChapterInput").value.trim() || "Newtonian Gravity";
+  const voice = document.getElementById("studioVoiceSelect").value;
+  const prompt = document.getElementById("studioPromptInput").value;
+
+  if (!chapterName) {
+    showToast("⚠️ Please enter a chapter title first!", "warning");
+    return;
+  }
+
+  let authorName = "Mrs. Tasnim Jahan";
+  if (voice === "Arif") authorName = "Dr. Arif Al-Hasan";
+  if (voice === "Rahul") authorName = "Mr. Rahul Amin";
+
+  let scriptText = "";
+  let quiz = {};
+
+  if (subject === "math") {
+    scriptText = 
+`Hello prep learners! ${authorName} here. Welcome to our PrepCast session on ${chapterName}.
+Today, we are focusing on solving advanced mathematical equations step-by-step for your upcoming midterm.
+Remember that consistency is key: if you apply the quadratic formula properly, the roots will reveal themselves.
+Let's pause here. Think about what we just discussed: the discriminant. If the discriminant is zero, what does that tell us about the roots?
+[AUDIO PAUSED FOR PREP CHECK] Let's verify: a discriminant equal to zero means the equation has exactly one real, repeating root. If it's negative, they are complex.
+Excellent. Let's move on. Imagine the graph of this function, it's a perfect parabola touching the x-axis at exactly one point.
+Keep this visual in your mind. The vertex of the parabola is the exact point of contact when the discriminant is zero.`;
+    
+    quiz = {
+      question: `For a quadratic equation, if the discriminant <strong>b² - 4ac</strong> is exactly zero, what is the nature of its roots?`,
+      options: [
+        "A) Two distinct real roots",
+        "B) One repeating real root",
+        "C) Two complex/imaginary roots",
+        "D) No roots exist in any domain"
+      ],
+      correctIndex: 1,
+      hint: "Recall that the vertex of the parabola touches the x-axis at exactly one single point, meaning there is only one real root!"
+    };
+  } else if (subject === "physics") {
+    scriptText = 
+`Hello prep learners! This is ${authorName}. Today we are diving into our Physics session on ${chapterName}.
+A key physical concept here is the interaction of force fields. Let's study how this changes relative to distance.
+Remember: as you double the distance, the relative intensity drops to one-quarter of its original value. This is the inverse square law.
+Let's analyze this carefully. If distance is tripled, what happens? It becomes one-ninth.
+[AUDIO PAUSED FOR PREP CHECK] Let's review: the mathematical formulation of this inverse square law states that force is inversely proportional to the square of the distance.
+This is crucial for understanding gravitational fields, electric charge forces, and even light propagation.
+Always verify the scale factor in your homework. It will save you from easy mistakes on the final paper.`;
+    
+    quiz = {
+      question: `If you double the distance between two masses, what happens to the gravitational force between them according to the Inverse Square Law?`,
+      options: [
+        "A) It is cut in half (1/2)",
+        "B) It drops to one-quarter (1/4)",
+        "C) It is doubled (2x)",
+        "D) It is quadrupled (4x)"
+      ],
+      correctIndex: 1,
+      hint: "Remember that force is proportional to 1 / d². If d becomes 2d, then (2)² is in the denominator, which is 4!"
+    };
+  } else if (subject === "chemistry") {
+    scriptText = 
+`Hello chemistry students! ${authorName} here. Let's study ${chapterName} for our upcoming exam.
+We are focusing on molecular structures and bonding configurations that form the basis of organic molecules.
+Covalent bonds represent shared electron pairs. The carbon atom, for example, is tetravalent and forms four bonds.
+Let's pause. Think about carbon's electronic configuration. It has four valence electrons in its outer shell.
+[AUDIO PAUSED FOR PREP CHECK] Let's verify this: because carbon needs four more electrons to complete its octet, it forms four covalent bonds.
+This makes it the core building block of all organic chemistry and complex life structures.
+Remember this tetravallency in all molecular sketches you draw during the exams!`;
+    
+    quiz = {
+      question: `What is the valency of a Carbon atom in organic molecules, enabling it to form stable covalent structures?`,
+      options: [
+        "A) Monovalent (1)",
+        "B) Divalent (2)",
+        "C) Trivalent (3)",
+        "D) Tetravalent (4)"
+      ],
+      correctIndex: 3,
+      hint: "Carbon resides in Group 14 of the periodic table and requires four shared electrons to satisfy the octet rule."
+    };
+  } else {
+    scriptText = 
+`Greetings scholars! This is ${authorName} bringing you an analysis of ${chapterName}.
+We are exploring the themes of character development and structural syntax within this famous text.
+Active voice structures bring clarity and power to your writing by putting the doer of the action first.
+Let's pause. Contrast this: 'The teacher published the podcast' versus 'The podcast was published by the teacher'.
+[AUDIO PAUSED FOR PREP CHECK] Let's review: the first sentence uses the active voice, which is direct, while the second is passive.
+By prioritizing the subject performing the action, your prose becomes punchy and easy to digest.
+Make sure you identify passive structures in your essay drafts and convert them to active voice where possible.`;
+    
+    quiz = {
+      question: `Which of the following sentences is written in the active voice?`,
+      options: [
+        "A) The exam sheet was scanned by the teacher.",
+        "B) Mrs. Tasnim Jahan published the new podcast.",
+        "C) The classroom exit card was submitted.",
+        "D) Confetti was triggered by the system."
+      ],
+      correctIndex: 1,
+      hint: "Look for the sentence where the subject ('Mrs. Tasnim Jahan') directly performs the action ('published') on the object."
+    };
+  }
+
+  currentGeneratedQuiz = quiz;
+
+  // Render elements in compiler preview
+  document.getElementById("studioScriptEdit").value = scriptText;
+  document.getElementById("studioQuizQ").innerHTML = quiz.question;
+  document.getElementById("studioQuizOpt").innerText = quiz.options.join(" | ");
+  document.getElementById("studioQuizAns").innerText = quiz.options[quiz.correctIndex];
+  document.getElementById("studioQuizHint").innerText = quiz.hint;
+
+  document.getElementById("studioCompilerPreview").style.display = "block";
+  showToast("🤖 AI educational script & check synthesized!", "success");
+};
+
+window.publishPodcast = function() {
+  const subject = document.getElementById("studioSubjectSelect").value;
+  const chapterName = document.getElementById("studioChapterInput").value.trim() || "Newtonian Gravity";
+  const voice = document.getElementById("studioVoiceSelect").value;
+  const editedScript = document.getElementById("studioScriptEdit").value;
+
+  if (!chapterName || !editedScript || !currentGeneratedQuiz) {
+    showToast("⚠️ Compile the script first!", "warning");
+    return;
+  }
+
+  let authorName = "Mrs. Tasnim Jahan";
+  if (voice === "Arif") authorName = "Dr. Arif Al-Hasan";
+  if (voice === "Rahul") authorName = "Mr. Rahul Amin";
+
+  const subjectLabels = {
+    math: "Math",
+    physics: "Physics",
+    chemistry: "Chemistry",
+    english: "English"
+  };
+  const subjectLabel = subjectLabels[subject] || "Math";
+
+  const coverIcons = {
+    math: "📐",
+    physics: "🚀",
+    chemistry: "🧪",
+    english: "📖"
+  };
+  const coverIcon = coverIcons[subject] || "📐";
+
+  // Parse script lines
+  const lines = editedScript.split("\n").filter(l => l.trim() !== "");
+  const scriptArray = [];
+  const times = [0, 25, 50, 75, 90, 120, 150];
+  times.forEach((t, index) => {
+    let textLine = lines[index] || "Reviewing our key points of the lesson. Ensure your notes are complete.";
+    if (t === 90 && !textLine.includes("[AUDIO PAUSED FOR PREP CHECK]")) {
+      textLine = "[AUDIO PAUSED FOR PREP CHECK] " + textLine;
+    }
+    scriptArray.push({ time: t, text: textLine });
+  });
+
+  // Retrieve current podcasts state or fallback
+  const raw = localStorage.getItem('school_podcasts_state');
+  let podcasts = [];
+  if (raw) {
+    try {
+      podcasts = JSON.parse(raw);
+    } catch (e) {
+      podcasts = [];
+    }
+  }
+
+  // Count existing podcasts in this subject to get incremental chapter number
+  const subjectCount = podcasts.filter(p => p.subject === subject).length;
+  const chapterNumber = `Chapter ${subjectCount + 1}`;
+
+  const newPodcast = {
+    id: `${subject}_${Date.now()}`,
+    subject: subject,
+    subjectLabel: subjectLabel,
+    chapter: chapterName,
+    chapterNumber: chapterNumber,
+    duration: 180,
+    difficulty: "Medium",
+    cover: coverIcon,
+    listens: 0,
+    author: authorName,
+    script: scriptArray,
+    quiz: currentGeneratedQuiz
+  };
+
+  podcasts.push(newPodcast);
+  localStorage.setItem('school_podcasts_state', JSON.stringify(podcasts));
+
+  // Broadcast alert
+  localStorage.setItem('new_podcast_alert', JSON.stringify({
+    chapter: chapterName,
+    author: authorName,
+    subject: subjectLabel,
+    timestamp: Date.now()
+  }));
+
+  // Push chat notification
+  pushCoordinatorSystemMessage(`🎯 Mrs. Tasnim Jahan has published a new preparation PrepCast: "${chapterName}" (${subjectLabel} - ${chapterNumber}).`);
+
+  // Reset inputs
+  document.getElementById("studioCompilerPreview").style.display = "none";
+  document.getElementById("studioChapterInput").value = "";
+  
+  showToast(`🎙️ PrepCast "${chapterName}" published successfully!`, "success");
+};
+
 
 /* ========================================================================
    UTILITY HELPER FUNCTIONS

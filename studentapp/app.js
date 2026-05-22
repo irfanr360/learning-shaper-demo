@@ -17,7 +17,15 @@ let studentState = {
   quizDifficulty: 'easy',
   currentQuizIndex: 0,
   selectedQuizOption: null,
-  isRecordingVoice: false
+  isRecordingVoice: false,
+  activePodcast: null,
+  podcastPlaybackInterval: null,
+  playbackSpeed: 1,
+  audioProgress: 0,
+  isPodcastPlaying: false,
+  podcastTranscriptIndex: -1,
+  completedPodcasts: [],
+  sleepTimerTimeout: null
 };
 
 // --- DATASETS ---
@@ -88,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTransportSimulation();
   setupParabolaSimulation(); // Initialize parabola interactive visualizer!
   loadSyncedMilestones();      // Initialize synced milestones!
+  setupPodcastSystem();        // Initialize the PrepCast system!
 
   // Draw initial state UI elements
   updateXpBar();
@@ -111,6 +120,17 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge.style.background = 'rgba(16, 185, 129, 0.1)';
         statusBadge.style.color = 'var(--success-color)';
       }
+    } else if (e.key === 'new_podcast_alert') {
+      try {
+        const alertData = JSON.parse(e.newValue);
+        if (alertData) {
+          showToast(`🎧 New PrepCast released by ${alertData.author || 'Teacher'}: ${alertData.chapter}!`, 'success');
+          // Refresh state
+          if (typeof loadSyncedPodcasts === 'function') {
+            loadSyncedPodcasts();
+          }
+        }
+      } catch (err) {}
     }
   });
 });
@@ -171,12 +191,15 @@ function switchTab(tabId) {
     const name = item.innerText.trim().toLowerCase();
     if (name === 'ai practice' && tabId === 'practice') item.classList.add('active');
     else if (name === 'bus' && tabId === 'transport') item.classList.add('active');
+    else if (name === 'prepcast' && tabId === 'podcast') item.classList.add('active');
     else if (name === tabId) item.classList.add('active');
   });
 
   // Specific Actions on Load
   if (tabId === 'practice') {
     renderQuizQuestion();
+  } else if (tabId === 'podcast') {
+    renderPodcastBrowseShelf('all');
   }
 }
 
@@ -1131,3 +1154,592 @@ function hideStudyTooltip() {
     tooltip.style.display = 'none';
   }
 }
+
+// ========================================================================
+// 6. PREPCAST PODCAST FEATURE IMPLEMENTATION
+// ========================================================================
+
+const defaultPodcasts = [
+  {
+    id: "math_quadratics",
+    subject: "math",
+    subjectLabel: "Mathematics",
+    chapter: "Quadratics Demystified",
+    chapterNumber: "Chapter 4",
+    duration: 180, // 3 minutes
+    difficulty: "Medium",
+    cover: "📐",
+    listens: 148,
+    author: "Mrs. Tasnim Jahan",
+    script: [
+      { time: 0, text: "Welcome to PrepCast, your active study companion. Today, we are mastering Chapter 4: Quadratic Equations and their roots." },
+      { time: 20, text: "Remember, the standard form of a quadratic equation is ax² + bx + c = 0. The roots can be found using middle-term splitting or the quadratic formula." },
+      { time: 45, text: "Let's review the roots of the equation x² - 5x + 6 = 0. When we split the middle term, we get (x - 2)(x - 3) = 0." },
+      { time: 70, text: "Wait! That means the roots are positive 2 and positive 3. Many students make the sign error of writing -2 and -3. Be extremely careful!" },
+      { time: 90, text: "[AUDIO PAUSED FOR PREP CHECK] Let's verify this in your mind. If you substitute x = 2 back into the equation, you get 2² - 5(2) + 6 which is 4 - 10 + 6, which equals 0. It works!" },
+      { time: 120, text: "Excellent work! Now let's try a visual exercise. Imagine the graph of this function: it's a parabola that intersects the x-axis at exactly x=2 and x=3." },
+      { time: 150, text: "By using this graph, you can see where the vertex lies. Since the roots are 2 and 3, the axis of symmetry lies right in the middle at x = 2.5." }
+    ],
+    quiz: {
+      question: "For the equation <strong>x² - 5x + 6 = 0</strong>, if you split the middle term, what are the factors of the equation?",
+      options: [
+        "A)  (x + 2)(x + 3) = 0",
+        "B)  (x - 2)(x - 3) = 0",
+        "C)  (x - 1)(x - 6) = 0",
+        "D)  (x + 1)(x - 6) = 0"
+      ],
+      correctIndex: 1,
+      hint: "Find two numbers that multiply to +6 and add to -5. They must both be negative values inside the brackets!"
+    }
+  },
+  {
+    id: "phys_vectors",
+    subject: "physics",
+    subjectLabel: "Physics",
+    chapter: "Force & Velocity Vectors",
+    chapterNumber: "Chapter 2",
+    duration: 180,
+    difficulty: "Hard",
+    cover: "🚀",
+    listens: 112,
+    author: "Dr. Arif Al-Hasan",
+    script: [
+      { time: 0, text: "Hello prep learners! Dr. Arif here. Today we are diving into Chapter 2: Force & Velocity Vectors." },
+      { time: 25, text: "A vector is a quantity that has both magnitude and direction, unlike a scalar which only has magnitude." },
+      { time: 50, text: "Common vectors include velocity, displacement, force, and acceleration. Scalar quantities include speed, mass, and temperature." },
+      { time: 75, text: "When two vectors act in the same direction, we simply add their magnitudes. But when they act at an angle, we use vector addition laws." },
+      { time: 90, text: "[AUDIO PAUSED FOR PREP CHECK] Let's review: the resultant R of two forces P and Q acting at an angle theta is given by the square root of P² + Q² + 2PQ cos(theta)." },
+      { time: 120, text: "This is crucial for solving real-world structural loads. Keep this formula locked in your memory!" },
+      { time: 150, text: "Vector resolution is another key skill. We can resolve any vector into vertical and horizontal components using sine and cosine functions." }
+    ],
+    quiz: {
+      question: "Which of the following is a pure vector quantity?",
+      options: [
+        "A)  Speed",
+        "B)  Mass",
+        "C)  Velocity",
+        "D)  Temperature"
+      ],
+      correctIndex: 2,
+      hint: "Look for a quantity that requires both a numerical magnitude and a directional heading to be fully described."
+    }
+  }
+];
+
+window.setupPodcastSystem = function() {
+  // Initialize shared state if empty
+  if (!localStorage.getItem('school_podcasts_state')) {
+    localStorage.setItem('school_podcasts_state', JSON.stringify(defaultPodcasts));
+  }
+  loadSyncedPodcasts();
+  renderPodcastBrowseShelf('all');
+  
+  // Render canvas visualizer flat line initially
+  drawWaveform();
+};
+
+window.loadSyncedPodcasts = function() {
+  const rawCompleted = localStorage.getItem('completed_podcasts_keys');
+  if (rawCompleted) {
+    try {
+      studentState.completedPodcasts = JSON.parse(rawCompleted);
+    } catch (e) {}
+  }
+};
+
+window.renderPodcastBrowseShelf = function(subjectFilter = 'all') {
+  const shelf = document.getElementById('podcastShelfList');
+  if (!shelf) return;
+  
+  const raw = localStorage.getItem('school_podcasts_state') || JSON.stringify(defaultPodcasts);
+  let podcasts = [];
+  try {
+    podcasts = JSON.parse(raw);
+  } catch (e) {
+    podcasts = defaultPodcasts;
+  }
+  
+  shelf.innerHTML = '';
+  
+  const filtered = podcasts.filter(p => subjectFilter === 'all' || p.subject.toLowerCase() === subjectFilter.toLowerCase());
+  
+  if (filtered.length === 0) {
+    shelf.innerHTML = `<p style="font-size:11px; color:var(--text-muted); text-align:center; padding:20px; width:100%;">No episodes available in this subject.</p>`;
+    return;
+  }
+  
+  filtered.forEach(p => {
+    const isCompleted = studentState.completedPodcasts.includes(p.id);
+    const card = document.createElement('div');
+    card.className = `podcast-browse-card glass-card ${studentState.activePodcast && studentState.activePodcast.id === p.id ? 'active' : ''}`;
+    card.setAttribute('onclick', `playPodcast('${p.id}')`);
+    
+    // Duration format
+    const mins = Math.floor(p.duration / 60);
+    const secs = p.duration % 60;
+    const durationStr = `${mins}:${secs < 10 ? '0' + secs : secs} mins`;
+    
+    card.innerHTML = `
+      <div class="podcast-browse-cover">${p.cover || '🎧'}</div>
+      <div class="podcast-browse-info">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <span style="font-size:8px; font-weight:800; text-transform:uppercase; color:var(--accent-color);">${p.subjectLabel} • ${p.chapterNumber}</span>
+          ${isCompleted ? '<span style="font-size:8px; background:rgba(16,185,129,0.15); color:var(--success-color); padding:1px 4px; border-radius:4px; font-weight:800;">✓ PASSED</span>' : ''}
+        </div>
+        <h4 class="podcast-browse-title">${p.chapter}</h4>
+        <div class="podcast-browse-meta">
+          <span>🕒 ${durationStr}</span>
+          <span>🔥 ${p.listens} listens</span>
+          <span class="difficulty-badge ${p.difficulty.toLowerCase()}">${p.difficulty}</span>
+        </div>
+      </div>
+    `;
+    shelf.appendChild(card);
+  });
+};
+
+window.filterPodcasts = function(subject) {
+  // Update chip styles
+  const chips = document.querySelectorAll('.podcast-filter-chip');
+  chips.forEach(chip => {
+    chip.classList.remove('active');
+    if (chip.innerText.trim().toLowerCase() === subject.toLowerCase() || (subject === 'all' && chip.innerText.trim() === 'All')) {
+      chip.classList.add('active');
+    }
+  });
+  
+  renderPodcastBrowseShelf(subject);
+};
+
+window.playPodcast = function(podcastId) {
+  const raw = localStorage.getItem('school_podcasts_state') || JSON.stringify(defaultPodcasts);
+  let podcasts = [];
+  try {
+    podcasts = JSON.parse(raw);
+  } catch (e) {
+    podcasts = defaultPodcasts;
+  }
+  
+  const podcast = podcasts.find(p => p.id === podcastId);
+  if (!podcast) return;
+  
+  // Stop existing simulation
+  stopPlaybackSimulation();
+  
+  // Update state
+  studentState.activePodcast = podcast;
+  studentState.audioProgress = 0;
+  studentState.isPodcastPlaying = true;
+  studentState.podcastTranscriptIndex = -1;
+  
+  // Update UI Elements
+  const activePlayer = document.getElementById('podcastActivePlayer');
+  if (activePlayer) activePlayer.classList.remove('hide');
+  
+  document.getElementById('playerEpisodeTitle').innerText = podcast.chapter;
+  document.getElementById('playerEpisodeSubject').innerText = `${podcast.subjectLabel} • ${podcast.chapterNumber} • By ${podcast.author}`;
+  document.getElementById('playerCoverArt').innerText = podcast.cover || '🎧';
+  
+  // Set timeline range
+  const slider = document.getElementById('podcastProgressSlider');
+  if (slider) {
+    slider.max = podcast.duration;
+    slider.value = 0;
+  }
+  
+  const mins = Math.floor(podcast.duration / 60);
+  const secs = podcast.duration % 60;
+  document.getElementById('playerTimeTotal').innerText = `${mins < 10 ? '0' + mins : mins}:${secs < 10 ? '0' + secs : secs}`;
+  document.getElementById('playerTimeElapsed').innerText = '00:00';
+  
+  // Build and load transcript
+  const transcriptBox = document.getElementById('podcastTranscriptBox');
+  if (transcriptBox) {
+    transcriptBox.innerHTML = '';
+    podcast.script.forEach((line, idx) => {
+      const p = document.createElement('p');
+      p.className = 'transcript-paragraph';
+      p.id = `transcript-line-${idx}`;
+      p.setAttribute('onclick', `seekPodcast(${line.time})`);
+      p.innerHTML = `<span style="color:var(--accent-color); font-weight:800; font-family:monospace; margin-right:6px;">${formatTime(line.time)}</span> ${line.text}`;
+      transcriptBox.appendChild(p);
+    });
+  }
+  
+  // Set play state buttons
+  const playBtn = document.getElementById('podcastPlayBtn');
+  if (playBtn) {
+    playBtn.innerHTML = `<svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+  }
+  
+  // Setup Speed Dropdown back to 1.0x or matching speed
+  document.getElementById('podcastSpeedSelect').value = studentState.playbackSpeed;
+  
+  // Refresh card highlights
+  const chips = document.querySelectorAll('.podcast-filter-chip');
+  let activeSubject = 'all';
+  chips.forEach(c => {
+    if (c.classList.contains('active')) {
+      activeSubject = c.innerText.trim().toLowerCase();
+    }
+  });
+  renderPodcastBrowseShelf(activeSubject === 'all' ? 'all' : activeSubject);
+  
+  // Start simulated loop
+  startPlaybackSimulation();
+  showToast(`🎧 Loaded PrepCast: ${podcast.chapter}`, 'success');
+};
+
+window.minimizePlayer = function() {
+  stopPlaybackSimulation();
+  studentState.isPodcastPlaying = false;
+  const activePlayer = document.getElementById('podcastActivePlayer');
+  if (activePlayer) activePlayer.classList.add('hide');
+  
+  const playBtn = document.getElementById('podcastPlayBtn');
+  if (playBtn) {
+    playBtn.innerHTML = `<svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
+  }
+};
+
+window.togglePodcastPlayback = function() {
+  if (!studentState.activePodcast) return;
+  
+  if (studentState.isPodcastPlaying) {
+    stopPlaybackSimulation();
+    studentState.isPodcastPlaying = false;
+    document.getElementById('podcastPlayBtn').innerHTML = `<svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
+    showToast('Audio paused', 'info');
+  } else {
+    // If we've completed or at end, loop back
+    if (studentState.audioProgress >= studentState.activePodcast.duration) {
+      studentState.audioProgress = 0;
+    }
+    studentState.isPodcastPlaying = true;
+    document.getElementById('podcastPlayBtn').innerHTML = `<svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    startPlaybackSimulation();
+    showToast('Resumed audio study guide', 'success');
+  }
+};
+
+window.startPlaybackSimulation = function() {
+  if (studentState.podcastPlaybackInterval) clearInterval(studentState.podcastPlaybackInterval);
+  
+  studentState.podcastPlaybackInterval = setInterval(() => {
+    if (!studentState.isPodcastPlaying || !studentState.activePodcast) return;
+    
+    // Tick up based on speed
+    studentState.audioProgress += 1 * studentState.playbackSpeed;
+    
+    // Limit bounds
+    if (studentState.audioProgress >= studentState.activePodcast.duration) {
+      studentState.audioProgress = studentState.activePodcast.duration;
+      stopPlaybackSimulation();
+      studentState.isPodcastPlaying = false;
+      document.getElementById('podcastPlayBtn').innerHTML = `<svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
+      showToast('📖 Study guide completed!', 'success');
+      addXp(20); // Minor bonus for completion!
+    }
+    
+    // Check 50% Active Listening Prep Check!
+    const quizCheckpoint = Math.floor(studentState.activePodcast.duration / 2);
+    if (studentState.audioProgress >= quizCheckpoint && !studentState.completedPodcasts.includes(studentState.activePodcast.id)) {
+      // Pause audio and pop up modal!
+      stopPlaybackSimulation();
+      studentState.audioProgress = quizCheckpoint; // Freeze at exact midpoint
+      showPodcastQuiz(studentState.activePodcast);
+      return;
+    }
+    
+    // Update timeline values
+    const slider = document.getElementById('podcastProgressSlider');
+    if (slider) slider.value = Math.floor(studentState.audioProgress);
+    
+    document.getElementById('playerTimeElapsed').innerText = formatTime(Math.floor(studentState.audioProgress));
+    
+    // Transcript sync highlights
+    updateTranscriptFocus();
+    
+    // Waveform dancing visualizer
+    drawWaveform();
+    
+    // Sync activity progress to parent app in real-time
+    syncPodcastActivityToParent();
+    
+  }, 1000);
+};
+
+window.stopPlaybackSimulation = function() {
+  if (studentState.podcastPlaybackInterval) {
+    clearInterval(studentState.podcastPlaybackInterval);
+    studentState.podcastPlaybackInterval = null;
+  }
+  drawWaveform(); // Draws flat line when paused
+};
+
+window.seekPodcast = function(seconds) {
+  if (!studentState.activePodcast) return;
+  
+  const secs = parseInt(seconds);
+  const quizCheckpoint = Math.floor(studentState.activePodcast.duration / 2);
+  
+  // If seeking past midpoint and quiz is not completed, lock it!
+  if (secs >= quizCheckpoint && !studentState.completedPodcasts.includes(studentState.activePodcast.id)) {
+    studentState.audioProgress = quizCheckpoint;
+    stopPlaybackSimulation();
+    showPodcastQuiz(studentState.activePodcast);
+    return;
+  }
+  
+  studentState.audioProgress = secs;
+  document.getElementById('playerTimeElapsed').innerText = formatTime(secs);
+  
+  const slider = document.getElementById('podcastProgressSlider');
+  if (slider) slider.value = secs;
+  
+  updateTranscriptFocus();
+  syncPodcastActivityToParent();
+  
+  if (studentState.isPodcastPlaying) {
+    startPlaybackSimulation();
+  }
+};
+
+window.changePodcastSpeed = function(speed) {
+  studentState.playbackSpeed = parseFloat(speed);
+  showToast(`Speed set to ${speed}x`, 'info');
+  if (studentState.isPodcastPlaying) {
+    startPlaybackSimulation();
+  }
+};
+
+window.setSleepTimer = function(val) {
+  if (studentState.sleepTimerTimeout) {
+    clearTimeout(studentState.sleepTimerTimeout);
+    studentState.sleepTimerTimeout = null;
+  }
+  
+  if (val === 'off') {
+    showToast('Sleep timer disabled', 'info');
+    return;
+  }
+  
+  const mins = parseInt(val);
+  showToast(`Sleep timer configured for ${mins} minutes`, 'success');
+  
+  studentState.sleepTimerTimeout = setTimeout(() => {
+    if (studentState.isPodcastPlaying) {
+      togglePodcastPlayback();
+      showToast('🛌 Sleep timer: audio paused automatically.', 'warning');
+    }
+  }, mins * 60 * 1000);
+};
+
+window.skipPodcast = function(seconds) {
+  if (!studentState.activePodcast) return;
+  let target = studentState.audioProgress + seconds;
+  if (target < 0) target = 0;
+  if (target > studentState.activePodcast.duration) target = studentState.activePodcast.duration;
+  seekPodcast(target);
+};
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+}
+
+function updateTranscriptFocus() {
+  if (!studentState.activePodcast) return;
+  const script = studentState.activePodcast.script;
+  const currentProgress = studentState.audioProgress;
+  
+  let activeIdx = -1;
+  for (let i = 0; i < script.length; i++) {
+    if (currentProgress >= script[i].time) {
+      activeIdx = i;
+    }
+  }
+  
+  if (activeIdx !== studentState.podcastTranscriptIndex) {
+    studentState.podcastTranscriptIndex = activeIdx;
+    
+    // Clear all highlights
+    const items = document.querySelectorAll('.transcript-paragraph');
+    items.forEach(el => el.classList.remove('highlight'));
+    
+    // Apply focus class
+    const activeEl = document.getElementById(`transcript-line-${activeIdx}`);
+    if (activeEl) {
+      activeEl.classList.add('highlight');
+      // Scroll smoothly into view
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+}
+
+function drawWaveform() {
+  const canvas = document.getElementById('audioVisualizerCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw center guide line
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height / 2);
+  ctx.lineTo(canvas.width, canvas.height / 2);
+  ctx.stroke();
+  
+  const barCount = 36;
+  const barWidth = 4;
+  const spacing = 2;
+  const startX = (canvas.width - (barCount * (barWidth + spacing))) / 2;
+  
+  ctx.fillStyle = 'var(--accent-color)';
+  
+  for (let i = 0; i < barCount; i++) {
+    const x = startX + i * (barWidth + spacing);
+    let height = 2; // Flat lines when idle
+    
+    if (studentState.isPodcastPlaying) {
+      // Dynamic random wave heights based on progress and cosine sweeps
+      const waveFactor = Math.sin((studentState.audioProgress + i) * 0.5);
+      height = Math.floor(Math.random() * 15 + 4) + (waveFactor * 6);
+      if (height < 2) height = 2;
+      if (height > canvas.height - 4) height = canvas.height - 4;
+    }
+    
+    const y = (canvas.height - height) / 2;
+    ctx.fillRect(x, y, barWidth, height);
+  }
+}
+
+window.showPodcastQuiz = function(podcast) {
+  const modal = document.getElementById('podcastQuizModal');
+  if (!modal) return;
+  
+  document.getElementById('podcastQuizChapter').innerText = `${podcast.subjectLabel.toUpperCase()}: ${podcast.chapterNumber.toUpperCase()}`;
+  document.getElementById('podcastQuizQuestionText').innerHTML = podcast.quiz.question;
+  
+  // Render options list
+  const container = document.getElementById('podcastQuizOptionsContainer');
+  container.innerHTML = '';
+  
+  podcast.quiz.options.forEach((optText, index) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerText = optText;
+    btn.style.width = '100%';
+    btn.style.textAlign = 'left';
+    btn.setAttribute('onclick', `selectPodcastQuizOption(this, ${index})`);
+    container.appendChild(btn);
+  });
+  
+  // Reset hint box
+  document.getElementById('podcastQuizHintBox').style.display = 'none';
+  document.getElementById('podcastQuizHintText').innerText = podcast.quiz.hint;
+  
+  // Disable verify button initially
+  const submitBtn = document.getElementById('podcastQuizSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Verify Answer";
+  
+  studentState.selectedQuizOption = null;
+  
+  modal.style.display = 'flex';
+  showToast('🧠 Active Study check triggered! Answer correctly to resume.', 'warning');
+};
+
+window.selectPodcastQuizOption = function(element, index) {
+  const buttons = document.querySelectorAll('#podcastQuizOptionsContainer .option-btn');
+  buttons.forEach(btn => btn.classList.remove('selected'));
+  
+  element.classList.add('selected');
+  studentState.selectedQuizOption = index;
+  
+  // Enable verify button
+  const submitBtn = document.getElementById('podcastQuizSubmitBtn');
+  submitBtn.disabled = false;
+};
+
+window.submitPodcastQuizAnswer = function() {
+  if (studentState.selectedQuizOption === null || !studentState.activePodcast) return;
+  
+  const quiz = studentState.activePodcast.quiz;
+  const buttons = document.querySelectorAll('#podcastQuizOptionsContainer .option-btn');
+  const submitBtn = document.getElementById('podcastQuizSubmitBtn');
+  
+  // Disable option clicks
+  buttons.forEach(btn => btn.removeAttribute('onclick'));
+  submitBtn.disabled = true;
+  
+  if (studentState.selectedQuizOption === quiz.correctIndex) {
+    // Correct! Confetti, XP, and Resume play!
+    buttons[studentState.selectedQuizOption].classList.add('correct-reveal');
+    triggerConfettiBurst();
+    
+    // Add XP reward
+    addXp(50);
+    
+    // Mark as completed
+    studentState.completedPodcasts.push(studentState.activePodcast.id);
+    localStorage.setItem('completed_podcasts_keys', JSON.stringify(studentState.completedPodcasts));
+    
+    showToast('🌟 Excellent! Active Prep Check passed! +50 XP', 'success');
+    
+    // Hide modal after delay and resume playback
+    setTimeout(() => {
+      document.getElementById('podcastQuizModal').style.display = 'none';
+      studentState.isPodcastPlaying = true;
+      document.getElementById('podcastPlayBtn').innerHTML = `<svg viewBox="0 0 24 24" id="playIconSVG"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+      startPlaybackSimulation();
+      
+      // Refresh browser shelf to show pass badge
+      const chips = document.querySelectorAll('.podcast-filter-chip');
+      let activeSubject = 'all';
+      chips.forEach(c => {
+        if (c.classList.contains('active')) {
+          activeSubject = c.innerText.trim().toLowerCase();
+        }
+      });
+      renderPodcastBrowseShelf(activeSubject === 'all' ? 'all' : activeSubject);
+    }, 1800);
+  } else {
+    // Incorrect: show hint and allow retrying
+    buttons[studentState.selectedQuizOption].classList.add('incorrect-reveal');
+    document.getElementById('podcastQuizHintBox').style.display = 'block';
+    showToast('Incorrect. Review the AI Tutor hint and try again!', 'warning');
+    
+    // Re-enable clicks after brief pause to allow trying another option
+    setTimeout(() => {
+      buttons.forEach((btn, idx) => {
+        btn.setAttribute('onclick', `selectPodcastQuizOption(this, ${idx})`);
+        btn.classList.remove('incorrect-reveal', 'selected');
+      });
+      studentState.selectedQuizOption = null;
+      submitBtn.innerText = "Verify Answer";
+    }, 1500);
+  }
+};
+
+window.syncPodcastActivityToParent = function() {
+  if (!studentState.activePodcast) return;
+  
+  const percentage = Math.floor((studentState.audioProgress / studentState.activePodcast.duration) * 100);
+  const minutesCount = (studentState.audioProgress / 60).toFixed(1);
+  
+  const data = {
+    studentName: "Aarif Al-Masoom",
+    episodeId: studentState.activePodcast.id,
+    title: studentState.activePodcast.chapter,
+    subject: studentState.activePodcast.subjectLabel,
+    progress: percentage,
+    duration: minutesCount,
+    xpGained: studentState.completedPodcasts.includes(studentState.activePodcast.id) ? 50 : 0
+  };
+  
+  localStorage.setItem('student_podcast_activity', JSON.stringify(data));
+};
