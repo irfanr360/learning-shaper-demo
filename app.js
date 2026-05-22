@@ -1,0 +1,668 @@
+// ─── Learning Shaper App Interactivity & Simulations ────────────────
+
+document.addEventListener("DOMContentLoaded", () => {
+  "use strict";
+
+  // ================= STATE DEFINITIONS =================
+  const STUDENT_PROFILES = {
+    aarif: {
+      name: "Aarif Al-Masoom",
+      class: "Class 10 · Roll #04",
+      avatar: "AA",
+      algebra: 62,
+      geometry: 88,
+      trigonometry: 74,
+      radarPoints: "100,60 160,85 140,150 70,130 50,90",
+      tagline: "Showing Aarif's strengths & weak areas derived from midterm OMR sheets.",
+      recommendation: "Aarif has demonstrated strong visualization in **geometry** (88%), but struggles with algebraic manipulations. Recommended personalized practice focusing on quadratic factorisations."
+    },
+    samira: {
+      name: "Samira Jahan",
+      class: "Class 10 · Roll #02",
+      avatar: "SJ",
+      algebra: 91,
+      geometry: 72,
+      trigonometry: 85,
+      radarPoints: "100,30 145,105 130,120 85,160 40,75",
+      tagline: "Showing Samira's strengths & weak areas derived from midterm OMR sheets.",
+      recommendation: "Samira excels in advanced **algebra** (91%) and symbolic calculation. Showed minor gaps in geometry theorems. Suggesting 4 exercise units on circle theorems."
+    },
+    tanvir: {
+      name: "Tanvir Rahman",
+      class: "Class 10 · Roll #17",
+      avatar: "TR",
+      algebra: 54,
+      geometry: 60,
+      trigonometry: 92,
+      radarPoints: "100,80 135,115 150,110 50,140 30,80",
+      tagline: "Showing Tanvir's strengths & weak areas derived from midterm OMR sheets.",
+      recommendation: "Tanvir has outstanding spatial analysis in **trigonometry** (92%), but algebraic speed requires reinforcing. Suggesting timing drill challenges on algebraic equations."
+    }
+  };
+
+  const OMR_ANSWER_KEY = {
+    1: "B", 2: "A", 3: "C", 4: "C", 5: "B",
+    6: "A", 7: "D", 8: "C", 9: "B", 10: "A",
+    11: "D", 12: "B", 13: "C", 14: "A", 15: "D"
+  };
+
+  let dashboardSelections = { 1: null, 2: null, 3: null, 4: null, 5: null };
+  let fullSheetSelections = {};
+  for (let i = 1; i <= 15; i++) {
+    fullSheetSelections[i] = null;
+  }
+
+  let selectedStudent = "aarif";
+  let teleTalkBalance = 2482.40;
+
+  // ================= ELEMENT SELECTORS =================
+  const themeBtn = document.getElementById("theme-btn");
+  const menuItems = document.querySelectorAll(".menu-item");
+  const tabPanes = document.querySelectorAll(".tab-pane");
+  const pageTitle = document.getElementById("page-title");
+  
+  // Dashboard elements
+  const dashBubbleRows = document.getElementById("dashboard-bubble-rows");
+  const dashScanBtn = document.getElementById("dash-scan-btn");
+  const dashScanStatus = document.getElementById("dash-scan-status");
+  const dashGradingResult = document.getElementById("dash-grading-result");
+  const dashScoreVal = document.getElementById("dash-score-val");
+  const dashRankVal = document.getElementById("dash-rank-val");
+
+  // AI Tab elements
+  const selectBtns = document.querySelectorAll(".select-btn");
+  const studentTagline = document.getElementById("student-tagline");
+  const barAlgebra = document.getElementById("bar-algebra");
+  const barAlgebraVal = document.getElementById("bar-algebra-val");
+  const barGeometry = document.getElementById("bar-geometry");
+  const barGeometryVal = document.getElementById("bar-geometry-val");
+  const barTrig = document.getElementById("bar-trig");
+  const barTrigVal = document.getElementById("bar-trig-val");
+  const aiPlanText = document.getElementById("ai-plan-text");
+  const aiProfileAvatar = document.getElementById("ai-profile-avatar");
+  const aiProfileName = document.getElementById("ai-profile-name");
+  const aiProfileClass = document.getElementById("ai-profile-class");
+  const radarPoints = document.getElementById("radar-poly-points");
+
+  // Lesson plan generator
+  const generateLessonBtn = document.getElementById("generate-lesson-btn");
+  const lessonTopicSelect = document.getElementById("lesson-topic-select");
+  const lessonOutputBox = document.getElementById("lesson-output-box");
+
+  // Comms / SMS elements
+  const smsTemplateSelect = document.getElementById("sms-template-select");
+  const smsBody = document.getElementById("sms-body");
+  const sendSmsBtn = document.getElementById("send-sms-btn");
+  const smsLogs = document.getElementById("sms-logs");
+
+  const commsRecipientSelect = document.getElementById("comms-recipient-select");
+  const commsTriggerSelect = document.getElementById("comms-trigger-select");
+  const commsSmsBody = document.getElementById("comms-sms-body");
+  const commsDispatchBtn = document.getElementById("comms-dispatch-btn");
+  const commsFullLogs = document.getElementById("comms-full-logs");
+
+  // Full OMR Tab
+  const fullBubbleGrid = document.getElementById("full-bubble-grid");
+  const fullScanBtn = document.getElementById("full-scan-btn");
+  const fullScanProgress = document.getElementById("full-scan-progress");
+  const progressStage = document.getElementById("scan-progress-stage");
+  const progressPercent = document.getElementById("scan-progress-percent");
+  const progressFill = document.getElementById("full-progress-fill");
+  const fullScanResults = document.getElementById("full-scan-results");
+  const correctCountEl = document.getElementById("correct-count");
+  const incorrectCountEl = document.getElementById("incorrect-count");
+  const flaggedCountEl = document.getElementById("flagged-count");
+  const gradePercentEl = document.getElementById("grade-percent");
+  const randomizeBubblesBtn = document.getElementById("randomize-bubbles");
+  const clearBubblesBtn = document.getElementById("clear-bubbles");
+  const pushSmsResultsBtn = document.getElementById("push-sms-results-btn");
+
+  // Operations
+  const busEta = document.getElementById("bus-eta");
+  const routeEtaVal = document.getElementById("route-eta-val");
+  const routeBusDesc = document.getElementById("route-bus-desc");
+
+  // Toast container
+  const toastHolder = document.getElementById("toast-holder");
+
+
+  // ================= TOAST ALERTS SYSTEM =================
+  function showToast(message, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${type === "success" ? "✓" : "ℹ"}</span>
+      <span class="toast-message">${message}</span>
+    `;
+    toastHolder.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(10px) scale(0.95)";
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+  // ================= TAB SWAPPING LOGIC =================
+  menuItems.forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      const tabId = item.getAttribute("data-tab");
+      
+      // Toggle menu items active class
+      menuItems.forEach(mi => mi.classList.remove("active"));
+      item.classList.add("active");
+      
+      // Toggle panes
+      tabPanes.forEach(pane => {
+        pane.classList.remove("active");
+        if (pane.id === tabId || (tabId === "dashboard" && pane.id === "dashboard")) {
+          pane.classList.add("active");
+        }
+      });
+      
+      // Update page title
+      const title = item.querySelector("span").textContent;
+      pageTitle.textContent = title;
+      
+      // Scroll to top
+      document.querySelector(".ls-main").scrollTop = 0;
+    });
+  });
+
+  // ================= THEME TOGGLE (DARK MODE) =================
+  themeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    
+    // Smooth transition toggle
+    themeBtn.style.transform = "rotate(180deg)";
+    setTimeout(() => {
+      themeBtn.style.transform = "none";
+    }, 300);
+    
+    if (isDark) {
+      themeBtn.innerHTML = `
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      `;
+      showToast("Dark Mode Enabled", "info");
+    } else {
+      themeBtn.innerHTML = `
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      `;
+      showToast("Light Mode Enabled", "info");
+    }
+  });
+
+  // ================= OMR SCANNER LOGIC =================
+  
+  // Render Dashboard 5-Question OMR preview
+  function initDashboardOMR() {
+    dashBubbleRows.innerHTML = "";
+    for (let q = 1; q <= 5; q++) {
+      const row = document.createElement("div");
+      row.className = "bubble-row";
+      row.innerHTML = `
+        <span class="row-num">${q}.</span>
+        <div class="bubbles-group">
+          ${["A", "B", "C", "D"].map(opt => `
+            <button class="bubble-btn" data-q="${q}" data-opt="${opt}">${opt}</button>
+          `).join("")}
+        </div>
+      `;
+      dashBubbleRows.appendChild(row);
+    }
+    
+    // Add event listeners for mini bubble sheets
+    dashBubbleRows.querySelectorAll(".bubble-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const q = btn.getAttribute("data-q");
+        const opt = btn.getAttribute("data-opt");
+        
+        // Deselect siblings
+        dashBubbleRows.querySelectorAll(`.bubble-btn[data-q="${q}"]`).forEach(sibling => {
+          sibling.classList.remove("filled", "correct", "wrong", "wrong-missed");
+        });
+        
+        if (dashboardSelections[q] === opt) {
+          dashboardSelections[q] = null;
+        } else {
+          dashboardSelections[q] = opt;
+          btn.classList.add("filled");
+        }
+      });
+    });
+  }
+
+  // Render full 15-Question sheet in exam tab
+  function initFullOMR() {
+    fullBubbleGrid.innerHTML = "";
+    for (let q = 1; q <= 15; q++) {
+      const cell = document.createElement("div");
+      cell.className = "bubble-row";
+      cell.innerHTML = `
+        <span class="row-num" style="width: 25px;">Q${q}.</span>
+        <div class="bubbles-group">
+          ${["A", "B", "C", "D"].map(opt => `
+            <button class="bubble-btn full-btn" data-q="${q}" data-opt="${opt}">${opt}</button>
+          `).join("")}
+        </div>
+      `;
+      fullBubbleGrid.appendChild(cell);
+    }
+    
+    // Add event listeners
+    fullBubbleGrid.querySelectorAll(".bubble-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const q = btn.getAttribute("data-q");
+        const opt = btn.getAttribute("data-opt");
+        
+        fullBubbleGrid.querySelectorAll(`.bubble-btn[data-q="${q}"]`).forEach(sibling => {
+          sibling.classList.remove("filled", "correct", "wrong", "wrong-missed");
+        });
+        
+        if (fullSheetSelections[q] === opt) {
+          fullSheetSelections[q] = null;
+        } else {
+          fullSheetSelections[q] = opt;
+          btn.classList.add("filled");
+        }
+      });
+    });
+  }
+
+  // Dashboard AI scan trigger
+  dashScanBtn.addEventListener("click", () => {
+    dashScanBtn.classList.add("hidden");
+    dashScanStatus.classList.remove("hidden");
+    dashGradingResult.classList.add("hidden");
+    
+    // Simulated OMR scanning timer
+    setTimeout(() => {
+      dashScanStatus.classList.add("hidden");
+      dashScanBtn.classList.remove("hidden");
+      
+      // Calculate scores
+      let correct = 0;
+      for (let q = 1; q <= 5; q++) {
+        const selected = dashboardSelections[q];
+        const correctKey = OMR_ANSWER_KEY[q];
+        
+        dashBubbleRows.querySelectorAll(`.bubble-btn[data-q="${q}"]`).forEach(btn => {
+          const opt = btn.getAttribute("data-opt");
+          if (selected === opt) {
+            if (opt === correctKey) {
+              btn.classList.add("correct");
+              correct++;
+            } else {
+              btn.classList.add("wrong");
+            }
+          } else if (opt === correctKey) {
+            btn.classList.add("wrong-missed");
+          }
+        });
+      }
+      
+      dashScoreVal.textContent = `${correct}/5`;
+      const ranks = ["#12/35", "#8/35", "#4/35", "#2/35", "#1/35", "#1/35"];
+      dashRankVal.textContent = ranks[correct];
+      dashGradingResult.classList.remove("hidden");
+      
+      showToast("Dashboard OMR Scan Complete!", "success");
+    }, 1200);
+  });
+
+  // Dedicated Full OMR Tab triggers
+  fullScanBtn.addEventListener("click", () => {
+    fullScanBtn.classList.add("hidden");
+    fullScanProgress.classList.remove("hidden");
+    fullScanResults.classList.add("hidden");
+    
+    // Detailed stages simulation
+    const stages = [
+      { p: 15, msg: "Aligning anchor borders..." },
+      { p: 40, msg: "Correcting ambient camera shadows..." },
+      { p: 75, msg: "Resolving bubble detection conflicts..." },
+      { p: 100, msg: "Compiling grades & metrics..." }
+    ];
+    
+    let stageIdx = 0;
+    
+    function runStage() {
+      if (stageIdx < stages.length) {
+        const current = stages[stageIdx];
+        progressStage.textContent = current.msg;
+        progressPercent.textContent = `${current.p}%`;
+        progressFill.style.width = `${current.p}%`;
+        
+        stageIdx++;
+        setTimeout(runStage, 400);
+      } else {
+        // Compute marks
+        completeFullGrading();
+      }
+    }
+    
+    runStage();
+  });
+
+  function completeFullGrading() {
+    fullScanProgress.classList.add("hidden");
+    fullScanBtn.classList.remove("hidden");
+    
+    let correct = 0;
+    let wrong = 0;
+    let unanswered = 0;
+    
+    for (let q = 1; q <= 15; q++) {
+      const selected = fullSheetSelections[q];
+      const correctKey = OMR_ANSWER_KEY[q];
+      
+      if (!selected) unanswered++;
+      
+      fullBubbleGrid.querySelectorAll(`.bubble-btn[data-q="${q}"]`).forEach(btn => {
+        const opt = btn.getAttribute("data-opt");
+        btn.classList.remove("filled");
+        
+        if (selected === opt) {
+          if (opt === correctKey) {
+            btn.classList.add("correct");
+            correct++;
+          } else {
+            btn.classList.add("wrong");
+            wrong++;
+          }
+        } else if (opt === correctKey) {
+          btn.classList.add("wrong-missed");
+        }
+      });
+    }
+    
+    correctCountEl.textContent = correct;
+    incorrectCountEl.textContent = wrong;
+    flaggedCountEl.textContent = unanswered;
+    
+    const percentage = ((correct / 15) * 100).toFixed(1);
+    let grade = "F";
+    if (percentage >= 90) grade = "A+";
+    else if (percentage >= 80) grade = "A-";
+    else if (percentage >= 70) grade = "B";
+    else if (percentage >= 60) grade = "C";
+    else if (percentage >= 50) grade = "D";
+    
+    gradePercentEl.textContent = `${percentage}% (${grade})`;
+    
+    fullScanResults.classList.remove("hidden");
+    showToast(`Exam Scanned. Score: ${correct}/15`, "success");
+  }
+
+  randomizeBubblesBtn.addEventListener("click", () => {
+    const opts = ["A", "B", "C", "D"];
+    for (let q = 1; q <= 15; q++) {
+      // 80% chance to answer, 75% accuracy
+      const answerChance = Math.random() < 0.9;
+      if (answerChance) {
+        const correctKey = OMR_ANSWER_KEY[q];
+        const correctGuess = Math.random() < 0.75;
+        const finalOpt = correctGuess ? correctKey : opts.filter(o => o !== correctKey)[Math.floor(Math.random() * 3)];
+        
+        fullSheetSelections[q] = finalOpt;
+        
+        fullBubbleGrid.querySelectorAll(`.bubble-btn[data-q="${q}"]`).forEach(btn => {
+          btn.classList.remove("filled", "correct", "wrong", "wrong-missed");
+          if (btn.getAttribute("data-opt") === finalOpt) {
+            btn.classList.add("filled");
+          }
+        });
+      } else {
+        fullSheetSelections[q] = null;
+        fullBubbleGrid.querySelectorAll(`.bubble-btn[data-q="${q}"]`).forEach(btn => {
+          btn.classList.remove("filled", "correct", "wrong", "wrong-missed");
+        });
+      }
+    }
+    showToast("Filled bubbles randomly!", "info");
+  });
+
+  clearBubblesBtn.addEventListener("click", () => {
+    for (let q = 1; q <= 15; q++) {
+      fullSheetSelections[q] = null;
+    }
+    fullBubbleGrid.querySelectorAll(".bubble-btn").forEach(btn => {
+      btn.className = "bubble-btn full-btn";
+    });
+    fullScanResults.classList.add("hidden");
+    showToast("Bubble sheet reset", "info");
+  });
+
+  // Broadcast marks via SMS from exam tab
+  pushSmsResultsBtn.addEventListener("click", () => {
+    const correct = correctCountEl.textContent;
+    const scoreText = `${correct}/15`;
+    
+    // Add entry to logs
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const newLog = document.createElement("div");
+    newLog.className = "log-entry";
+    newLog.innerHTML = `
+      <span class="log-time">${timeStr}</span>
+      <span class="log-type exam">EXAM</span>
+      <span class="log-msg">Mathematics midterm score (${scoreText}) broadcasted to Roll #04's guardian (+88017******22)</span>
+    `;
+    commsFullLogs.insertBefore(newLog, commsFullLogs.firstChild);
+    
+    // deduct balance
+    teleTalkBalance -= 1.20;
+    document.querySelectorAll(".comms-status-bar strong")[1].textContent = `৳${teleTalkBalance.toFixed(2)}`;
+    
+    showToast("Marks broadcasted to parents via Teletalk!", "success");
+  });
+
+
+  // ================= AI INSIGHTS SWITCHER =================
+  selectBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectBtns.forEach(sb => sb.classList.remove("active"));
+      btn.classList.add("active");
+      
+      const studentId = btn.getAttribute("data-student");
+      selectedStudent = studentId;
+      const data = STUDENT_PROFILES[studentId];
+      
+      // Update UI texts
+      studentTagline.textContent = data.tagline;
+      barAlgebra.style.width = `${data.algebra}%`;
+      barAlgebraVal.textContent = `${data.algebra}%`;
+      barGeometry.style.width = `${data.geometry}%`;
+      barGeometryVal.textContent = `${data.geometry}%`;
+      barTrig.style.width = `${data.trigonometry}%`;
+      barTrigVal.textContent = `${data.trigonometry}%`;
+      aiPlanText.innerHTML = `"${data.recommendation}"`;
+
+      // Update dedicated profile card elements
+      aiProfileAvatar.textContent = data.avatar;
+      aiProfileName.textContent = data.name;
+      aiProfileClass.textContent = data.class;
+      radarPoints.setAttribute("points", data.radarPoints);
+      
+      showToast(`Selected profile: ${data.name}`, "info");
+    });
+  });
+
+  // AI Lesson Generator plan
+  generateLessonBtn.addEventListener("click", () => {
+    const topic = lessonTopicSelect.value;
+    lessonOutputBox.innerHTML = `
+      <div class="spinner" style="margin: 30px auto;"></div>
+      <p style="text-align:center;font-family:var(--font-body);color:var(--text-muted);font-size:11px;">Generating dynamic curriculum structure...</p>
+    `;
+    
+    setTimeout(() => {
+      if (topic === "quadratics") {
+        lessonOutputBox.innerHTML = `
+          <div class="lesson-plan-result">
+            <h5>📖 AI LESSON PLAN: QUADRATIC EQUATIONS</h5>
+            <ul>
+              <li><strong>Target cohort:</strong> 18 Students under 50% threshold.</li>
+              <li><strong>Core Concept:</strong> Factoring $ax^2 + bx + c = 0$ using visual cross-multiplication sheets.</li>
+              <li><strong>Remediation Strategy:</strong> Dual-bracket division sheets and OMR mock tracking diagnostic.</li>
+              <li><strong>Homework generated:</strong> 10 Curated question banks, auto-tagged 'Factoring'.</li>
+            </ul>
+          </div>
+        `;
+      } else if (topic === "trigonometry") {
+        lessonOutputBox.innerHTML = `
+          <div class="lesson-plan-result">
+            <h5>📖 AI LESSON PLAN: TRIGONOMETRIC IDENTITIES</h5>
+            <ul>
+              <li><strong>Target cohort:</strong> Section B Mathematics classes.</li>
+              <li><strong>Core Concept:</strong> Pythagoras relation mapping ($\sin^2 \theta + \cos^2 \theta = 1$) visual proofs.</li>
+              <li><strong>Remediation Strategy:</strong> Tri-color geometric blocks matching sine and cosine sweeps.</li>
+              <li><strong>Diagnostics:</strong> 5-question OMR scanner alert tracking.</li>
+            </ul>
+          </div>
+        `;
+      } else {
+        lessonOutputBox.innerHTML = `
+          <div class="lesson-plan-result">
+            <h5>📖 AI LESSON PLAN: ALGEBRAIC FACTORISATION</h5>
+            <ul>
+              <li><strong>Target cohort:</strong> Selected students showing weak calculations.</li>
+              <li><strong>Core Concept:</strong> Polynomial expansions & cubic roots division tricks.</li>
+              <li><strong>Remediation Strategy:</strong> Digital block representation puzzles.</li>
+              <li><strong>Homework:</strong> Auto-emailed practice PDFs.</li>
+            </ul>
+          </div>
+        `;
+      }
+      showToast("Dynamic AI lesson plan compiled!", "success");
+    }, 1000);
+  });
+
+  // Support mini click generators
+  document.querySelectorAll(".generate-lesson-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const topic = btn.getAttribute("data-topic");
+      lessonTopicSelect.value = topic;
+      // swap tab to AI center
+      document.querySelector('[data-tab="ai-tab"]').click();
+      generateLessonBtn.click();
+    });
+  });
+
+  // Print Practice plan mock
+  document.getElementById("generate-pdf-plan").addEventListener("click", (e) => {
+    e.preventDefault();
+    showToast("Compiling Practice Pack PDF... Download started!", "success");
+  });
+
+
+  // ================= SMS COMMUNICATOR =================
+  
+  const SMS_TEMPLATES = {
+    attendance: "Dear Parent, your child Aarif was absent for homeroom class at 9:00 AM on 2026-05-22. Please contact the coordinator if you have any questions.",
+    exam: "Learning Shaper: Class 10 Math Midterm OMR results are processed. Aarif scored 12/15 (80.0%, Rank #4). Detail worksheet uploaded.",
+    fees: "Dear Guardian, tuition billing outstanding balance of ৳3,500 is due by 2026-05-30. Please settle dues in the parent application link."
+  };
+
+  smsTemplateSelect.addEventListener("change", () => {
+    smsBody.value = SMS_TEMPLATES[smsTemplateSelect.value];
+  });
+
+  sendSmsBtn.addEventListener("click", () => {
+    const text = smsBody.value;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Add entry to logs
+    const newLog = document.createElement("div");
+    newLog.className = "log-entry";
+    newLog.innerHTML = `
+      <span class="log-time">${timeStr}</span>
+      <span class="log-type attendance">SMS</span>
+      <span class="log-msg">${text.substring(0, 48)}... dispatched.</span>
+    `;
+    smsLogs.insertBefore(newLog, smsLogs.firstChild);
+    
+    teleTalkBalance -= 0.60;
+    document.querySelectorAll(".comms-status-bar strong")[1].textContent = `৳${teleTalkBalance.toFixed(2)}`;
+    
+    showToast("SMS dispatched through gate!", "success");
+  });
+
+  // Comms Tab Bulk dispatcher
+  commsDispatchBtn.addEventListener("click", () => {
+    const target = commsRecipientSelect.value;
+    const bodyText = commsSmsBody.value;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    let count = 35;
+    if (target === "failures") count = 18;
+    else if (target === "all") count = 1247;
+    
+    const cost = count * 0.45;
+    if (teleTalkBalance < cost) {
+      showToast("Insufficient TeleTalk Gateway balance!", "error");
+      return;
+    }
+    
+    const newLog = document.createElement("div");
+    newLog.className = "log-entry";
+    newLog.innerHTML = `
+      <span class="log-time">${timeStr}</span>
+      <span class="log-type notice">BROADCAST</span>
+      <span class="log-msg">Bulk broadcast sent to ${count} guardians. Delivery Rate: 99.8%. Message: "${bodyText.substring(0, 36)}..."</span>
+    `;
+    commsFullLogs.insertBefore(newLog, commsFullLogs.firstChild);
+    
+    teleTalkBalance -= cost;
+    document.querySelectorAll(".comms-status-bar strong")[1].textContent = `৳${teleTalkBalance.toFixed(2)}`;
+    
+    showToast(`Bulk broadcast sent to ${count} parents!`, "success");
+  });
+
+  commsTriggerSelect.addEventListener("change", () => {
+    const val = commsTriggerSelect.value;
+    if (val === "report") {
+      commsSmsBody.value = "Dear Parent, we have completed scanning of Class 10 Mathematics Midterms. The digital grade cards are now accessible in your parent app portal. Average: 74.2%.";
+    } else if (val === "holiday") {
+      commsSmsBody.value = "Emergency Alert: Learning Shaper schools will remain closed tomorrow, May 23rd, due to the severe weather protocol. Classes resume Sunday.";
+    } else {
+      commsSmsBody.value = "Enter your custom notice or operational update here to dispatch immediately to guardians.";
+    }
+  });
+
+
+  // ================= OPERATIONS / TRANSPORT SIMULATOR LOOP =================
+  let minutesLeft = 6;
+  function updateTransportLoop() {
+    minutesLeft--;
+    if (minutesLeft <= 0) {
+      minutesLeft = 8;
+      routeBusDesc.textContent = "Bus #14 departed Dhanmondi Stop.";
+      showToast("Bus #14 departed Dhanmondi Stop", "info");
+    } else if (minutesLeft === 5) {
+      routeBusDesc.textContent = "Approaching Flyover Junction.";
+      showToast("Bus #14 approaching Flyover Junction", "info");
+    } else if (minutesLeft === 1) {
+      routeBusDesc.textContent = "Entering campus main gate.";
+      showToast("Bus #14 arriving at main gate!", "success");
+    }
+    
+    busEta.textContent = `${minutesLeft} min`;
+    routeEtaVal.textContent = `${minutesLeft} min`;
+  }
+  
+  // Tick route simulator every 1.5 minutes (90 seconds)
+  setInterval(updateTransportLoop, 90000);
+
+
+  // ================= INITIALIZATION EXECUTION =================
+  initDashboardOMR();
+  initFullOMR();
+
+});

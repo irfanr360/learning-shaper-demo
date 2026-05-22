@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learning Shaper — Interactive Demonstration Portal</title>
+  
+  <!-- Premium Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Core Design CSS Link -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Layout Wrapper -->
+  <div class="ls-app-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="ls-sidebar">
+      <div class="ls-brand">
+        <div class="ls-logo-icon">
+          <span>◈</span>
+        </div>
+        <div class="ls-brand-text">
+          <h2>Learning Shaper</h2>
+          <span>AI-POWERED SCHOOLS</span>
+        </div>
+      </div>
+      
+      <nav class="ls-sidebar-menu">
+        <a href="#dashboard" class="menu-item active" data-tab="dashboard">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          <span>Executive Dashboard</span>
+        </a>
+        <a href="#omr" class="menu-item" data-tab="omr-tab">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>OMR Exam Scanner</span>
+        </a>
+        <a href="#ai-insights" class="menu-item" data-tab="ai-tab">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>
+          <span>AI Insight Center</span>
+        </a>
+        <a href="#operations" class="menu-item" data-tab="ops-tab">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+          <span>Live Operations</span>
+        </a>
+        <a href="#comms" class="menu-item" data-tab="comms-tab">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>SMS Alerts Console</span>
+        </a>
+        <a href="./studentapp/index.html" class="menu-item" target="_blank" style="border-top: 1px dashed rgba(30, 99, 245, 0.15); margin-top: 15px; color: #a855f7;">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span style="font-weight: 700;">Student Companion App</span>
+        </a>
+      </nav>
+      
+      <!-- User profile block at bottom of sidebar -->
+      <div class="sidebar-footer">
+        <div class="user-avatar">AP</div>
+        <div class="user-info">
+          <h4>Admin Portal</h4>
+          <span>Principal Account</span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content Panel -->
+    <main class="ls-main">
+      
+      <!-- Top navbar inside main area -->
+      <header class="ls-header">
+        <div class="header-left">
+          <h1 id="page-title">Executive Dashboard</h1>
+          <p class="header-subtitle">Real-time indicators across all school operational systems</p>
+        </div>
+        <div class="header-right">
+          <!-- Status Pill -->
+          <div class="status-indicator">
+            <span class="pulse-dot"></span>
+            <span>All Systems Normal</span>
+          </div>
+          
+          <!-- Mode Switcher -->
+          <button class="theme-toggle" id="theme-btn" aria-label="Toggle dark mode">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          </button>
+        </div>
+      </header>
+      
+      <!-- Tab Content Area -->
+      <div class="ls-content">
+        
+        <!-- ================= EXECUTIVE DASHBOARD TAB ================= -->
+        <section id="dashboard" class="tab-pane active">
+          
+          <!-- Quick Status Cards -->
+          <div class="stats-row grid-4">
+            <div class="glass-card stat-card">
+              <div class="stat-icon" style="background: rgba(30, 99, 245, 0.1); color: #1e63f5;">◈</div>
+              <div class="stat-details">
+                <span>Today's Attendance</span>
+                <h3>94.2%</h3>
+                <small class="green-text">↑ 1.2% from average</small>
+              </div>
+            </div>
+            
+            <div class="glass-card stat-card">
+              <div class="stat-icon" style="background: rgba(124, 92, 255, 0.1); color: #7c5cff;">◇</div>
+              <div class="stat-details">
+                <span>OMR Papers Scanned</span>
+                <h3>1,248</h3>
+                <small>Math Midterms completed</small>
+              </div>
+            </div>
+            
+            <div class="glass-card stat-card">
+              <div class="stat-icon" style="background: rgba(10, 139, 108, 0.1); color: #0a8b6c;">◉</div>
+              <div class="stat-details">
+                <span>Bus Arrival Status</span>
+                <h3>Bus #14 Live</h3>
+                <small class="blue-text">6 min to main campus</small>
+              </div>
+            </div>
+            
+            <div class="glass-card stat-card">
+              <div class="stat-icon" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">◐</div>
+              <div class="stat-details">
+                <span>Pending Invoices</span>
+                <h3>12 Outstanding</h3>
+                <small class="amber-text">Auto-reminders active</small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Dashboard Layout Grid -->
+          <div class="dashboard-grid grid-2">
+            
+            <!-- Quick OMR Simulator Preview -->
+            <div class="glass-card panel-card">
+              <div class="card-header">
+                <h3>OMR Interactive Scanner</h3>
+                <span class="badge">Assessment</span>
+              </div>
+              <p class="card-desc">Try selecting answers on this student sheet and click "Scan Sheets" to trigger our AI OMR grader.</p>
+              
+              <div class="mini-omr-container">
+                <!-- Mini Bubble sheet preview -->
+                <div class="mock-sheet">
+                  <div class="sheet-title">EXAM ANSWER SHEET - MATH 101</div>
+                  
+                  <div class="bubble-rows" id="dashboard-bubble-rows">
+                    <!-- Javascript will inject 5 quick rows here -->
+                  </div>
+                </div>
+                
+                <div class="omr-action-panel">
+                  <button class="primary-btn" id="dash-scan-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    Scan & Grade with AI
+                  </button>
+                  <div class="scan-status-indicator hidden" id="dash-scan-status">
+                    <div class="spinner"></div>
+                    <span>AI shadow correction...</span>
+                  </div>
+                  <div class="grading-result-alert hidden" id="dash-grading-result">
+                    <span class="result-score">Score: <strong id="dash-score-val">8/10</strong></span>
+                    <span class="result-ranking">Rank: <strong id="dash-rank-val">#4/35</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- AI Insights and Personalized Path -->
+            <div class="glass-card panel-card">
+              <div class="card-header">
+                <h3>AI Student Insight Center</h3>
+                <div class="student-select">
+                  <button class="select-btn active" data-student="aarif">Aarif</button>
+                  <button class="select-btn" data-student="samira">Samira</button>
+                  <button class="select-btn" data-student="tanvir">Tanvir</button>
+                </div>
+              </div>
+              <p class="card-desc" id="student-tagline">Showing cognitive strengths & weak areas derived from midterm OMR sheets.</p>
+              
+              <!-- Topic bars -->
+              <div class="topic-bars">
+                <div class="topic-bar-group">
+                  <div class="bar-header">
+                    <span>Algebra</span>
+                    <strong class="bar-percent" id="bar-algebra-val">62%</strong>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill amber" id="bar-algebra" style="width: 62%;"></div>
+                  </div>
+                </div>
+                
+                <div class="topic-bar-group">
+                  <div class="bar-header">
+                    <span>Geometry</span>
+                    <strong class="bar-percent" id="bar-geometry-val">88%</strong>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill blue" id="bar-geometry" style="width: 88%;"></div>
+                  </div>
+                </div>
+                
+                <div class="topic-bar-group">
+                  <div class="bar-header">
+                    <span>Trigonometry</span>
+                    <strong class="bar-percent" id="bar-trig-val">74%</strong>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill green" id="bar-trig" style="width: 74%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- AI Practice Plan Recommendation -->
+              <div class="ai-box">
+                <div class="ai-box-header">
+                  <div class="ai-stars">✨ AI Recommendation</div>
+                  <span class="badge secondary" id="insight-badge">Smart Insight</span>
+                </div>
+                <div class="ai-box-body">
+                  <p id="ai-plan-text">"12 students struggle with **algebra**. Generated tailored practice session focusing on algebraic factorisation and equations. Ready for homeroom printing."</p>
+                  <button class="text-link-btn" id="generate-pdf-plan">Print Practice Pack (PDF)</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Live Operations: Bus Tracker -->
+            <div class="glass-card panel-card">
+              <div class="card-header">
+                <h3>Transport & Fleet Operations</h3>
+                <span class="badge live">Live</span>
+              </div>
+              <p class="card-desc">Simulated tracker showing GPS positioning of school vehicles. Watch **Bus #14** transition back to campus.</p>
+              
+              <div class="live-map-container">
+                <!-- SVG animated bus route -->
+                <div class="map-graphics">
+                  <!-- Road Dotted Path -->
+                  <svg width="100%" height="150" style="position: absolute; overflow: visible;">
+                    <defs>
+                      <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#1e63f5" stop-opacity="0.1" />
+                        <stop offset="100%" stop-color="#1e63f5" stop-opacity="0.9" />
+                      </linearGradient>
+                    </defs>
+                    
+                    <!-- Dotted map roads -->
+                    <path class="map-road-bg" d="M 20,75 Q 160,10 300,90 T 580,60" fill="none" stroke="#e1e6f0" stroke-width="6" stroke-linecap="round"></path>
+                    <path class="map-road" id="bus-route-path" d="M 20,75 Q 160,10 300,90 T 580,60" fill="none" stroke="url(#routeGrad)" stroke-width="4" stroke-dasharray="8,5" stroke-linecap="round"></path>
+                    
+                    <!-- Animated bus dot -->
+                    <circle class="animated-bus-dot" id="map-bus-dot" r="8" fill="#1e63f5" filter="drop-shadow(0 4px 6px rgba(30,99,245,0.4))"></circle>
+                  </svg>
+                  
+                  <!-- Place markers overlay -->
+                  <div class="map-marker source" style="left: 10px; top: 60px;">
+                    <div class="marker-dot"></div>
+                    <span>Dhanmondi Stop</span>
+                  </div>
+                  
+                  <div class="map-marker middle" style="left: 285px; top: 75px;">
+                    <div class="marker-dot"></div>
+                    <span>Flyover Junction</span>
+                  </div>
+                  
+                  <div class="map-marker destination" style="right: 15px; top: 45px;">
+                    <div class="marker-dot animated"></div>
+                    <span>Main School Campus</span>
+                  </div>
+                  
+                  <!-- Floating tracker details card -->
+                  <div class="map-floating-overlay">
+                    <div class="overlay-row">
+                      <div class="overlay-label">ACTIVE BUS:</div>
+                      <div class="overlay-value bold">Bus #14 (Route A)</div>
+                    </div>
+                    <div class="overlay-row">
+                      <div class="overlay-label">ETA:</div>
+                      <div class="overlay-value bold green-text" id="bus-eta">5 mins</div>
+                    </div>
+                    <div class="overlay-row">
+                      <div class="overlay-label">SPEED:</div>
+                      <div class="overlay-value">34 km/h</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- SMS Alerts & Messaging Desk -->
+            <div class="glass-card panel-card">
+              <div class="card-header">
+                <h3>Parent Communication Desk</h3>
+                <span class="badge">Messaging</span>
+              </div>
+              <p class="card-desc">Instantly dispatch customized notifications to parent databases based on real-time triggers.</p>
+              
+              <div class="sms-portal-grid">
+                <div class="sms-composer">
+                  <div class="composer-field">
+                    <label for="sms-template-select">Select Template:</label>
+                    <select id="sms-template-select">
+                      <option value="attendance">Daily Absent Alert (Automatic)</option>
+                      <option value="exam">OMR Math Exam Results Published</option>
+                      <option value="fees">Invoice & Tuition Outstanding Reminders</option>
+                    </select>
+                  </div>
+                  
+                  <div class="composer-field">
+                    <label for="sms-body">Message Content Preview:</label>
+                    <textarea id="sms-body" readonly class="sms-textarea">Dear Parent, your child Aarif was absent for homeroom class at 9:00 AM on 2026-05-22. Please contact the coordinator if you have any questions.</textarea>
+                  </div>
+                  
+                  <button class="primary-btn wide" id="send-sms-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    Send Instant SMS Alert
+                  </button>
+                </div>
+                
+                <div class="sms-logs-container">
+                  <div class="logs-header">COMMUNICATION LOGGER</div>
+                  <div class="logs-body" id="sms-logs">
+                    <div class="log-entry">
+                      <span class="log-time">12:20 PM</span>
+                      <span class="log-type fees">FEE</span>
+                      <span class="log-msg">Tuition invoice auto-reminder sent to 48 parents.</span>
+                    </div>
+                    <div class="log-entry">
+                      <span class="log-time">09:15 AM</span>
+                      <span class="log-type attendance">ATTENDANCE</span>
+                      <span class="log-msg">Absentee SMS sent to Aarif's guardian (+88017******22)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </section>
+        
+        <!-- ================= FULL OMR EXAM SCANNER TAB ================= -->
+        <section id="omr-tab" class="tab-pane">
+          <div class="glass-card panel-card">
+            <div class="card-header">
+              <h2>Interactive OMR Exam Scanner Simulator</h2>
+              <span class="badge">Assessment</span>
+            </div>
+            <p class="card-desc">This tab represents a dedicated assessment control suite. Bubble in answers manually, click "Batch Grade Sheets", and observe the AI model resolve shadows, skewed angles, and ambiguous marks in real-time before publishing results.</p>
+            
+            <div class="omr-suite-layout">
+              <!-- Interactive Bubble sheet -->
+              <div class="full-bubble-sheet">
+                <div class="sheet-header">
+                  <h3>OMR ANSWER SHEET</h3>
+                  <div class="sheet-meta">
+                    <div><strong>TERM:</strong> MID-TERM EXAM</div>
+                    <div><strong>SUBJECT:</strong> MATHEMATICS (CLASS 10)</div>
+                  </div>
+                </div>
+                
+                <div class="sheet-bubble-grid" id="full-bubble-grid">
+                  <!-- Javascript will inject 15 questions here -->
+                </div>
+                
+                <div class="sheet-footer">
+                  <button class="secondary-btn" id="randomize-bubbles">Generate Random Answers</button>
+                  <button class="secondary-btn" id="clear-bubbles">Reset Sheet</button>
+                </div>
+              </div>
+              
+              <!-- Grading Side Control Panel -->
+              <div class="omr-control-panel">
+                <div class="glass-card sub-panel">
+                  <h4>AI OCR Parameters</h4>
+                  
+                  <div class="slider-control">
+                    <label>Shadow Correction Intensity: <strong>85%</strong></label>
+                    <div class="mock-slider"><div class="slider-fill" style="width: 85%;"></div></div>
+                  </div>
+                  
+                  <div class="slider-control">
+                    <label>Bubble Detection Sensitivity: <strong>92%</strong></label>
+                    <div class="mock-slider"><div class="slider-fill" style="width: 92%;"></div></div>
+                  </div>
+                  
+                  <div class="options-group">
+                    <label class="checkbox-container">
+                      <input type="checkbox" checked disabled>
+                      <span class="checkmark"></span>
+                      Auto-shadow Removal
+                    </label>
+                    <label class="checkbox-container">
+                      <input type="checkbox" checked disabled>
+                      <span class="checkmark"></span>
+                      Ambiguity Conflict Flagging
+                    </label>
+                    <label class="checkbox-container">
+                      <input type="checkbox" checked disabled>
+                      <span class="checkmark"></span>
+                      Bilingual Bangla Labels
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="glass-card sub-panel scan-action-card">
+                  <h4>Operations Execution</h4>
+                  <button class="primary-btn wide large" id="full-scan-btn">
+                    Execute Bulk AI Scan
+                  </button>
+                  
+                  <div class="scan-progress-bar hidden" id="full-scan-progress">
+                    <div class="progress-info">
+                      <span id="scan-progress-stage">Resolving skewed angles...</span>
+                      <span id="scan-progress-percent">40%</span>
+                    </div>
+                    <div class="progress-track"><div class="progress-fill" id="full-progress-fill" style="width: 40%;"></div></div>
+                  </div>
+                  
+                  <div class="detailed-results hidden" id="full-scan-results">
+                    <h4>Grading Execution Report</h4>
+                    <table class="results-table">
+                      <tr>
+                        <td>Total Questions</td>
+                        <td class="bold">15</td>
+                      </tr>
+                      <tr>
+                        <td>Correct Answers</td>
+                        <td class="bold green-text" id="correct-count">12</td>
+                      </tr>
+                      <tr>
+                        <td>Incorrect Answers</td>
+                        <td class="bold red-text" id="incorrect-count">3</td>
+                      </tr>
+                      <tr>
+                        <td>Unanswered/Flagged</td>
+                        <td class="bold amber-text" id="flagged-count">0</td>
+                      </tr>
+                      <tr class="highlight-row">
+                        <td>Grade Performance</td>
+                        <td class="bold blue-text" id="grade-percent">80.0% (A-)</td>
+                      </tr>
+                    </table>
+                    
+                    <button class="primary-btn wide secondary" id="push-sms-results-btn">
+                      Broadcast Marks via SMS
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ================= FULL AI INSIGHT TAB ================= -->
+        <section id="ai-tab" class="tab-pane">
+          <div class="glass-card panel-card">
+            <div class="card-header">
+              <h2>Cognitive AI Analytics Center</h2>
+              <span class="badge primary">AI Layer</span>
+            </div>
+            
+            <div class="ai-analytics-layout">
+              <!-- Cognitive Profiler Side -->
+              <div class="profiler-card glass-card">
+                <div class="profile-header">
+                  <div class="profile-large-avatar" id="ai-profile-avatar">AA</div>
+                  <div class="profile-title">
+                    <h3 id="ai-profile-name">Aarif Al-Masoom</h3>
+                    <span id="ai-profile-class">Class 10 · Roll #04</span>
+                  </div>
+                </div>
+                
+                <div class="cognitive-radar-visual">
+                  <!-- A beautiful geometric graphic representing cognitive skills -->
+                  <div class="radar-box">
+                    <div class="radar-circle size-3"></div>
+                    <div class="radar-circle size-2"></div>
+                    <div class="radar-circle size-1"></div>
+                    <!-- Diagonal spokes -->
+                    <div class="radar-spoke angle-1"></div>
+                    <div class="radar-spoke angle-2"></div>
+                    <div class="radar-spoke angle-3"></div>
+                    
+                    <!-- Highlighted Area Map using SVG -->
+                    <svg class="radar-poly-svg" viewBox="0 0 200 200">
+                      <polygon class="radar-poly" id="radar-poly-points" points="100,60 160,85 140,150 70,130 50,90" />
+                    </svg>
+                    
+                    <span class="radar-label label-top">Logic</span>
+                    <span class="radar-label label-right">Calculation</span>
+                    <span class="radar-label label-bottom-right">Spatial</span>
+                    <span class="radar-label label-bottom-left">Memory</span>
+                    <span class="radar-label label-left">Curiosity</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Cohort and Practice Plan Column -->
+              <div class="cohort-insights-col">
+                <div class="glass-card sub-panel">
+                  <h4>Cohort Knowledge Gap (Math Section B)</h4>
+                  <p class="small-text">Aggregated cohort vulnerabilities computed from all section midterm answer sheets.</p>
+                  
+                  <div class="gap-indicator-list">
+                    <div class="gap-item alert-high">
+                      <div class="gap-icon">⚠️</div>
+                      <div class="gap-info">
+                        <strong>Quadratics (High Risk)</strong>
+                        <span>18 students scored below 50% criteria.</span>
+                      </div>
+                      <button class="primary-btn compact generate-lesson-btn" data-topic="quadratics">Plan Lesson</button>
+                    </div>
+                    
+                    <div class="gap-item alert-medium">
+                      <div class="gap-icon">📈</div>
+                      <div class="gap-info">
+                        <strong>Trigonometric Identities</strong>
+                        <span>Class average down 8% from last term.</span>
+                      </div>
+                      <button class="primary-btn compact generate-lesson-btn" data-topic="trigonometry">Plan Lesson</button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="glass-card sub-panel ai-plan-card">
+                  <div class="ai-spark-header">
+                    <h4>✨ Dynamic AI Lesson Generator</h4>
+                    <span class="badge premium">PRO</span>
+                  </div>
+                  
+                  <div class="generator-input-row" id="gen-controls-row">
+                    <select id="lesson-topic-select">
+                      <option value="quadratics">Quadratic Equations & Roots</option>
+                      <option value="trigonometry">Trigonometric Identities & Sine Rule</option>
+                      <option value="algebra">Algebraic Polynomial Factorisation</option>
+                    </select>
+                    <button class="primary-btn" id="generate-lesson-btn">Generate Plan</button>
+                  </div>
+                  
+                  <!-- Dynamic Output panel -->
+                  <div class="generated-lesson-output" id="lesson-output-box">
+                    <div class="placeholder-msg">Select a cohort gap topic above and click generate to run the AI curriculum planner.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ================= FULL OPERATIONS TAB ================= -->
+        <section id="ops-tab" class="tab-pane">
+          <div class="glass-card panel-card">
+            <div class="card-header">
+              <h2>Operations & Campus Logistics</h2>
+              <span class="badge live">Live now</span>
+            </div>
+            
+            <div class="ops-layout-grid grid-2">
+              <div class="glass-card sub-panel">
+                <h4>Today's Real-time Attendance Console</h4>
+                <p class="card-desc">Continuous automatic synchronization with student entry gate terminals.</p>
+                
+                <div class="attendance-ring-analytics">
+                  <div class="donut-chart-box">
+                    <svg class="donut-chart" viewBox="0 0 100 100">
+                      <circle class="donut-ring" cx="50" cy="50" r="40" fill="transparent" stroke="#e1e6f0" stroke-width="8"></circle>
+                      <circle class="donut-segment" cx="50" cy="50" r="40" fill="transparent" stroke="#1e63f5" stroke-width="8" stroke-dasharray="236.8 251.2" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="donut-center">
+                      <h3>94.2%</h3>
+                      <span>Present</span>
+                    </div>
+                  </div>
+                  
+                  <div class="donut-labels">
+                    <div class="d-label">
+                      <span class="color-dot present"></span>
+                      <div>
+                        <strong>1,247 Present</strong>
+                        <span>Auto-scanned at RFID gates</span>
+                      </div>
+                    </div>
+                    
+                    <div class="d-label">
+                      <span class="color-dot absent"></span>
+                      <div>
+                        <strong>77 Absent</strong>
+                        <span>12 Parent notifications sent</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="glass-card sub-panel">
+                <h4>Live Transport Fleet Monitor</h4>
+                <p class="card-desc">Active tracking of bus routes. Parents receive alerts when buses cross 1km threshold boundaries.</p>
+                
+                <div class="transport-routes-list">
+                  <div class="route-card active">
+                    <div class="route-left">
+                      <div class="route-bus-number">BUS #14</div>
+                      <div class="route-details">
+                        <strong>Dhanmondi Express</strong>
+                        <span id="route-bus-desc">Approaching Main Campus gate.</span>
+                      </div>
+                    </div>
+                    <div class="route-right">
+                      <div class="eta-pill" id="route-eta-val">5 min</div>
+                      <span class="ping-signal"></span>
+                    </div>
+                  </div>
+                  
+                  <div class="route-card">
+                    <div class="route-left">
+                      <div class="route-bus-number inactive">BUS #08</div>
+                      <div class="route-details">
+                        <strong>Uttara Shuttler</strong>
+                        <span>Parked. Morning shifts completed.</span>
+                      </div>
+                    </div>
+                    <div class="route-right">
+                      <div class="eta-pill inactive">Offline</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ================= FULL COMMS TAB ================= -->
+        <section id="comms-tab" class="tab-pane">
+          <div class="glass-card panel-card">
+            <div class="card-header">
+              <h2>Parent-Teacher SMS Broadcasting Suite</h2>
+              <span class="badge">Communications</span>
+            </div>
+            <p class="card-desc">Trigger SMS communications across classrooms. Select recipients, load message logs, or send bulk broadcasts based on academic benchmarks.</p>
+            
+            <div class="comms-layout-grid">
+              <div class="comms-composer-side glass-card">
+                <h4>Dispatch New Broadcast</h4>
+                
+                <div class="form-row">
+                  <label>Recipient Target Group:</label>
+                  <select id="comms-recipient-select">
+                    <option value="class10">Class 10 (Guardians of 35 Students)</option>
+                    <option value="failures">Guardians of Students Scoring Below 50%</option>
+                    <option value="all">Entire Student Directory (1,247 Guardians)</option>
+                  </select>
+                </div>
+                
+                <div class="form-row">
+                  <label>Alert Title & Trigger:</label>
+                  <select id="comms-trigger-select">
+                    <option value="custom">Manual General Broadcast</option>
+                    <option value="report">Midterm Report Cards Dispatched</option>
+                    <option value="holiday">Urgent Campus Holiday Announcement</option>
+                  </select>
+                </div>
+                
+                <div class="form-row">
+                  <label>Message Content:</label>
+                  <textarea class="sms-textarea large" id="comms-sms-body">Dear Parent, we have completed scanning of Class 10 Mathematics Midterms. The digital grade cards are now accessible in your parent app portal. Average: 74.2%.</textarea>
+                </div>
+                
+                <button class="primary-btn wide large" id="comms-dispatch-btn">
+                  Launch Broadcast Queue
+                </button>
+              </div>
+              
+              <div class="comms-log-side glass-card">
+                <h4>Broadcast Queue & SMS Logs</h4>
+                <div class="comms-status-bar">
+                  <span>API Status: <strong class="green-text">CONNECTED (TeleTalk gateway)</strong></span>
+                  <span>Balance: <strong>৳2,482.40</strong></span>
+                </div>
+                
+                <div class="full-logs-list" id="comms-full-logs">
+                  <div class="log-entry">
+                    <span class="log-time">12:20 PM</span>
+                    <span class="log-type fees">FEE</span>
+                    <span class="log-msg">Outstanding tuition auto-reminders processed for 48 accounts. Delivery Rate: 100%.</span>
+                  </div>
+                  <div class="log-entry">
+                    <span class="log-time">09:15 AM</span>
+                    <span class="log-type attendance">ABSENT</span>
+                    <span class="log-msg">Class B homeroom absences dispatched to 12 guardians. Delivery Rate: 91.6%</span>
+                  </div>
+                  <div class="log-entry">
+                    <span class="log-time">Yesterday</span>
+                    <span class="log-type notice">NOTICE</span>
+                    <span class="log-msg">General SMS alert: "Sports Day Schedule Updated" sent to 1,247 accounts.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+      </div>
+      
+      <!-- Premium App Footer -->
+      <footer class="ls-footer">
+        <p>© <span id="current-year">2026</span> Learning Shaper. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <span>·</span>
+          <a href="#">Terms of Service</a>
+          <span>·</span>
+          <a href="#">Help Center</a>
+        </div>
+      </footer>
+      
+    </main>
+    
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toast-holder"></div>
+
+  <!-- Javascript Core Files -->
+  <script src="app.js" defer></script>
+</body>
+</html>

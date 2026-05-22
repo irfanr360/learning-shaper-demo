@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Shaper - Student Companion App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Smartphone Simulator Frame Wrapper -->
+  <div class="phone-container" id="phoneContainer" data-theme="dark">
+    
+    <!-- Dynamic Island notch at top of frame -->
+    <div class="phone-header-island">
+      <div class="island-camera"></div>
+      <div class="island-sensor"></div>
+    </div>
+    
+    <!-- Phone Top Status Bar -->
+    <div class="phone-status-bar">
+      <span id="statusBarTime">13:27</span>
+      <div class="status-right">
+        <!-- Cellular Signal SVGs -->
+        <svg class="status-icon" viewBox="0 0 24 24">
+          <path d="M2 22h20V2z" />
+        </svg>
+        <!-- Wifi SVG -->
+        <svg class="status-icon" viewBox="0 0 24 24">
+          <path d="M12 21c-2.97 0-5.67-1.16-7.68-3.03l1.42-1.42C7.39 18.06 9.58 19 12 19s4.61-.94 6.26-2.45l1.42 1.42C17.67 19.84 14.97 21 12 21zm0-6c-1.34 0-2.58-.51-3.52-1.34l1.42-1.42C10.45 12.65 11.18 13 12 13s1.55-.35 2.1-.76l1.42 1.42C14.58 14.49 13.34 15 12 15zm0-10C5.37 5 0 10.37 0 17h2c0-5.52 4.48-10 10-10s10 4.48 10 10h2c0-6.63-5.37-12-12-12z" />
+        </svg>
+        <!-- Battery SVG -->
+        <svg class="status-icon" viewBox="0 0 24 24">
+          <path d="M17 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm1 9h-2v2h2v-2zm0-4h-2v2h2v-2zm3 0h-2v4h2v-4z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Phone screen container -->
+    <div class="phone-screen">
+      
+      <!-- Toast Notice Queue Container -->
+      <div class="toast-container" id="toastContainer"></div>
+      
+      <!-- XP Level Up Glowing Modal Overlay -->
+      <div class="level-up-modal" id="levelUpModal">
+        <div class="level-glow-ring">
+          <div class="level-glow-inner">
+            <h2 id="levelUpModalNumber">13</h2>
+            <span>LEVEL UP</span>
+          </div>
+        </div>
+        <h1 class="level-up-title">CONGRATULATIONS!</h1>
+        <p class="level-up-subtitle">You have successfully mastered basic quadratics and reached Level 13! New Algebra master badges have been unlocked in your profile.</p>
+        <button class="level-up-btn" id="levelUpCloseBtn">Claim Rewards</button>
+      </div>
+
+      <!-- Payment Success Receipt overlay -->
+      <div class="receipt-success-card" id="receiptSuccessCard">
+        <div class="success-icon-badge">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <h3>Payment Successful</h3>
+        <p>Your outstanding school tuition fees have been securely settled.</p>
+        
+        <div class="receipt-details-list">
+          <div class="receipt-row">
+            <label>Transaction ID</label>
+            <span id="receiptTxn">LS-BK-928472</span>
+          </div>
+          <div class="receipt-row">
+            <label>Payment Method</label>
+            <span id="receiptMethod">bKash (MFS)</span>
+          </div>
+          <div class="receipt-row">
+            <label>Paid For</label>
+            <span>May 2026 Tuition Dues</span>
+          </div>
+          <div class="receipt-row">
+            <label>Total Amount</label>
+            <span>৳3,500</span>
+          </div>
+        </div>
+        <button class="receipt-close-btn" id="receiptCloseBtn">Return to Dashboard</button>
+      </div>
+
+      <!-- Tuition Checkout simulator drawer -->
+      <div class="payment-modal" id="paymentModal">
+        <div class="payment-sheet">
+          <div class="sheet-header">
+            <h3>Secure Tuition Payment</h3>
+            <button class="sheet-close-btn" id="paymentModalClose">
+              <svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="gateway-options">
+            <div class="gateway-btn active" id="gatebKash" onclick="selectGateway('bKash')">
+              <img src="https://logowik.com/content/uploads/images/bkash-bangladesh8693.logowik.com.webp" alt="bKash" onerror="this.src='https://opn.ooo/assets/images/bkash.png'; this.onerror=null;">
+            </div>
+            <div class="gateway-btn" id="gateNagad" onclick="selectGateway('Nagad')">
+              <img src="https://logowik.com/content/uploads/images/nagad9661.logowik.com.webp" alt="Nagad" onerror="this.src='https://opn.ooo/assets/images/nagad.png'; this.onerror=null;">
+            </div>
+            <div class="gateway-btn" id="gateRocket" onclick="selectGateway('Rocket')">
+              <img src="https://logowik.com/content/uploads/images/dutch-bangla-bank-dbbl5505.logowik.com.webp" alt="Rocket" onerror="this.src='https://opn.ooo/assets/images/rocket.png'; this.onerror=null;">
+            </div>
+          </div>
+
+          <div class="gateway-form-row">
+            <label id="phoneInputLabel">bKash Account Number</label>
+            <input type="tel" class="gateway-input" id="paymentPhone" placeholder="017XXXXXXXX" value="01712345678">
+          </div>
+          <div class="gateway-form-row">
+            <label>Enter 4-5 Digit PIN</label>
+            <input type="password" class="gateway-input" id="paymentPin" placeholder="••••" value="1234">
+          </div>
+
+          <button class="pay-execute-btn" id="payExecuteBtn">Confirm Payment (৳3,500)</button>
+        </div>
+      </div>
+
+      <!-- Floating Voice Assistant Dialog -->
+      <div class="chat-assistant-overlay" id="chatAssistantOverlay">
+        <div class="chat-header">
+          <div class="chat-title-info">
+            <div class="chat-header-avatar">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              </svg>
+            </div>
+            <div>
+              <h3>AI Tutor & Voice Assistant</h3>
+              <p>Online & Listening</p>
+            </div>
+          </div>
+          <button class="sheet-close-btn" id="chatAssistantClose">
+            <svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="chat-body-messages" id="chatBodyMessages">
+          <div class="chat-msg bot">
+            Hello Aarif! I am your personal Learning Shaper AI assistant. Feel free to ask me any math doubts or speak your questions using the microphone button below.
+          </div>
+          <div class="chat-msg bot">
+            Tip: You can ask: "How do I factorize quadratic equations?" or "Explain question 5 on the midterm exam".
+          </div>
+        </div>
+
+        <div class="chat-input-row">
+          <!-- Text Input -->
+          <input type="text" class="chat-input-box" id="chatInput" placeholder="Ask a question or request hint...">
+          
+          <!-- Pulsing Audio Wave Visualizer while recording -->
+          <div class="voice-wave-container" id="voiceWaveContainer">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+
+          <!-- Micro Voice Recording trigger -->
+          <button class="chat-voice-btn" id="chatVoiceBtn">
+            <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+            </svg>
+          </button>
+          
+          <!-- Send message button -->
+          <button class="chat-send-btn" id="chatSendBtn">
+            <svg viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Core Scrolling Screen Workspace -->
+      <div class="app-content">
+        
+        <!-- Header -->
+        <div class="app-header">
+          <div class="app-logo">Learning Shaper</div>
+          <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+            <!-- Moon Icon by default -->
+            <svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2" viewBox="0 0 24 24" id="themeIcon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Student Profile Card widget -->
+        <div class="profile-card">
+          <div class="profile-avatar-row">
+            <div class="avatar-wrapper">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Aarif Al-Masoom" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
+              <div class="avatar-badge" id="avatarLevelBadge">12</div>
+            </div>
+            <div class="student-info">
+              <h3>Aarif Al-Masoom</h3>
+              <p>
+                <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84a50.58 50.58 0 00-2.657.814m-15.482 0l2.902-1.397m12.58 1.397L17 8.75M12 11.25a3 3 0 100-6 3 3 0 000 6c0 1.62-.647 3.093-1.697 4.197L12 16.5l1.697-1.053C12.647 14.343 12 12.87 12 11.25z" />
+                </svg>
+                Level 12 Math Scholar (St. Gregory)
+              </p>
+            </div>
+          </div>
+          
+          <div class="xp-row">
+            <div class="xp-labels">
+              <span>XP Progression</span>
+              <span id="xpTextIndicator">850 / 1000 XP</span>
+            </div>
+            <div class="xp-bar-outer">
+              <div class="xp-bar-inner" id="xpProgressFill" style="width: 85%"></div>
+            </div>
+          </div>
+          
+          <div class="badges-mini-list">
+            <div class="mini-badge">🔥 5 Day Streak</div>
+            <div class="mini-badge">📐 Trig Wizard</div>
+            <div class="mini-badge">📝 OMR Master</div>
+          </div>
+        </div>
+
+        <!-- ========================================================================
+             TAB 1: HOME PANEL
+             ======================================================================== -->
+        <div class="tab-content-panel active" id="tab-home">
+          <!-- Adaptive Learning Path widget -->
+          <div class="glass-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(217, 70, 239, 0.08)); border-color: rgba(139, 92, 246, 0.25);">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" style="stroke: #d946ef">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48z" />
+              </svg>
+              Adaptive Study Goal
+            </div>
+            <p style="font-size:12px; line-height:1.5; color: var(--text-main); font-weight: 500;">
+              Our AI analysis indicates you have a strong understanding of **Trigonometry** (88%) but need reinforcement in **Algebra (Quadratics)** (45%).
+            </p>
+            <div style="margin-top: 10px; padding: 10px; background: rgba(139, 92, 246, 0.1); border-radius: 12px; font-size:11px; font-weight:700; color:var(--accent-color)">
+              🎯 Target: Complete 3 drills in Quadratics to earn +150 XP & unlock Level 13!
+            </div>
+          </div>
+
+          <!-- Milestones and Goals tracker (Interactive) -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Weekly Milestones
+            </div>
+            <div class="milestones-list">
+              <div class="milestone-item completed" onclick="toggleMilestone(this, 0)">
+                <div class="milestone-checkbox"></div>
+                <span class="milestone-text">Inspect Math Midterm OMR results</span>
+                <span class="milestone-reward">+30 XP</span>
+              </div>
+              <div class="milestone-item" id="milestoneDrill" onclick="toggleMilestone(this, 50)">
+                <div class="milestone-checkbox"></div>
+                <span class="milestone-text">Settle Outstanding tuition fees</span>
+                <span class="milestone-reward">+50 XP</span>
+              </div>
+              <div class="milestone-item" id="milestoneMath" onclick="toggleMilestone(this, 100)">
+                <div class="milestone-checkbox"></div>
+                <span class="milestone-text">Finish Algebra Drills in AI Practice</span>
+                <span class="milestone-reward">+100 XP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pure-CSS Visual Stats / Cognitive Radar Simulator -->
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+              </svg>
+              Cognitive Strengths
+            </div>
+            
+            <div class="skill-bar-row">
+              <div class="skill-bar-info">
+                <span>Trigonometry & Geometry</span>
+                <span>88% (Proficient)</span>
+              </div>
+              <div class="skill-bar-outer">
+                <div class="skill-bar-inner" style="width: 88%; background: var(--success-color);"></div>
+              </div>
+            </div>
+
+            <div class="skill-bar-row">
+              <div class="skill-bar-info">
+                <span>Physics & General Sciences</span>
+                <span>76% (Stable)</span>
+              </div>
+              <div class="skill-bar-outer">
+                <div class="skill-bar-inner" style="width: 76%; background: var(--accent-color);"></div>
+              </div>
+            </div>
+
+            <div class="skill-bar-row">
+              <div class="skill-bar-info">
+                <span>Algebra & Polynomials</span>
+                <span>45% (Needs Practice)</span>
+              </div>
+              <div class="skill-bar-outer">
+                <div class="skill-bar-inner" style="width: 45%; background: var(--error-color);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================
+             TAB 2: EXAMS PANEL (OMR Review)
+             ======================================================================== -->
+        <div class="tab-content-panel" id="tab-exams">
+          
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Maths Term Midterm Review
+            </div>
+            
+            <!-- Midterm Summary -->
+            <div class="exam-header">
+              <div class="exam-info">
+                <h4>Mathematics (Theory + OMR)</h4>
+                <p>Scanned on May 18, 2026</p>
+              </div>
+              <div class="exam-badge-score">12/15</div>
+            </div>
+
+            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+              You answered **12 questions correctly** out of 15. The digital carbon scanner detected two missed marks and one incorrect bubble. Click below to inspect your sheet.
+            </p>
+
+            <!-- Digital OMR Inspector bubble grid -->
+            <div class="omr-sheet-inspector">
+              <div class="omr-grid-header">
+                <span>Q#</span>
+                <div style="display:flex; justify-content:space-between; padding-right:10px; width:100%">
+                  <span>[ A ]</span>
+                  <span>[ B ]</span>
+                  <span>[ C ]</span>
+                  <span>[ D ]</span>
+                </div>
+              </div>
+              
+              <!-- Row 1: Correct (B) -->
+              <div class="omr-question-row">
+                <span class="omr-num">Q1</span>
+                <div class="omr-bubbles">
+                  <div class="bubble">A</div>
+                  <div class="bubble correct">B</div>
+                  <div class="bubble">C</div>
+                  <div class="bubble">D</div>
+                </div>
+              </div>
+
+              <!-- Row 2: Incorrect marked A, correct was C -->
+              <div class="omr-question-row">
+                <span class="omr-num">Q2</span>
+                <div class="omr-bubbles">
+                  <div class="bubble incorrect">A</div>
+                  <div class="bubble">B</div>
+                  <div class="bubble missed-correct">C</div>
+                  <div class="bubble">D</div>
+                </div>
+              </div>
+
+              <!-- Row 3: Correct (A) -->
+              <div class="omr-question-row">
+                <span class="omr-num">Q3</span>
+                <div class="omr-bubbles">
+                  <div class="bubble correct">A</div>
+                  <div class="bubble">B</div>
+                  <div class="bubble">C</div>
+                  <div class="bubble">D</div>
+                </div>
+              </div>
+
+              <!-- Row 4: Correct (D) -->
+              <div class="omr-question-row">
+                <span class="omr-num">Q4</span>
+                <div class="omr-bubbles">
+                  <div class="bubble">A</div>
+                  <div class="bubble">B</div>
+                  <div class="bubble">C</div>
+                  <div class="bubble correct">D</div>
+                </div>
+              </div>
+
+              <!-- Row 5: Unmarked correctly shown missed in D -->
+              <div class="omr-question-row">
+                <span class="omr-num">Q5</span>
+                <div class="omr-bubbles">
+                  <div class="bubble">A</div>
+                  <div class="bubble">B</div>
+                  <div class="bubble">C</div>
+                  <div class="bubble missed-correct">D</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recheck drawer workflow trigger -->
+            <button class="recheck-btn" id="recheckBtn">
+              <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              File Re-evaluation Request
+            </button>
+            <div class="recheck-status-badge" id="recheckStatusBadge">
+              ⏳ Request Status: Pending Coordinator Verification
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================
+             TAB 3: AI PRACTICE (Quizzes, XP, Leaderboard)
+             ======================================================================== -->
+        <div class="tab-content-panel" id="tab-practice">
+          <!-- Canvas for celebratory Confetti overlays inside smartphone screen boundary -->
+          <canvas id="confetti-canvas"></canvas>
+
+          <!-- Adaptive difficulty selector triggers -->
+          <div class="difficulty-selector">
+            <button class="diff-btn active" id="diffEasy" onclick="setQuizDifficulty('easy')">Easy</button>
+            <button class="diff-btn" id="diffMedium" onclick="setQuizDifficulty('medium')">Medium</button>
+            <button class="diff-btn" id="diffHard" onclick="setQuizDifficulty('hard')">Hard</button>
+          </div>
+
+          <!-- Dynamic Algebra Math drill practice card -->
+          <div class="practice-card">
+            <div class="question-meta">
+              <span id="quizDifficultyBadge">QUADRATICS • EASY</span>
+              <span id="quizProgressNum">Q 1 of 3</span>
+            </div>
+            
+            <div class="question-text" id="quizQuestionText">
+              Factorize the polynomial expression completely:<br>
+              <strong>x² - 5x + 6 = 0</strong>. What are the roots?
+            </div>
+            
+            <div class="options-list" id="quizOptionsList">
+              <button class="option-btn" onclick="selectQuizOption(this, 0)">A)  x = 1, x = 6</button>
+              <button class="option-btn" onclick="selectQuizOption(this, 1)">B)  x = 2, x = 3</button>
+              <button class="option-btn" onclick="selectQuizOption(this, 2)">C)  x = -2, x = -3</button>
+              <button class="option-btn" onclick="selectQuizOption(this, 3)">D)  x = 5, x = -6</button>
+            </div>
+
+            <!-- Quiz Explanations / Feedback panel -->
+            <div class="drill-feedback" id="drillFeedbackPanel">
+              Lorem ipsum feedback correct explain.
+            </div>
+
+            <!-- Practice Hints drawer trigger -->
+            <div class="practice-action-row">
+              <button class="hint-btn" id="quizHintBtn" aria-label="Toggle Hint">
+                <svg viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 2.25h.008v.008H12v-.008zm0-10.5h.008v.008H12V4.5L12 9" />
+                </svg>
+              </button>
+              <button class="submit-quiz-btn" id="submitQuizBtn">Submit Answer</button>
+            </div>
+            
+            <div class="hint-bubble" id="quizHintBubble">
+              💡 <strong>AI Hint:</strong> Remember, you are looking for two numbers that multiply to +6 (constant term) and add up to -5 (middle term). Since they multiply to a positive but add to a negative, both roots must be positive values!
+            </div>
+          </div>
+
+          <!-- Gamified Peer Classroom leaderboard -->
+          <div class="glass-card" style="margin-top:20px">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.75a1.125 1.125 0 01-1.125-1.125V13.5m.75-12h2.25a2.25 2.25 0 012.25 2.25V7.5a2.25 2.25 0 01-2.25 2.25h-.75a1.125 1.125 0 01-1.125-1.125V1.5z" />
+              </svg>
+              Classroom Leaderboard
+            </div>
+            <div class="leaderboard-list">
+              <div class="leader-item">
+                <span class="leader-rank">🥇</span>
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=128&auto=format&fit=crop" class="leader-avatar" alt="Samira">
+                <span class="leader-name">Samira Sultana</span>
+                <span class="leader-xp">1,240 XP</span>
+              </div>
+              <div class="leader-item">
+                <span class="leader-rank">🥈</span>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=128&auto=format&fit=crop" class="leader-avatar" alt="Tanvir">
+                <span class="leader-name">Tanvir Ahmed</span>
+                <span class="leader-xp">1,020 XP</span>
+              </div>
+              <div class="leader-item highlight">
+                <span class="leader-rank">4th</span>
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" class="leader-avatar" alt="Aarif">
+                <span class="leader-name">Aarif Al-Masoom (You)</span>
+                <span class="leader-xp" id="leaderboardXpText">850 XP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================
+             TAB 4: TRANSPORT PANEL (Stops & Real-time vehicle lines)
+             ======================================================================== -->
+        <div class="tab-content-panel" id="tab-transport">
+          <div class="transport-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177V18.75m0-11.177L12 3.75m0 0l-3 3m3-3v15" />
+              </svg>
+              School Transport Bus #14
+            </div>
+
+            <!-- ETA visual pulsing -->
+            <div class="bus-eta-circle-box">
+              <div class="eta-loader">
+                <div class="eta-pulse-glowing"></div>
+                <div class="eta-pulse-inner"></div>
+                <span class="eta-time-text" id="busEtaText">08</span>
+              </div>
+              <div class="eta-details">
+                <h4>Approaching Dhanmondi Stop</h4>
+                <p id="busSubEtaText">Estimated arrival in 8 mins</p>
+              </div>
+            </div>
+
+            <!-- Bus Route Dotted SVG Track crawl mapping -->
+            <div class="route-map-box">
+              <div class="route-progress-line"></div>
+              <div class="route-progress-fill" id="busRouteProgressFill" style="width: 40%"></div>
+              
+              <!-- Stop indicators -->
+              <div class="route-stop-point passed" style="left: 10%"></div>
+              <div class="route-stop-label" style="left: 10%">Science Lab</div>
+
+              <div class="route-stop-point passed" style="left: 40%"></div>
+              <div class="route-stop-label" style="left: 40%">City College</div>
+
+              <div class="route-stop-point destination" style="left: 85%"></div>
+              <div class="route-stop-label" style="left: 85%; color: var(--warning-color)">Dhanmondi</div>
+
+              <!-- Bus tracking icon marker -->
+              <div class="route-bus-marker" id="busRouteMarker" style="left: 40%">
+                <svg viewBox="0 0 24 24">
+                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H6.5c-.66 0-1.21.42-1.42.99L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 6h11l1.39 4H5.11L6.5 6zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================
+             TAB 5: TUITION PANEL (Outstanding Billing)
+             ======================================================================== -->
+        <div class="tab-content-panel" id="tab-tuition">
+          <div class="glass-card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+              </svg>
+              Billing & School Dues
+            </div>
+            
+            <div class="dues-list">
+              <div class="due-item-box" id="tuitionDueItem">
+                <div class="due-details">
+                  <h4>May 2026 Academic Dues</h4>
+                  <p>Deadline: May 28, 2026 • Status: UNPAID</p>
+                </div>
+                <div class="due-amount" id="tuitionDueAmountText">৳3,500</div>
+              </div>
+            </div>
+
+            <!-- Trigger checkout simulator drawer modal -->
+            <button class="checkout-trigger-btn" id="payTuitionBtn">Pay Outstanding Tuition</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Floating Voice Assistant activation button -->
+      <button class="voice-assistant-fab" id="voiceAssistantFab" aria-label="Ask AI Assistant">
+        <svg viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+        </svg>
+      </button>
+
+      <!-- Floating bottom tab navigation bar -->
+      <div class="bottom-nav-bar">
+        <div class="nav-item active" onclick="switchTab('home')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+          </svg>
+          Home
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('exams')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Exams
+        </div>
+
+        <div class="nav-item" onclick="switchTab('practice')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+          AI Practice
+        </div>
+
+        <div class="nav-item" onclick="switchTab('transport')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8m-6-4.5h.008v.008H9V10.5zm6 2.25h.008v.008H15v-.008zM3.75 18h16.5a1.5 1.5 0 001.5-1.5V6.75A1.5 1.5 0 0020.25 5.25H3.75A1.5 1.5 0 002.25 6.75v9.75A1.5 1.5 0 003.75 18z" />
+          </svg>
+          Bus
+        </div>
+
+        <div class="nav-item" onclick="switchTab('tuition')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+          </svg>
+          Tuition
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
