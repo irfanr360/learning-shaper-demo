@@ -244,11 +244,21 @@
                 <div class="roster-info-row">
                   <div class="roster-avatar">AM</div>
                   <div class="roster-details">
-                    <h4>Aarif Al-Masoom</h4>
+                    <h4 style="display:flex; align-items:center; gap:6px;">
+                      <span>Aarif Al-Masoom</span>
+                      <span id="teacherRosterFocusFlame" style="display:none; font-size:12px; filter: drop-shadow(0 0 4px #ef4444); animation: flamePulse 1s infinite alternate;" title="Study Focus Active">🔥</span>
+                    </h4>
                     <p>Roll: 05 • Grade 8-C</p>
                   </div>
                   <div class="roster-grade-badge critical">68%</div>
                 </div>
+                
+                <style>
+                  @keyframes flamePulse {
+                    0% { transform: scale(0.9); filter: drop-shadow(0 0 2px #ef4444); }
+                    100% { transform: scale(1.15); filter: drop-shadow(0 0 6px #f59e0b); }
+                  }
+                </style>
                 <div class="roster-metric-bar">
                   <div class="metric-bar-label">Algebra Mastery: <span class="critical-text">45%</span></div>
                   <div class="metric-bar-outer"><div class="metric-bar-inner critical" style="width: 45%"></div></div>

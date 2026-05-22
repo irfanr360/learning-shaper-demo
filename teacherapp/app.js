@@ -20,6 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial OMR sheet template
   loadStudentOMRTemplate("aarif");
+
+  // Setup Teacher Focus Badge Sync
+  setupTeacherFocusBadge();
 });
 
 /* ========================================================================
@@ -975,4 +978,43 @@ function escapeHTML(str) {
       '"': '&quot;'
     }[tag] || tag)
   );
+}
+
+/* ========================================================================
+   TEACHER COMPANION POMODORO SYNC
+   ======================================================================== */
+function setupTeacherFocusBadge() {
+  const updateFlameUI = (activity) => {
+    const flame = document.getElementById("teacherRosterFocusFlame");
+    if (!flame) return;
+
+    if (activity && activity.isRunning && activity.mode === 'work') {
+      flame.style.display = "inline-block";
+    } else {
+      flame.style.display = "none";
+    }
+  };
+
+  // Initial check
+  const rawActivity = localStorage.getItem("student_pomodoro_activity");
+  if (rawActivity) {
+    try {
+      updateFlameUI(JSON.parse(rawActivity));
+    } catch (e) {
+      updateFlameUI(null);
+    }
+  } else {
+    updateFlameUI(null);
+  }
+
+  // Real-time synchronization via storage event listener
+  window.addEventListener("storage", (e) => {
+    if (e.key === "student_pomodoro_activity") {
+      try {
+        updateFlameUI(JSON.parse(e.newValue));
+      } catch (err) {
+        updateFlameUI(null);
+      }
+    }
+  });
 }

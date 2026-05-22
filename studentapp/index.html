@@ -884,6 +884,125 @@
           </div>
         </div>
 
+        <!-- ========================================================================
+             7. POMODORO FOCUS TIMER TAB PANEL
+             ======================================================================== -->
+        <div class="tab-content-panel" id="tab-focus">
+          <!-- Circular Timer Ring Frame -->
+          <div class="focus-timer-deck glass-card">
+            <!-- Mode Switcher Pills -->
+            <div class="focus-mode-switcher">
+              <span class="focus-mode-chip active" id="pomodoroModeWork" onclick="switchPomodoroMode('work')">Work</span>
+              <span class="focus-mode-chip" id="pomodoroModeShort" onclick="switchPomodoroMode('short')">Short Break</span>
+              <span class="focus-mode-chip" id="pomodoroModeLong" onclick="switchPomodoroMode('long')">Long Break</span>
+            </div>
+
+            <!-- SVG Circular Countdown Container -->
+            <div class="timer-visual-wrapper">
+              <svg class="timer-ring-svg" viewBox="0 0 200 200">
+                <!-- Track ring -->
+                <circle class="timer-ring-track" cx="100" cy="100" r="88" />
+                <!-- Fill ring -->
+                <circle class="timer-ring-fill" id="timerRingFillCircle" cx="100" cy="100" r="88" stroke-dasharray="552.92" stroke-dashoffset="0" />
+              </svg>
+              <!-- Center countdown text values -->
+              <div class="timer-countdown-text">
+                <span class="timer-time-display" id="pomodoroTimeDisplay">25:00</span>
+                <span class="timer-status-display" id="pomodoroStatusLabel">STAY FOCUSED</span>
+              </div>
+            </div>
+
+            <!-- Focus Session Task Assocation -->
+            <div class="focus-task-select-box">
+              <label for="pomodoroTaskSelect" class="focus-label">🎯 ASSOCIATED STUDY MILESTONE</label>
+              <select class="focus-select" id="pomodoroTaskSelect" onchange="updatePomodoroActiveTask(this.value)">
+                <option value="">-- Select Active Goal --</option>
+                <option value="Complete Algebra quadratics diagnostic check">Complete Algebra quadratics check</option>
+                <option value="Forces & Velocity Vectors PrepCast study">Forces & Velocity Vectors PrepCast</option>
+                <option value="Newtonian Gravity physics revision">Newtonian Gravity physics revision</option>
+                <option value="Organic Chemistry molecular valency study">Organic Chemistry valency study</option>
+                <option value="Tuition Fee bkash receipt settlement">Settle tuition fees</option>
+              </select>
+              <div class="focus-active-task-desc" id="pomodoroActiveTaskDisplay">Select a milestone to lock in focus mode.</div>
+            </div>
+
+            <!-- Soundscape Ambient Mixer -->
+            <div class="focus-soundscape-box">
+              <span class="focus-label">🎵 DYNAMIC AMBIENT SOUNDSCAPE</span>
+              <div class="soundscape-chips-row">
+                <button class="sound-chip active" id="soundChip_off" onclick="togglePomodoroSoundscape('off')">🔇 Off</button>
+                <button class="sound-chip" id="soundChip_rain" onclick="togglePomodoroSoundscape('rain')">🌧️ Rain</button>
+                <button class="sound-chip" id="soundChip_waves" onclick="togglePomodoroSoundscape('waves')">🌊 Waves</button>
+                <button class="sound-chip" id="soundChip_hum" onclick="togglePomodoroSoundscape('hum')">🧘 Hum</button>
+              </div>
+            </div>
+
+            <!-- Controls Group -->
+            <div class="focus-controls-row">
+              <button class="focus-btn-primary" id="pomodoroStartBtn" onclick="togglePomodoroTimer()">Start Focus</button>
+              <button class="focus-btn-secondary" onclick="resetPomodoroTimer()">Reset</button>
+            </div>
+
+            <!-- Demo Speed / Fast-forward Toggle -->
+            <div class="demo-speed-row">
+              <label class="demo-switch-label" for="pomodoroDemoSpeedCheckbox">
+                <input type="checkbox" id="pomodoroDemoSpeedCheckbox" onchange="togglePomodoroDemoSpeed(this.checked)">
+                <span class="demo-switch-text">⚡ Fast-Forward Demo (1s = 1m)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Stats Dashboard Grid -->
+          <div class="focus-stats-grid">
+            <div class="focus-stats-card glass-card">
+              <span class="stats-label">🔥 DAILY STREAK</span>
+              <h3 id="pomodoroStreakDisplay">3 Days</h3>
+              <p style="font-size:8px; color:var(--text-muted);">Keep it up Aarif!</p>
+            </div>
+            <div class="focus-stats-card glass-card">
+              <span class="stats-label">⏱️ TOTAL FOCUS</span>
+              <h3 id="pomodoroTotalMinutesDisplay">75 mins</h3>
+              <p style="font-size:8px; color:var(--text-muted);">Focused study time</p>
+            </div>
+            <div class="focus-stats-card glass-card" style="grid-column: span 2;">
+              <span class="stats-label">🎯 COMPLETED SESSIONS</span>
+              <div class="pomodoro-dots-row" id="pomodoroCompletedDotsRow">
+                <!-- Completed session circles injected here -->
+                <span class="pomo-dot done"></span>
+                <span class="pomo-dot done"></span>
+                <span class="pomo-dot done"></span>
+                <span class="pomo-dot"></span>
+                <span class="pomo-dot"></span>
+              </div>
+              <p style="font-size:8px; color:var(--text-muted); margin-top: 4px;" id="pomodoroSessionsFraction">3 of 5 completed today (+25 XP per session)</p>
+            </div>
+          </div>
+
+          <!-- Personalized Focus Coach Insights -->
+          <div class="focus-coach-card glass-card">
+            <div class="coach-header">
+              <span class="coach-avatar">🤖</span>
+              <span class="coach-title">AI COGNITIVE FOCUS COACH</span>
+            </div>
+            <p class="coach-tip-text" id="pomodoroCoachTipText">"Welcome Aarif! Choose an active learning milestone, pick a synthesized focus soundscape to drown out environmental distractions, and let's lock in!"</p>
+          </div>
+        </div>
+
+        <!-- Fullscreen Anti-Distraction Focus Lockdown Screen -->
+        <div class="focus-lockdown-screen" id="focusLockdownScreen" style="display:none;">
+          <div class="lockdown-content">
+            <div class="lockdown-spinner">
+              <div class="double-bounce1"></div>
+              <div class="double-bounce2"></div>
+            </div>
+            <h2 class="lockdown-title">FOCUS MODE ACTIVE</h2>
+            <p class="lockdown-task" id="lockdownActiveTaskText">Concentrating on: Complete Algebra quadratics check</p>
+            <div class="lockdown-timer" id="lockdownTimerDisplay">25:00</div>
+            <p class="lockdown-prompt" id="lockdownBreathingPrompt">Focus lockdown active. Deep breaths...</p>
+            <button class="lockdown-abort-btn" onclick="abortPomodoroFocus()">Exit Focus Session</button>
+          </div>
+        </div>
+
       </div>
 
       <!-- Floating Voice Assistant activation button -->
@@ -921,6 +1040,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
           </svg>
           PrepCast
+        </div>
+
+        <div class="nav-item" onclick="switchTab('focus')">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Focus
         </div>
 
         <div class="nav-item" onclick="switchTab('transport')">

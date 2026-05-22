@@ -796,9 +796,125 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= PRODUCTIVITY & FOCUS ANALYTICS SYNC =================
+  function initDashboardProductivity() {
+    const updateProductivityUI = (activity) => {
+      const activeCount = document.getElementById("dashActiveFocusCount");
+      const pulseDot = document.getElementById("dashFocusPulseDot");
+      const activeRow = document.getElementById("dashActiveStudentRow");
+      const placeholder = document.getElementById("dashActiveStudentsPlaceholder");
+      const lockdownBadge = document.getElementById("dashLockdownBadge");
+      const studentTask = document.getElementById("dashActiveStudentTask");
+      const timeText = document.getElementById("dashFocusTimeText");
+      const ringOffset = document.getElementById("dashFocusRingOffset");
+      const studentStatus = document.getElementById("dashActiveStudentStatus");
+      const focusHours = document.getElementById("dashFocusHours");
+      const focusStreak = document.getElementById("dashFocusStreak");
+
+      // Update general KPIs based on activity
+      if (activity) {
+        // School-Wide Hours: Base 248.5 + Aarif's minutes
+        if (focusHours) {
+          const baseHours = 248.5;
+          const extraMins = activity.totalMinutes || 0;
+          const totalHrs = (baseHours + extraMins / 60).toFixed(1);
+          const hrsSpan = focusHours.querySelector("span");
+          if (hrsSpan) hrsSpan.textContent = `${totalHrs} hrs`;
+        }
+        // Focus Streak
+        if (focusStreak) {
+          const streak = activity.streak || 5;
+          focusStreak.textContent = `${Math.max(5.4, streak)} Days`;
+        }
+      }
+
+      // Handle focus lockdown state visualization
+      if (activity && activity.isRunning) {
+        if (activity.mode === "work") {
+          if (activeCount) activeCount.textContent = "1";
+          if (pulseDot) pulseDot.style.display = "inline-block";
+          if (activeRow) activeRow.style.display = "flex";
+          if (placeholder) placeholder.style.display = "none";
+          if (lockdownBadge) lockdownBadge.style.display = "inline-block";
+          if (studentTask) studentTask.textContent = `Task: ${activity.activeTask || "Syllabus Prep Session"}`;
+          if (studentStatus) {
+            studentStatus.textContent = "Work Session";
+            studentStatus.style.background = "rgba(239, 68, 68, 0.15)";
+            studentStatus.style.color = "#ef4444";
+            studentStatus.style.borderColor = "rgba(239, 68, 68, 0.25)";
+          }
+        } else {
+          // Break mode
+          if (activeCount) activeCount.textContent = "0";
+          if (pulseDot) pulseDot.style.display = "none";
+          if (activeRow) activeRow.style.display = "flex";
+          if (placeholder) placeholder.style.display = "none";
+          if (lockdownBadge) lockdownBadge.style.display = "none";
+          if (studentTask) {
+            studentTask.textContent = activity.mode === "short" ? "Resting: Short Break" : "Resting: Long Break";
+          }
+          if (studentStatus) {
+            studentStatus.textContent = activity.mode === "short" ? "Short Break" : "Long Break";
+            studentStatus.style.background = "rgba(16, 185, 129, 0.15)";
+            studentStatus.style.color = "#10b981";
+            studentStatus.style.borderColor = "rgba(16, 185, 129, 0.25)";
+          }
+        }
+
+        // Format ticking countdown time
+        if (timeText) {
+          let mins = Math.floor(activity.secondsLeft / 60);
+          let secs = activity.secondsLeft % 60;
+          mins = mins < 10 ? "0" + mins : mins;
+          secs = secs < 10 ? "0" + secs : secs;
+          timeText.textContent = `${mins}:${secs}`;
+        }
+
+        // Animate circular ring offset
+        if (ringOffset) {
+          const totalSecs = activity.totalSeconds || 1500;
+          const pct = activity.secondsLeft / totalSecs;
+          const offset = 100.53 * (1 - pct);
+          ringOffset.style.strokeDashoffset = offset;
+        }
+      } else {
+        // Idle/Stopped state
+        if (activeCount) activeCount.textContent = "0";
+        if (pulseDot) pulseDot.style.display = "none";
+        if (activeRow) activeRow.style.display = "none";
+        if (placeholder) placeholder.style.display = "block";
+        if (lockdownBadge) lockdownBadge.style.display = "none";
+      }
+    };
+
+    // Initial check
+    const raw = localStorage.getItem("student_pomodoro_activity");
+    if (raw) {
+      try {
+        updateProductivityUI(JSON.parse(raw));
+      } catch (e) {
+        updateProductivityUI(null);
+      }
+    } else {
+      updateProductivityUI(null);
+    }
+
+    // Real-time synchronization
+    window.addEventListener("storage", (e) => {
+      if (e.key === "student_pomodoro_activity") {
+        try {
+          updateProductivityUI(JSON.parse(e.newValue));
+        } catch (err) {
+          updateProductivityUI(null);
+        }
+      }
+    });
+  }
+
   // ================= INITIALIZATION EXECUTION =================
   initDashboardOMR();
   initFullOMR();
   initDashboardPrepCast();
+  initDashboardProductivity();
 
 });

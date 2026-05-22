@@ -119,6 +119,58 @@
             </p>
           </div>
 
+          <!-- 7.2 Pomodoro Focus Monitor Card -->
+          <div class="glass-card" id="parentFocusMonitorCard" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.08)); border-color: rgba(245, 158, 11, 0.25); display: block; text-align: left; padding: 16px; border-radius: 16px; margin-bottom: 20px;">
+            <div class="card-title" style="color: var(--accent-gold); display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 8px;">
+              <span style="display:flex; align-items:center; gap:6px;">
+                <span class="live-pulse-ring" id="parentFocusPulseRing" style="width: 8px; height: 8px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 8px #fbbf24; animation: livePulseParent 2s infinite"></span>
+                <span>⏱️ Aarif's Live Study Focus</span>
+              </span>
+              <span class="focus-status-badge" id="parentFocusStatusBadge" style="font-size: 8px; padding: 2px 6px; border-radius: 8px; background: rgba(239, 68, 68, 0.2); color: #f87171; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Idle Mode</span>
+            </div>
+            
+            <p class="section-desc" style="margin-top: 4px; font-size: 9.5px; color: var(--text-muted); line-height: 1.35; margin-bottom: 12px;">Supervise Aarif's deep learning session in real-time. Cheering nudges keep his motivation locked in!</p>
+            
+            <div style="display: flex; gap: 16px; align-items: center; margin: 12px 0;">
+              <!-- Mini Countdown circle -->
+              <div style="position: relative; width: 70px; height: 70px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                  <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="none" />
+                  <circle id="parentFocusRingFill" cx="50" cy="50" r="44" stroke="#fbbf24" stroke-width="6" fill="none" stroke-dasharray="276.46" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s linear;" />
+                </svg>
+                <div id="parentFocusTimerDisplay" style="position: absolute; font-size: 14px; font-weight: 800; font-family: monospace; color: #fff; text-shadow: 0 0 8px rgba(251,191,36,0.3);">25:00</div>
+              </div>
+              
+              <!-- Session text details -->
+              <div style="flex: 1; text-align: left; display: flex; flex-direction: column; gap: 2px;">
+                <div style="font-size: 7.5px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px;">ACTIVE STUDY TARGET</div>
+                <h4 id="parentFocusActiveTaskText" style="font-size: 11px; font-weight: 700; color: var(--text-main); margin: 0; line-height: 1.3; font-style: italic;">No active milestone associated.</h4>
+                
+                <div style="display: flex; gap: 12px; font-size: 8.5px; color: var(--text-muted); margin-top: 4px;">
+                  <div>Completed: <strong id="parentCompletedSessionsCount" style="color: #fbbf24;">3 / 5</strong></div>
+                  <div>Today: <strong id="parentTotalFocusMinutes" style="color: #fbbf24;">75 mins</strong></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Send encouragement cheer button -->
+            <div style="display: flex; gap: 8px; width: 100%; margin-top: 12px;">
+              <input type="text" id="parentNudgeCustomMsg" class="chat-input-field" style="margin:0; flex:1; height:34px; font-size:10px; background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 8px; color:#fff;" placeholder="Send custom cheer message..." value="Keep it up Aarif! Super proud of your focus! ❤️">
+              <button class="focus-btn-primary" id="parentNudgeBtn" style="margin: 0; background: linear-gradient(135deg, #fbbf24, #f59e0b); border: none; font-size: 10px; font-weight: 800; padding: 0 14px; border-radius: 8px; color: #000; cursor: pointer; box-shadow: 0 4px 10px rgba(251,191,36,0.25); display: flex; align-items: center; justify-content: center; gap: 4px; height: 34px;" onclick="sendPomodoroEncouragement()">
+                <span>📣 Nudge</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Animation style for pulse in parent portal -->
+          <style>
+            @keyframes livePulseParent {
+              0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+              70% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
+              100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+            }
+          </style>
+
           <!-- Daily Task Progress Summary -->
           <div class="glass-card warm-accent">
             <div class="card-title">

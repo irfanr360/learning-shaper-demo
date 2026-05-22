@@ -25,7 +25,19 @@ let studentState = {
   isPodcastPlaying: false,
   podcastTranscriptIndex: -1,
   completedPodcasts: [],
-  sleepTimerTimeout: null
+  sleepTimerTimeout: null,
+  
+  // Pomodoro Focus Timer State
+  pomodoroSecondsLeft: 1500,
+  pomodoroMode: 'work',
+  pomodoroIsRunning: false,
+  pomodoroActiveTask: '',
+  pomodoroCompletedSessions: 3,
+  pomodoroTotalMinutes: 75,
+  pomodoroStreak: 3,
+  pomodoroSoundscape: 'off',
+  pomodoroDemoSpeed: false,
+  pomodoroTimerInterval: null
 };
 
 // --- DATASETS ---
@@ -100,11 +112,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Draw initial state UI elements
   updateXpBar();
+  setupPomodoroTimer(); // Initialize Pomodoro focus timer ecosystem!
 
   // Listen for storage changes from Parent or Teacher app
   window.addEventListener('storage', (e) => {
     if (e.key === 'weekly_milestones_state') {
       loadSyncedMilestones();
+    } else if (e.key === 'parent_pomodoro_encouragement') {
+      try {
+        const encouragement = JSON.parse(e.newValue);
+        if (encouragement && encouragement.timestamp) {
+          triggerParentCheer(encouragement);
+        }
+      } catch (err) {}
     } else if (e.key === 'rfid_checkin_event') {
       try {
         const checkin = JSON.parse(e.newValue);
@@ -1743,3 +1763,670 @@ window.syncPodcastActivityToParent = function() {
   
   localStorage.setItem('student_podcast_activity', JSON.stringify(data));
 };
+
+// ========================================================================
+// 7. POMODORO FOCUS TIMER SYSTEM & WEB AUDIO SYNTHESIZER
+// ========================================================================
+
+// Audio Synth State Nodes
+let audioCtx = null;
+let masterGain = null;
+let soundscapeNodes = {
+  noise: null,
+  filter: null,
+  lfo: null,
+  lfoFilterGain: null,
+  lfoVolumeGain: null,
+  humOscs: []
+};
+
+// 7.1 Setup Focus Timer System
+window.setupPomodoroTimer = function() {
+  // Synchronize initial state variables with DOM
+  updatePomodoroStatsDOM();
+  updatePomodoroTimerDOM();
+  
+  // Set default active task on page
+  const taskSelect = document.getElementById('pomodoroTaskSelect');
+  if (taskSelect && studentState.pomodoroActiveTask) {
+    taskSelect.value = studentState.pomodoroActiveTask;
+  }
+  
+  // Clean start state
+  syncPomodoroActivityToParent();
+};
+
+// Render Pomodoro session dot checklist indicator
+function renderPomodoroDots() {
+  const dotsRow = document.getElementById('pomodoroCompletedDotsRow');
+  const fractionLabel = document.getElementById('pomodoroSessionsFraction');
+  if (!dotsRow) return;
+  
+  dotsRow.innerHTML = '';
+  const totalDots = 5;
+  const completed = studentState.pomodoroCompletedSessions;
+  
+  for (let i = 0; i < totalDots; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'pomo-dot' + (i < completed ? ' done' : '');
+    dotsRow.appendChild(dot);
+  }
+  
+  if (fractionLabel) {
+    fractionLabel.innerText = `${completed} of ${totalDots} completed today (+25 XP per session)`;
+  }
+}
+
+// Update stats numbers on screen
+function updatePomodoroStatsDOM() {
+  const streakDisplay = document.getElementById('pomodoroStreakDisplay');
+  const totalMinsDisplay = document.getElementById('pomodoroTotalMinutesDisplay');
+  
+  if (streakDisplay) streakDisplay.innerText = `${studentState.pomodoroStreak} Days`;
+  if (totalMinsDisplay) totalMinsDisplay.innerText = `${studentState.pomodoroTotalMinutes} mins`;
+  
+  renderPomodoroDots();
+}
+
+// Update timer digits and SVG ring offset
+function updatePomodoroTimerDOM() {
+  const timeDisplay = document.getElementById('pomodoroTimeDisplay');
+  const lockdownTimeDisplay = document.getElementById('lockdownTimerDisplay');
+  const ringCircle = document.getElementById('timerRingFillCircle');
+  
+  const minutes = Math.floor(studentState.pomodoroSecondsLeft / 60);
+  const seconds = studentState.pomodoroSecondsLeft % 60;
+  const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  
+  if (timeDisplay) timeDisplay.innerText = timeString;
+  if (lockdownTimeDisplay) lockdownTimeDisplay.innerText = timeString;
+  
+  if (ringCircle) {
+    let totalSeconds = 1500;
+    if (studentState.pomodoroMode === 'short') totalSeconds = 300;
+    if (studentState.pomodoroMode === 'long') totalSeconds = 900;
+    
+    const fraction = studentState.pomodoroSecondsLeft / totalSeconds;
+    const offset = 552.92 * (1 - fraction);
+    ringCircle.setAttribute('stroke-dashoffset', offset);
+  }
+}
+
+// Switch between Work, Short Break, and Long Break
+window.switchPomodoroMode = function(mode) {
+  if (studentState.pomodoroIsRunning) {
+    showToast("⚠️ Pause active timer to switch focus modes!", "warning");
+    return;
+  }
+  
+  studentState.pomodoroMode = mode;
+  
+  // Set default countdown seconds
+  if (mode === 'work') {
+    studentState.pomodoroSecondsLeft = 1500; // 25m
+  } else if (mode === 'short') {
+    studentState.pomodoroSecondsLeft = 300;  // 5m
+  } else if (mode === 'long') {
+    studentState.pomodoroSecondsLeft = 900;  // 15m
+  }
+  
+  // Dynamic visual highlighting on Mode pills
+  document.getElementById('pomodoroModeWork').classList.toggle('active', mode === 'work');
+  document.getElementById('pomodoroModeShort').classList.toggle('active', mode === 'short');
+  document.getElementById('pomodoroModeLong').classList.toggle('active', mode === 'long');
+  
+  // dynamic HSL theme shifting: set CSS color overrides on tab Focus deck
+  const focusTab = document.getElementById('tab-focus');
+  if (focusTab) {
+    if (mode === 'work') {
+      focusTab.style.setProperty('--accent-color', '#ef4444'); // Crimson work
+      document.getElementById('pomodoroStatusLabel').innerText = 'STAY FOCUSED';
+    } else if (mode === 'short') {
+      focusTab.style.setProperty('--accent-color', '#10b981'); // Forest short break
+      document.getElementById('pomodoroStatusLabel').innerText = 'SHORT BREAK';
+    } else if (mode === 'long') {
+      focusTab.style.setProperty('--accent-color', '#3b82f6'); // Lavender long break
+      document.getElementById('pomodoroStatusLabel').innerText = 'LONG BREAK';
+    }
+  }
+  
+  updatePomodoroTimerDOM();
+  syncPomodoroActivityToParent();
+  
+  showToast(`Switched to ${mode.toUpperCase()} mode!`, 'success');
+};
+
+// Handle task select change
+window.updatePomodoroActiveTask = function(task) {
+  studentState.pomodoroActiveTask = task;
+  
+  const activeDesc = document.getElementById('pomodoroActiveTaskDisplay');
+  const lockdownDesc = document.getElementById('lockdownActiveTaskText');
+  
+  if (task) {
+    const text = `Concentration goal locked: "${task}"`;
+    if (activeDesc) activeDesc.innerText = text;
+    if (lockdownDesc) lockdownDesc.innerText = `Concentrating on: ${task}`;
+    showToast('🎯 Focus milestone successfully associated!', 'success');
+  } else {
+    const text = "Select a milestone to lock in focus mode.";
+    if (activeDesc) activeDesc.innerText = text;
+    if (lockdownDesc) lockdownDesc.innerText = "General deep concentration session";
+  }
+  
+  syncPomodoroActivityToParent();
+};
+
+// Toggle start/pause timer execution loop
+window.togglePomodoroTimer = function() {
+  const startBtn = document.getElementById('pomodoroStartBtn');
+  
+  if (studentState.pomodoroIsRunning) {
+    // PAUSE ACTIVE TIMER
+    clearInterval(studentState.pomodoroTimerInterval);
+    studentState.pomodoroTimerInterval = null;
+    studentState.pomodoroIsRunning = false;
+    
+    if (startBtn) startBtn.innerText = "Resume Focus";
+    
+    // Pause Synthesized Audio
+    stopSynthesizedSoundscape();
+    
+    showToast("Focus timer paused.", "warning");
+  } else {
+    // START FOCUS TIMER
+    if (studentState.pomodoroMode === 'work' && !studentState.pomodoroActiveTask) {
+      showToast("🎯 Please lock in an active study milestone goal first!", "warning");
+      return;
+    }
+    
+    studentState.pomodoroIsRunning = true;
+    if (startBtn) startBtn.innerText = "Pause Focus";
+    
+    // Show Full screen Anti-distraction lockdown screen if Work mode is active
+    if (studentState.pomodoroMode === 'work') {
+      const lockScreen = document.getElementById('focusLockdownScreen');
+      if (lockScreen) {
+        lockScreen.style.display = 'flex';
+        // Fade in effect
+        lockScreen.style.opacity = '0';
+        setTimeout(() => { lockScreen.style.opacity = '1'; lockScreen.style.transition = 'opacity 0.5s ease'; }, 10);
+      }
+    }
+    
+    // Play Active Soundscape Synth immediately
+    if (studentState.pomodoroSoundscape !== 'off') {
+      playSynthesizedSoundscape(studentState.pomodoroSoundscape);
+    }
+    
+    // Establish timer counting loops
+    const tickSpeed = studentState.pomodoroDemoSpeed ? 16 : 1000; // Accelerated 60x if demo check ticked
+    
+    studentState.pomodoroTimerInterval = setInterval(() => {
+      if (studentState.pomodoroSecondsLeft > 0) {
+        studentState.pomodoroSecondsLeft--;
+        updatePomodoroTimerDOM();
+        
+        // Push ticking status updates to parent companion app every 5 ticks
+        if (studentState.pomodoroSecondsLeft % 5 === 0) {
+          syncPomodoroActivityToParent();
+        }
+      } else {
+        // COUNTDOWN FINISHED!
+        clearInterval(studentState.pomodoroTimerInterval);
+        studentState.pomodoroTimerInterval = null;
+        studentState.pomodoroIsRunning = false;
+        
+        handleFocusSessionCompletion();
+      }
+    }, tickSpeed);
+    
+    showToast("Focus lockdown initiated. Let's study!", "success");
+  }
+  
+  syncPomodoroActivityToParent();
+};
+
+// Reset pomodoro timer state
+window.resetPomodoroTimer = function() {
+  clearInterval(studentState.pomodoroTimerInterval);
+  studentState.pomodoroTimerInterval = null;
+  studentState.pomodoroIsRunning = false;
+  
+  const startBtn = document.getElementById('pomodoroStartBtn');
+  if (startBtn) startBtn.innerText = "Start Focus";
+  
+  // Stop soundscapes
+  stopSynthesizedSoundscape();
+  
+  // Close lockdown overlays
+  const lockScreen = document.getElementById('focusLockdownScreen');
+  if (lockScreen) lockScreen.style.display = 'none';
+  
+  // Reset seconds
+  if (studentState.pomodoroMode === 'work') studentState.pomodoroSecondsLeft = 1500;
+  else if (studentState.pomodoroMode === 'short') studentState.pomodoroSecondsLeft = 300;
+  else if (studentState.pomodoroMode === 'long') studentState.pomodoroSecondsLeft = 900;
+  
+  updatePomodoroTimerDOM();
+  syncPomodoroActivityToParent();
+  
+  showToast("Focus timer reset.", "success");
+};
+
+// Fast-forward demo mode speed checkbox
+window.togglePomodoroDemoSpeed = function(checked) {
+  studentState.pomodoroDemoSpeed = checked;
+  
+  if (studentState.pomodoroIsRunning) {
+    // Recreate the running countdown timer with the new speed setting
+    clearInterval(studentState.pomodoroTimerInterval);
+    const tickSpeed = checked ? 16 : 1000;
+    
+    studentState.pomodoroTimerInterval = setInterval(() => {
+      if (studentState.pomodoroSecondsLeft > 0) {
+        studentState.pomodoroSecondsLeft--;
+        updatePomodoroTimerDOM();
+        if (studentState.pomodoroSecondsLeft % 5 === 0) {
+          syncPomodoroActivityToParent();
+        }
+      } else {
+        clearInterval(studentState.pomodoroTimerInterval);
+        studentState.pomodoroTimerInterval = null;
+        studentState.pomodoroIsRunning = false;
+        handleFocusSessionCompletion();
+      }
+    }, tickSpeed);
+  }
+  
+  showToast(`Demo Speed: ${checked ? 'ACCELERATED (60x)' : 'NORMAL'}`, 'warning');
+};
+
+// Soundscape selector chip active indicator
+window.togglePomodoroSoundscape = function(soundscape) {
+  studentState.pomodoroSoundscape = soundscape;
+  
+  // Highlight active chips
+  const chips = ['off', 'rain', 'waves', 'hum'];
+  chips.forEach(c => {
+    const el = document.getElementById(`soundChip_${c}`);
+    if (el) el.classList.toggle('active', c === soundscape);
+  });
+  
+  // Play immediately if timer is actively running
+  if (studentState.pomodoroIsRunning) {
+    if (soundscape === 'off') {
+      stopSynthesizedSoundscape();
+    } else {
+      playSynthesizedSoundscape(soundscape);
+    }
+  }
+  
+  showToast(`Ambient Soundscape: ${soundscape.toUpperCase()}`, 'success');
+};
+
+// Handle session end scoring and break switches
+function handleFocusSessionCompletion() {
+  // Play satisfied audio chime beep!
+  playFocusAlarmBeep();
+  
+  // Close active lockdown
+  const lockScreen = document.getElementById('focusLockdownScreen');
+  if (lockScreen) lockScreen.style.display = 'none';
+  
+  const startBtn = document.getElementById('pomodoroStartBtn');
+  if (startBtn) startBtn.innerText = "Start Focus";
+  
+  // Stop soundscapes
+  stopSynthesizedSoundscape();
+  
+  // Celebrate XP!
+  let xpReward = 25;
+  let textLabel = '';
+  
+  if (studentState.pomodoroMode === 'work') {
+    studentState.pomodoroCompletedSessions = Math.min(5, studentState.pomodoroCompletedSessions + 1);
+    studentState.pomodoroTotalMinutes += 25;
+    
+    addXp(xpReward);
+    triggerConfettiBurst();
+    
+    textLabel = `🎯 Session Complete! Beautiful concentration Aarif! +${xpReward} XP. Enjoy your short break!`;
+    showToast(textLabel, 'success');
+    
+    // Increment AI Coach text dynamically
+    const coachTexts = [
+      "Excellent work on your quadratics milestones! Continuous study feeds your cognitive recall.",
+      "Incredible discipline Aarif! Focus streak maintained! Grab some water and recharge.",
+      "Fantastic focus session. Study efficiency is off the charts! Ready for a quick breather?",
+      "Superb work! Your parents are seeing this live. Keep grinding!"
+    ];
+    const coachTip = document.getElementById('pomodoroCoachTipText');
+    if (coachTip) {
+      coachTip.innerText = `"${coachTexts[Math.floor(Math.random() * coachTexts.length)]}"`;
+    }
+    
+    // Auto transition to Short break mode
+    setTimeout(() => {
+      switchPomodoroMode('short');
+    }, 2000);
+  } else {
+    // Break finished, switch back to work
+    textLabel = "☕ Break finished! Recharged and ready to study! Switched back to Work Mode.";
+    showToast(textLabel, 'success');
+    
+    setTimeout(() => {
+      switchPomodoroMode('work');
+    }, 2000);
+  }
+  
+  updatePomodoroStatsDOM();
+  syncPomodoroActivityToParent();
+}
+
+// Abort session from lockdown screen
+window.abortPomodoroFocus = function() {
+  if (confirm("Are you sure you want to exit your active focus lockdown study session? Aarif, you'll lose focus streak momentum!")) {
+    resetPomodoroTimer();
+    showToast("Focus session aborted. Take a breath and lock in later!", "warning");
+  }
+};
+
+// Synchronize state values in real-time to localStorage for companion portal sync
+window.syncPomodoroActivityToParent = function() {
+  let totalSeconds = 1500;
+  if (studentState.pomodoroMode === 'short') totalSeconds = 300;
+  if (studentState.pomodoroMode === 'long') totalSeconds = 900;
+  
+  const payload = {
+    studentName: "Aarif Al-Masoom",
+    mode: studentState.pomodoroMode,
+    secondsLeft: studentState.pomodoroSecondsLeft,
+    totalSeconds: totalSeconds,
+    isRunning: studentState.pomodoroIsRunning,
+    activeTask: studentState.pomodoroActiveTask,
+    completedSessions: studentState.pomodoroCompletedSessions,
+    totalMinutes: studentState.pomodoroTotalMinutes,
+    streak: studentState.pomodoroStreak,
+    timestamp: Date.now()
+  };
+  
+  localStorage.setItem('student_pomodoro_activity', JSON.stringify(payload));
+};
+
+// Web Audio API Synthesized Audio Generators
+function playSynthesizedSoundscape(type) {
+  try {
+    stopSynthesizedSoundscape();
+    
+    if (type === 'off') return;
+    
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 1.0); // Smooth 1s fade-in!
+    masterGain.connect(audioCtx.destination);
+    
+    // Generate 2-second white noise buffer
+    const bufferSize = audioCtx.sampleRate * 2;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    
+    if (type === 'rain') {
+      // 🌧️ Synthesized Forest Rain
+      const noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+      
+      const bandpass = audioCtx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 750;
+      bandpass.Q.value = 1.0;
+      
+      const lowpass = audioCtx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 1200;
+      
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.value = 0.4;
+      
+      // Connect sound path
+      noiseSource.connect(bandpass);
+      bandpass.connect(lowpass);
+      lowpass.connect(noiseGain);
+      noiseGain.connect(masterGain);
+      
+      noiseSource.start();
+      soundscapeNodes.noise = noiseSource;
+      soundscapeNodes.filter = lowpass;
+      
+    } else if (type === 'waves') {
+      // 🌊 Synthesized Ocean Waves
+      const noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+      
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 350; // Waves base frequency
+      
+      const waveGain = audioCtx.createGain();
+      waveGain.gain.value = 0.08;
+      
+      // Low Frequency Oscillator to modulate waves volume & filter
+      const lfo = audioCtx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.12; // Period ~8.3 seconds
+      
+      const lfoFilterGain = audioCtx.createGain();
+      lfoFilterGain.gain.value = 220; // modulate filter +/- 220Hz
+      
+      const lfoVolumeGain = audioCtx.createGain();
+      lfoVolumeGain.gain.value = 0.05; // modulate volume +/- 0.05
+      
+      // Connect modulators
+      lfo.connect(lfoFilterGain);
+      lfoFilterGain.connect(filter.frequency);
+      
+      lfo.connect(lfoVolumeGain);
+      lfoVolumeGain.connect(waveGain.gain);
+      
+      // Connect audio
+      noiseSource.connect(filter);
+      filter.connect(waveGain);
+      waveGain.connect(masterGain);
+      
+      noiseSource.start();
+      lfo.start();
+      
+      soundscapeNodes.noise = noiseSource;
+      soundscapeNodes.filter = filter;
+      soundscapeNodes.lfo = lfo;
+      soundscapeNodes.lfoFilterGain = lfoFilterGain;
+      soundscapeNodes.lfoVolumeGain = lfoVolumeGain;
+      
+    } else if (type === 'hum') {
+      // 🧘 Synthesized Lo-Fi Meditative Hum
+      const osc1 = audioCtx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.value = 82.41; // E2 (low base)
+      
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.value = 164.81; // E3 (octave detune)
+      osc2.detune.value = 5;
+      
+      const osc3 = audioCtx.createOscillator();
+      osc3.type = 'sine';
+      osc3.frequency.value = 246.94; // B3 detuned fifth
+      osc3.detune.value = -5;
+      
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 140;
+      
+      const humGain = audioCtx.createGain();
+      humGain.gain.value = 0.35;
+      
+      osc1.connect(filter);
+      osc2.connect(filter);
+      osc3.connect(filter);
+      filter.connect(humGain);
+      humGain.connect(masterGain);
+      
+      // Vintage record/dust crackle
+      const crackleSource = audioCtx.createBufferSource();
+      crackleSource.buffer = noiseBuffer;
+      crackleSource.loop = true;
+      
+      const crackleFilter = audioCtx.createBiquadFilter();
+      crackleFilter.type = 'highpass';
+      crackleFilter.frequency.value = 7500;
+      
+      const crackleGain = audioCtx.createGain();
+      crackleGain.gain.value = 0.007; // ultra-soft vinyl dust
+      
+      crackleSource.connect(crackleFilter);
+      crackleFilter.connect(crackleGain);
+      crackleGain.connect(masterGain);
+      
+      osc1.start();
+      osc2.start();
+      osc3.start();
+      crackleSource.start();
+      
+      soundscapeNodes.noise = crackleSource;
+      soundscapeNodes.humOscs = [osc1, osc2, osc3];
+    }
+  } catch (err) {
+    console.error("Audio synthesizer initialization failed:", err);
+  }
+}
+
+function stopSynthesizedSoundscape() {
+  try {
+    if (masterGain && audioCtx) {
+      const currentGain = masterGain.gain.value;
+      masterGain.gain.setValueAtTime(currentGain, audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4); // smooth fade
+    }
+    
+    setTimeout(() => {
+      if (soundscapeNodes.noise) {
+        try { soundscapeNodes.noise.stop(); } catch (e) {}
+        soundscapeNodes.noise = null;
+      }
+      if (soundscapeNodes.lfo) {
+        try { soundscapeNodes.lfo.stop(); } catch (e) {}
+        soundscapeNodes.lfo = null;
+      }
+      if (soundscapeNodes.humOscs && soundscapeNodes.humOscs.length) {
+        soundscapeNodes.humOscs.forEach(osc => {
+          try { osc.stop(); } catch (e) {}
+        });
+        soundscapeNodes.humOscs = [];
+      }
+      soundscapeNodes.filter = null;
+      soundscapeNodes.lfoFilterGain = null;
+      soundscapeNodes.lfoVolumeGain = null;
+      
+      if (masterGain) {
+        try { masterGain.disconnect(); } catch (e) {}
+        masterGain = null;
+      }
+    }, 500);
+  } catch (err) {}
+}
+
+function playFocusAlarmBeep() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    const times = [0, 0.18, 0.36];
+    const freqs = [659.25, 880, 1046.5]; // Harmonious E5 - A5 - C6 chime
+    
+    times.forEach((time, index) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freqs[index], audioCtx.currentTime + time);
+      
+      gain.gain.setValueAtTime(0, audioCtx.currentTime + time);
+      gain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + time + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + time + 0.28);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start(audioCtx.currentTime + time);
+      osc.stop(audioCtx.currentTime + time + 0.3);
+    });
+  } catch (err) {}
+}
+
+// 7.2 Parent encouraging emoji chimes nudge
+window.triggerParentCheer = function(encouragement) {
+  // Pop celebratory confetti particles!
+  triggerConfettiBurst();
+  
+  // Award +10 XP bonus!
+  addXp(10);
+  
+  let cheerOverlay = document.getElementById('parentCheerOverlay');
+  if (!cheerOverlay) {
+    cheerOverlay = document.createElement('div');
+    cheerOverlay.id = 'parentCheerOverlay';
+    cheerOverlay.style.cssText = `
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 10, 15, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 250;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+    `;
+    
+    cheerOverlay.innerHTML = `
+      <div class="glass-card" style="padding: 24px; display:flex; flex-direction:column; align-items:center; gap:16px; border:1px solid rgba(251,191,36,0.3); background: rgba(255,255,255,0.03); max-width:280px; border-radius: 20px; box-shadow: 0 10px 40px rgba(251,191,36,0.25)">
+        <div style="font-size:40px; animation: bounce 1.5s infinite">📣❤️👨‍👩‍👦</div>
+        <h3 style="font-size:16px; color:#fbbf24; font-weight:800; letter-spacing:1px; margin:0">PARENT CHEERS!</h3>
+        <p id="parentCheerMsg" style="font-size:11px; color:var(--text-main); line-height:1.45; margin:0">"Keep going Aarif! We are extremely proud of your concentration! Finish this milestone!"</p>
+        <div style="font-size:12px; font-weight:800; color:var(--success-color)">🌟 +10 XP CHEERING BONUS!</div>
+        <button class="focus-btn-primary" style="margin-top:8px; padding: 10px 20px; font-size:11px; background:#fbbf24; border-radius: 12px; font-weight:800; border:none; color:#000; box-shadow: 0 4px 12px rgba(251,191,36,0.3)" onclick="document.getElementById('parentCheerOverlay').style.display='none'">Thanks, Locked in! 👍</button>
+      </div>
+    `;
+    
+    const phoneContainer = document.getElementById('phoneContainer');
+    if (phoneContainer) phoneContainer.appendChild(cheerOverlay);
+  } else {
+    cheerOverlay.style.display = 'flex';
+  }
+  
+  if (encouragement.message) {
+    document.getElementById('parentCheerMsg').innerText = `"${encouragement.message}"`;
+  }
+  
+  showToast('❤️ Parent encouragement received! +10 XP', 'success');
+};
+

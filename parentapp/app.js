@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   checkGoalAlignment();
   initAlertsTimeline();
   setupParentPodcastListener();
+  setupParentFocusMonitor(); // Initialize real-time study focus monitoring widget!
 });
 
 /* ========================================================================
@@ -838,4 +839,147 @@ function updateParentPodcastUI(activity) {
     dialogueTextEl.textContent = `"${prompt}"`;
   }
 }
+
+// ========================================================================
+// 7.2 POMODORO REAL-TIME FOCUS MONITOR ENGINE (PARENT COMPANION)
+// ========================================================================
+let parentFocusTimeout = null;
+
+window.setupParentFocusMonitor = function() {
+  // Read current student Pomodoro activity state
+  const initialActivity = localStorage.getItem('student_pomodoro_activity');
+  if (initialActivity) {
+    try {
+      const activity = JSON.parse(initialActivity);
+      updateParentFocusUI(activity);
+    } catch (err) {}
+  } else {
+    // Set default idle UI values
+    updateParentFocusUI(null);
+  }
+  
+  // Set up real-time cross-tab storage event listener
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'student_pomodoro_activity') {
+      try {
+        const activity = JSON.parse(e.newValue);
+        updateParentFocusUI(activity);
+      } catch (err) {}
+    }
+  });
+};
+
+function updateParentFocusUI(activity) {
+  const card = document.getElementById("parentFocusMonitorCard");
+  const pulseRing = document.getElementById("parentFocusPulseRing");
+  const statusBadge = document.getElementById("parentFocusStatusBadge");
+  const timerDisplay = document.getElementById("parentFocusTimerDisplay");
+  const ringFill = document.getElementById("parentFocusRingFill");
+  const activeTaskText = document.getElementById("parentFocusActiveTaskText");
+  const completedSessionsText = document.getElementById("parentCompletedSessionsCount");
+  const totalMinsText = document.getElementById("parentTotalFocusMinutes");
+  const nudgeBtn = document.getElementById("parentNudgeBtn");
+  
+  if (!card || !statusBadge || !timerDisplay || !ringFill || !activeTaskText || !completedSessionsText || !totalMinsText) return;
+  
+  if (parentFocusTimeout) clearTimeout(parentFocusTimeout);
+  
+  if (!activity) {
+    // Set Idle state
+    statusBadge.textContent = "Idle Mode";
+    statusBadge.style.background = "rgba(156, 163, 175, 0.15)";
+    statusBadge.style.color = "#9ca3af";
+    
+    pulseRing.style.background = "#9ca3af";
+    pulseRing.style.animation = "none";
+    
+    timerDisplay.textContent = "25:00";
+    ringFill.setAttribute("stroke-dashoffset", 0);
+    ringFill.setAttribute("stroke", "rgba(255,255,255,0.15)");
+    
+    activeTaskText.textContent = "No active focus milestone locked.";
+    completedSessionsText.textContent = "0 / 5";
+    totalMinsText.textContent = "0 mins";
+    
+    if (nudgeBtn) nudgeBtn.disabled = true;
+    return;
+  }
+  
+  // Roster completed sessions and minutes
+  completedSessionsText.textContent = `${activity.completedSessions || 0} / 5`;
+  totalMinsText.textContent = `${activity.totalMinutes || 0} mins`;
+  
+  // Set active goal milestone description
+  if (activity.activeTask) {
+    activeTaskText.textContent = activity.activeTask;
+  } else {
+    activeTaskText.textContent = activity.mode === "work" ? "General deep study session" : "Taking a well-deserved breather! 💤";
+  }
+  
+  // Set active countdown string
+  const minutes = Math.floor(activity.secondsLeft / 60);
+  const seconds = activity.secondsLeft % 60;
+  timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  
+  // Update parent ring fill
+  const totalSeconds = activity.totalSeconds || 1500;
+  const fraction = activity.secondsLeft / totalSeconds;
+  const offset = 276.46 * (1 - fraction);
+  ringFill.setAttribute("stroke-dashoffset", offset);
+  
+  // Enable nudge button if focus is actively running
+  if (nudgeBtn) nudgeBtn.disabled = !activity.isRunning;
+  
+  if (!activity.isRunning) {
+    // Paused or Idle Mode
+    statusBadge.textContent = activity.mode === "work" ? "Focused Paused" : `${activity.mode.toUpperCase()} BREAK`;
+    statusBadge.style.background = "rgba(245, 158, 11, 0.15)";
+    statusBadge.style.color = "#f59e0b";
+    
+    pulseRing.style.background = "#f59e0b";
+    pulseRing.style.animation = "none";
+    
+    ringFill.setAttribute("stroke", "#f59e0b");
+  } else {
+    // Actively running
+    if (activity.mode === "work") {
+      statusBadge.textContent = "Study Focus Lock ⏱️";
+      statusBadge.style.background = "rgba(239, 68, 68, 0.2)";
+      statusBadge.style.color = "#f87171";
+      
+      pulseRing.style.background = "#ef4444";
+      pulseRing.style.animation = "livePulseParent 1.5s infinite";
+      ringFill.setAttribute("stroke", "#fbbf24"); // Glow gold
+    } else {
+      statusBadge.textContent = `${activity.mode.toUpperCase()} BREAK ☕`;
+      statusBadge.style.background = "rgba(16, 185, 129, 0.2)";
+      statusBadge.style.color = "#34d399";
+      
+      pulseRing.style.background = "#10b981";
+      pulseRing.style.animation = "livePulseParent 1.5s infinite";
+      ringFill.setAttribute("stroke", "#10b981"); // Forest green
+    }
+  }
+}
+
+// 7.2 Send Encouragement Nudge from parent to student portal
+window.sendPomodoroEncouragement = function() {
+  const nudgeInput = document.getElementById("parentNudgeCustomMsg");
+  let msg = nudgeInput ? nudgeInput.value : "";
+  if (!msg.trim()) {
+    msg = "Keep going Aarif! Super proud of your focus! ❤️";
+  }
+  
+  const payload = {
+    message: msg,
+    timestamp: Date.now()
+  };
+  
+  // Write key to trigger student storage listener
+  localStorage.setItem('parent_pomodoro_encouragement', JSON.stringify(payload));
+  
+  // Visual Parent Feedback
+  showToast("📣 Cheering nudge dispatched to Aarif! +10 XP awarded.", "❤️");
+};
+
 
