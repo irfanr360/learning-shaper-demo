@@ -1,6 +1,6 @@
 /* 
 ========================================================================
-   LEARNING SHAPER TEACHER COMPANION APP - CORE INTERACTIVE ENGINE
+   TEACHING ASSISTANT - CORE INTERACTIVE ENGINE
 ========================================================================
 */
 
@@ -981,7 +981,7 @@ function escapeHTML(str) {
 }
 
 /* ========================================================================
-   TEACHER COMPANION POMODORO SYNC
+   TEACHING ASSISTANT POMODORO SYNC
    ======================================================================== */
 function setupTeacherFocusBadge() {
   const updateFlameUI = (activity) => {
