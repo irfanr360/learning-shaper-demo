@@ -1,6 +1,6 @@
 /*
 ========================================================================
-   LEARNING SHAPER LEARNING MATE - CORE INTERACTIVE ENGINE
+   LEARNING MATE - CORE INTERACTIVE ENGINE
 ========================================================================
 */
 
