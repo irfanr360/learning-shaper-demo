@@ -113,6 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Draw initial state UI elements
   updateXpBar();
   setupPomodoroTimer(); // Initialize Pomodoro focus timer ecosystem!
+  initBalancePill();           // Initialize bKash-style balance reveal pill!
+  updateTuitionGauges();       // Initialize study metric gauges!
 
   // Listen for storage changes from Parent or Teacher app
   window.addEventListener('storage', (e) => {
@@ -220,6 +222,8 @@ function switchTab(tabId) {
     renderQuizQuestion();
   } else if (tabId === 'podcast') {
     renderPodcastBrowseShelf('all');
+  } else if (tabId === 'tuition') {
+    updateTuitionGauges();
   }
 }
 
@@ -313,6 +317,16 @@ function setupUIEventListeners() {
       }
 
       showToast('Payment successful! Invoice receipt generated.', 'success');
+      
+      // Update receipts option details in MFS action list
+      const receiptsListItem = document.getElementById('receiptsListItem');
+      if (receiptsListItem) {
+        receiptsListItem.querySelector('p').innerText = "1 Official School Invoice Available";
+        receiptsListItem.setAttribute('onclick', "showToast('Downloading May 2026 tuition receipt PDF...', 'success')");
+      }
+      
+      // Update Gauges since tuition is settled
+      updateTuitionGauges();
       
       // Reset checkout executor state
       payExecuteBtn.innerText = `Confirm Payment (৳3,500)`;
@@ -2429,4 +2443,97 @@ window.triggerParentCheer = function(encouragement) {
   
   showToast('❤️ Parent encouragement received! +10 XP', 'success');
 };
+
+function initBalancePill() {
+  const pill = document.getElementById('tapForBalancePill');
+  const textEl = document.getElementById('balancePillText');
+  const iconEl = pill ? pill.querySelector('.pill-icon') : null;
+  if (!pill || !textEl) return;
+  let balanceTimeout = null;
+  let pillState = 'idle';
+  pill.addEventListener('click', () => {
+    if (pillState !== 'idle') return;
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.1);
+    } catch (e) {}
+    pillState = 'showing_xp';
+    pill.classList.add('revealed');
+    if (iconEl) iconEl.innerText = '⚡';
+    textEl.innerText = `${studentState.xp} XP`;
+    balanceTimeout = setTimeout(() => {
+      pillState = 'showing_dues';
+      if (iconEl) iconEl.innerText = '৳';
+      const dues = studentState.tuitionPaid ? '0' : '3,500';
+      textEl.innerText = `৳${dues} Dues`;
+      balanceTimeout = setTimeout(() => {
+        pill.classList.remove('revealed');
+        setTimeout(() => {
+          if (iconEl) iconEl.innerText = '৳';
+          textEl.innerText = 'Tap for Balance';
+          pillState = 'idle';
+        }, 300);
+      }, 1500);
+    }, 1500);
+  });
+}
+
+function updateTuitionGauges() {
+  let completedDrills = studentState.tuitionPaid ? 10 : 9;
+  const drillPercent = Math.min(100, Math.round((completedDrills / 20) * 100));
+  const drillOffset = 44 * (1 - drillPercent / 100);
+  const drillPath = document.getElementById('gaugeAiDrillsPath');
+  const drillPercText = document.getElementById('gaugeAiDrillsPercentage');
+  const drillAmtText = document.getElementById('gaugeAiDrillsAmount');
+  if (drillPath && drillPercText && drillAmtText) {
+    drillPath.style.strokeDashoffset = drillOffset;
+    drillPercText.innerText = `${drillPercent}%`;
+    drillAmtText.innerText = `${completedDrills}/20 Drills`;
+  }
+  let studyHours = 15 + (studentState.pomodoroCompletedSessions > 3 ? 1 : 0);
+  const studyPercent = Math.min(100, Math.round((studyHours / 20) * 100));
+  const studyOffset = 44 * (1 - studyPercent / 100);
+  const studyPath = document.getElementById('gaugeStudyHoursPath');
+  const studyPercText = document.getElementById('gaugeStudyHoursPercentage');
+  const studyAmtText = document.getElementById('gaugeStudyHoursAmount');
+  if (studyPath && studyPercText && studyAmtText) {
+    studyPath.style.strokeDashoffset = studyOffset;
+    studyPercText.innerText = `${studyPercent}%`;
+    studyAmtText.innerText = `${studyHours}/20 Hrs`;
+  }
+  const streakDays = studentState.pomodoroStreak || 5;
+  const streakPercent = Math.min(100, Math.round((streakDays / 7) * 100));
+  const streakOffset = 44 * (1 - streakPercent / 100);
+  const streakPath = document.getElementById('gaugeXpStreakPath');
+  const streakPercText = document.getElementById('gaugeXpStreakPercentage');
+  const streakAmtText = document.getElementById('gaugeXpStreakAmount');
+  if (streakPath && streakPercText && streakAmtText) {
+    streakPath.style.strokeDashoffset = streakOffset;
+    streakPercText.innerText = `${streakPercent}%`;
+    streakAmtText.innerText = `${streakDays}/7 Days`;
+  }
+}
+
+function scrollToClassmateFeed() {
+  const el = document.getElementById('classmateActivityFeedCard');
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.animation = 'pulse-balance-glow 1.5s infinite alternate';
+    setTimeout(() => { el.style.animation = ''; }, 3000);
+  }
+}
+
 

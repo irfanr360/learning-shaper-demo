@@ -2858,5 +2858,649 @@ body {
   color: #f87171;
 }
 
+/* 
+========================================================================
+   BKASH PREMIUM DESIGN THEME SYSTEM
+========================================================================
+*/
+
+/* Brand color overrides/definitions */
+:root {
+  --bkash-pink: #e21251;
+  --bkash-pink-glow: rgba(226, 18, 81, 0.35);
+  --bkash-pink-light: #ffedf2;
+  --bkash-header-gradient: linear-gradient(135deg, #e21251, #f43f5e);
+  --bkash-accent-glow: 0 4px 15px rgba(226, 18, 81, 0.25);
+}
+
+[data-theme="dark"] {
+  --bkash-pink: #f43f5e;
+  --bkash-pink-glow: rgba(244, 63, 94, 0.4);
+  --bkash-pink-light: #2c0e18;
+  --bkash-header-gradient: linear-gradient(135deg, #e21251, #9f0736);
+  --bkash-accent-glow: 0 4px 20px rgba(244, 63, 94, 0.3);
+}
+
+/* Redesigned Bottom Nav Tab Bar Active Accent overrides */
+.nav-item.active {
+  color: var(--bkash-pink) !important;
+}
+.nav-item.active svg {
+  stroke: var(--bkash-pink) !important;
+  fill: var(--bkash-pink-glow) !important;
+}
+
+/* Curved Header Banner */
+.bkash-header-banner {
+  background: var(--bkash-header-gradient);
+  border-radius: 0 0 28px 28px;
+  padding: 18px 16px 28px 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(226, 18, 81, 0.15);
+  margin-bottom: 12px;
+}
+
+.bkash-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  z-index: 2;
+  position: relative;
+}
+
+.bkash-header-top .app-logo {
+  font-family: var(--font-brand);
+  font-size: 21px;
+  font-weight: 900;
+  color: #fff !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bkash-header-top .badge-role {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.bkash-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+  position: relative;
+}
+
+.bkash-profile-avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bkash-profile-avatar-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.bkash-avatar-img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.bkash-avatar-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #ffc107;
+  border: 2px solid #fff;
+  color: #333;
+  font-size: 9px;
+  font-weight: 900;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.bkash-profile-info {
+  flex: 1;
+  text-align: left;
+}
+
+.bkash-username {
+  font-family: var(--font-header);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Tap for Balance Pill Container */
+.bkash-balance-pill {
+  background: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 12px 4px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  max-width: 140px;
+  overflow: hidden;
+  height: 26px;
+}
+
+.bkash-balance-pill:active {
+  transform: scale(0.97);
+}
+
+.bkash-balance-pill .pill-icon {
+  width: 18px;
+  height: 18px;
+  background: var(--bkash-pink);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.bkash-balance-pill .pill-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bkash-pink);
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+/* Revealed active style */
+.bkash-balance-pill.revealed {
+  max-width: 200px;
+  animation: pulse-balance-glow 1.5s infinite alternate;
+}
+
+@keyframes pulse-balance-glow {
+  0% { box-shadow: 0 0 5px rgba(226, 18, 81, 0.2); }
+  100% { box-shadow: 0 0 12px rgba(226, 18, 81, 0.4); }
+}
+
+.bkash-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.bkash-action-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bkash-action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.bkash-silhouette-landscape {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bkash-silhouette-landscape svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Services 4xN Grid */
+.bkash-services-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  padding: 16px 12px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 12px;
+}
+
+.bkash-services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 6px;
+}
+
+.bkash-service-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bkash-service-item:hover {
+  transform: translateY(-2px);
+}
+
+.bkash-service-item:active {
+  transform: scale(0.95);
+}
+
+.bkash-service-item .service-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid rgba(226, 18, 81, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+  margin-bottom: 6px;
+}
+
+/* Custom icon glow matching specific features */
+.service-icon-circle.accent-purple { border-color: rgba(168, 85, 247, 0.25); background: rgba(168, 85, 247, 0.05); }
+.service-icon-circle.accent-blue { border-color: rgba(30, 99, 245, 0.25); background: rgba(30, 99, 245, 0.05); }
+.service-icon-circle.accent-green { border-color: rgba(16, 185, 129, 0.25); background: rgba(16, 185, 129, 0.05); }
+.service-icon-circle.accent-red { border-color: rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.05); }
+.service-icon-circle.accent-orange { border-color: rgba(245, 158, 11, 0.25); background: rgba(245, 158, 11, 0.05); }
+.service-icon-circle.accent-pink { border-color: rgba(226, 18, 81, 0.25); background: rgba(226, 18, 81, 0.05); }
+.service-icon-circle.accent-gold { border-color: rgba(217, 119, 6, 0.25); background: rgba(217, 119, 6, 0.05); }
+.service-icon-circle.accent-teal { border-color: rgba(20, 184, 166, 0.25); background: rgba(20, 184, 166, 0.05); }
+
+.bkash-service-item:hover .service-icon-circle {
+  transform: scale(1.06);
+  box-shadow: 0 4px 15px rgba(226, 18, 81, 0.12);
+  border-color: var(--bkash-pink);
+}
+
+.bkash-service-item .service-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Offers & Campaigns Horizontal Scroll */
+.bkash-offers-section {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.bkash-section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  margin-bottom: 8px;
+}
+
+.bkash-section-title-row h3 {
+  font-family: var(--font-header);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.bkash-section-title-row .see-all-link {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bkash-pink);
+  text-decoration: none;
+}
+
+.bkash-offers-carousel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  padding-bottom: 4px;
+}
+
+.bkash-offers-carousel::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari */
+}
+
+.bkash-offer-card {
+  flex: 0 0 160px;
+  scroll-snap-align: start;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bkash-offer-card:hover {
+  transform: translateY(-2px);
+}
+
+.bkash-offer-cover {
+  height: 76px;
+  background: linear-gradient(135deg, var(--bkash-pink-light), #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  position: relative;
+}
+
+.bkash-offer-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--bkash-pink);
+  color: #fff;
+  font-size: 7px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.bkash-offer-details {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.bkash-offer-details h4 {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bkash-offer-details p {
+  font-size: 8px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* My bKash wallet style Card mockups & progress arc gauges */
+.bkash-ledger-card {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-radius: 16px;
+  padding: 16px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.bkash-ledger-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  background: rgba(226, 18, 81, 0.2);
+  border-radius: 50%;
+  filter: blur(25px);
+}
+
+.bkash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.bkash-card-logo {
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1px;
+}
+
+.bkash-card-type {
+  font-size: 8px;
+  background: rgba(255,255,255,0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.bkash-card-number {
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.bkash-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.bkash-card-holder label {
+  font-size: 7px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  display: block;
+}
+
+.bkash-card-holder span {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bkash-card-bank-icon {
+  font-size: 20px;
+}
+
+/* progress gauges row */
+.bkash-gauges-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  padding: 16px 12px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 16px;
+}
+
+.bkash-gauges-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.bkash-gauges-title-row h3 {
+  font-family: var(--font-header);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.bkash-gauges-title-row .gauges-sub-link {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bkash-pink);
+}
+
+.bkash-gauges-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bkash-gauge-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.bkash-gauge-svg-container {
+  width: 58px;
+  height: 38px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bkash-gauge-svg-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+.bkash-gauge-percentage {
+  position: absolute;
+  bottom: 0px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+.bkash-gauge-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 6px;
+  margin-bottom: 2px;
+  line-height: 1.1;
+}
+
+.bkash-gauge-amount {
+  font-size: 8px;
+  color: var(--bkash-pink);
+  font-weight: 800;
+}
+
+.bkash-gauge-limit {
+  font-size: 7px;
+  color: var(--text-muted);
+}
+
+/* List group style */
+.bkash-list-group {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.bkash-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1.5px solid var(--panel-border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bkash-list-item:last-child {
+  border-bottom: none;
+}
+
+.bkash-list-item:hover {
+  background: rgba(226, 18, 81, 0.03);
+}
+
+.bkash-list-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bkash-list-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bkash-pink-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--bkash-pink);
+}
+
+.bkash-list-item-meta h4 {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 1px 0;
+}
+
+.bkash-list-item-meta p {
+  font-size: 8px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.bkash-list-item-arrow {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: bold;
+}
+
+
 
 

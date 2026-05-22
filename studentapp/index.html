@@ -187,51 +187,39 @@
       <!-- Core Scrolling Screen Workspace -->
       <div class="app-content">
         
-        <!-- Header -->
-        <div class="app-header">
-          <div class="app-logo">Learning Mate <span class="badge-role" style="background: linear-gradient(135deg, #a855f7, #6366f1); box-shadow: 0 0 10px rgba(168, 85, 247, 0.4); font-size: 8px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle;">STUDENT</span></div>
-          <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme">
-            <!-- Moon Icon by default -->
-            <svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2" viewBox="0 0 24 24" id="themeIcon">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-            </svg>
-          </button>
-        </div>
+        <!-- Curved bKash Header Banner -->
+        <div class="bkash-header-banner">
+          <div class="bkash-header-top">
+            <div class="app-logo">Learning Mate <span class="badge-role">STUDENT</span></div>
+            <button class="bkash-action-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+              <!-- Moon Icon by default -->
+              <svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2" viewBox="0 0 24 24" id="themeIcon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="bkash-profile-row">
+            <div class="bkash-profile-avatar-wrapper" onclick="document.getElementById('badgesShelfDrawer').classList.add('active')">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Aarif Al-Masoom" class="bkash-avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
+              <div class="bkash-avatar-badge" id="avatarLevelBadge">12</div>
+            </div>
+            <div class="bkash-profile-info">
+              <h3 class="bkash-username">Aarif Al-Masoom</h3>
+              <button class="bkash-balance-pill" id="tapForBalancePill">
+                <span class="pill-icon">৳</span>
+                <span class="pill-text" id="balancePillText">Tap for Balance</span>
+              </button>
+            </div>
+          </div>
 
-        <!-- Student Profile Card widget -->
-        <div class="profile-card">
-          <div class="profile-avatar-row">
-            <div class="avatar-wrapper">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Aarif Al-Masoom" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
-              <div class="avatar-badge" id="avatarLevelBadge">12</div>
-            </div>
-            <div class="student-info">
-              <h3>Aarif Al-Masoom</h3>
-              <p>
-                <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84a50.58 50.58 0 00-2.657.814m-15.482 0l2.902-1.397m12.58 1.397L17 8.75M12 11.25a3 3 0 100-6 3 3 0 000 6c0 1.62-.647 3.093-1.697 4.197L12 16.5l1.697-1.053C12.647 14.343 12 12.87 12 11.25z" />
-                </svg>
-                Level 12 Math Scholar (St. Gregory)
-              </p>
-            </div>
+          <!-- Background Curved SVG Landscape Silhouette -->
+          <div class="bkash-silhouette-landscape">
+            <svg viewBox="0 0 375 40" preserveAspectRatio="none" fill="rgba(255, 255, 255, 0.15)">
+              <path d="M0,40 L0,25 Q35,15 70,25 T140,25 T210,15 T280,30 T350,20 T375,25 L375,40 Z"></path>
+              <path d="M0,40 L0,30 Q45,20 90,30 T180,25 T270,35 T360,20 T375,30 L375,40 Z" fill="rgba(255, 255, 255, 0.08)"></path>
+            </svg>
           </div>
-          
-          <div class="xp-row">
-            <div class="xp-labels">
-              <span>XP Progression</span>
-              <span id="xpTextIndicator">850 / 1000 XP</span>
-            </div>
-            <div class="xp-bar-outer">
-              <div class="xp-bar-inner" id="xpProgressFill" style="width: 85%"></div>
-            </div>
-          </div>
-          
-          <div class="badges-mini-list">
-            <div class="mini-badge">🔥 5 Day Streak</div>
-            <div class="mini-badge">📐 Trig Wizard</div>
-            <div class="mini-badge">📝 OMR Master</div>
-          </div>
-          <button id="btnOpenBadgesShelf" style="background:transparent; border:none; color:var(--accent-color); font-size:10px; font-weight:800; cursor:pointer; text-decoration:underline; margin-top: 8px; display:block;">View Badges Shelf</button>
         </div>
 
         <!-- ========================================================================
@@ -239,6 +227,97 @@
              ======================================================================== -->
         <div class="tab-content-panel active" id="tab-home">
           
+          <!-- Quick Services 4xN Grid -->
+          <div class="bkash-services-panel">
+            <div class="bkash-services-grid">
+              <div class="bkash-service-item" onclick="switchTab('practice')">
+                <div class="service-icon-circle accent-purple">📐</div>
+                <div class="service-label">AI Practice</div>
+              </div>
+              <div class="bkash-service-item" onclick="switchTab('exams')">
+                <div class="service-icon-circle accent-blue">📝</div>
+                <div class="service-label">OMR Exams</div>
+              </div>
+              <div class="bkash-service-item" onclick="switchTab('podcast')">
+                <div class="service-icon-circle accent-red">🎧</div>
+                <div class="service-label">PrepCast</div>
+              </div>
+              <div class="bkash-service-item" onclick="switchTab('focus')">
+                <div class="service-icon-circle accent-teal">⏱️</div>
+                <div class="service-label">Focus</div>
+              </div>
+              <div class="bkash-service-item" onclick="switchTab('transport')">
+                <div class="service-icon-circle accent-orange">🚌</div>
+                <div class="service-label">Live Bus</div>
+              </div>
+              <div class="bkash-service-item" onclick="switchTab('tuition')">
+                <div class="service-icon-circle accent-pink">৳</div>
+                <div class="service-label">Tuition</div>
+              </div>
+              <div class="bkash-service-item" onclick="document.getElementById('badgesShelfDrawer').classList.add('active')">
+                <div class="service-icon-circle accent-gold">🏆</div>
+                <div class="service-label">Badges</div>
+              </div>
+              <div class="bkash-service-item" onclick="scrollToClassmateFeed()">
+                <div class="service-icon-circle accent-green">⚡</div>
+                <div class="service-label">Feed</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Offers & Campaigns Horizontal Scroll Carousel -->
+          <div class="bkash-offers-section">
+            <div class="bkash-section-title-row">
+              <h3>Offers & Campaigns</h3>
+              <a href="#" class="see-all-link" onclick="event.preventDefault(); showToast('All active campaigns are listed in this horizontal feed.', 'info');">See All</a>
+            </div>
+            <div class="bkash-offers-carousel" id="offersCarousel">
+              <!-- Offer Card 1 -->
+              <div class="bkash-offer-card" onclick="switchTab('podcast')">
+                <div class="bkash-offer-cover">
+                  📻
+                  <span class="bkash-offer-badge">PrepCast</span>
+                </div>
+                <div class="bkash-offer-details">
+                  <h4>Physics PrepCast</h4>
+                  <p>Get 2x XP booster today!</p>
+                </div>
+              </div>
+              <!-- Offer Card 2 -->
+              <div class="bkash-offer-card" onclick="switchTab('practice')">
+                <div class="bkash-offer-cover">
+                  ⚡
+                  <span class="bkash-offer-badge">Practice</span>
+                </div>
+                <div class="bkash-offer-details">
+                  <h4>Algebra Booster</h4>
+                  <p>Complete drills for +150 XP</p>
+                </div>
+              </div>
+              <!-- Offer Card 3 -->
+              <div class="bkash-offer-card" onclick="switchTab('exams')">
+                <div class="bkash-offer-cover">
+                  📝
+                  <span class="bkash-offer-badge">Exam</span>
+                </div>
+                <div class="bkash-offer-details">
+                  <h4>Midterm Recheck</h4>
+                  <p>Verify your OMR scan accuracy</p>
+                </div>
+              </div>
+              <!-- Offer Card 4 -->
+              <div class="bkash-offer-card" onclick="switchTab('focus')">
+                <div class="bkash-offer-cover">
+                  ⏱️
+                  <span class="bkash-offer-badge">Focus</span>
+                </div>
+                <div class="bkash-offer-details">
+                  <h4>Study Marathon</h4>
+                  <p>Join the 30-min focus streak</p>
+                </div>
+              </div>
+            </div>
+          </div>
           <!-- Parent Portal Switch Banner -->
           <div class="glass-card" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(245, 158, 11, 0.12)); border-color: rgba(244, 63, 94, 0.35); padding: 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
             <div style="display:flex; align-items:center; gap:8px">
@@ -449,7 +528,7 @@
           </div>
 
           <!-- Classmate Activity Feed (Peer Collaboration) -->
-          <div class="glass-card">
+          <div class="glass-card" id="classmateActivityFeedCard">
             <div class="card-title">
               <svg viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 20M3 11.627a9.39 9.39 0 002.625.372 9.336 9.336 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M3 11.627v-.003c0-1.11-.285-2.16-.786-3.07M3 11.627v.11a11.386 11.386 0 01-4.911-3.606m15.482 1.397a3 3 0 11-5.997 0 3 3 0 015.997 0zM4 9a3 3 0 11-6 0 3 3 0 016 0zm3.498 12a3 3 0 11-5.997 0 3 3 0 015.997 0z" />
@@ -772,7 +851,24 @@
              TAB 5: TUITION PANEL (Outstanding Billing)
              ======================================================================== -->
         <div class="tab-content-panel" id="tab-tuition">
-          <div class="glass-card">
+          <!-- Mock Student ID Debit Card -->
+          <div class="bkash-ledger-card">
+            <div class="bkash-card-header">
+              <div class="bkash-card-logo">Learning Mate</div>
+              <div class="bkash-card-type">STUDENT CARD</div>
+            </div>
+            <div class="bkash-card-number">4321 8765 0987 2026</div>
+            <div class="bkash-card-footer">
+              <div class="bkash-card-holder">
+                <label>Card Holder</label>
+                <span>Aarif Al-Masoom</span>
+              </div>
+              <div class="bkash-card-bank-icon">🎓</div>
+            </div>
+          </div>
+
+          <!-- Billing & School Dues Action Card -->
+          <div class="glass-card" style="margin-bottom: 16px;">
             <div class="card-title">
               <svg viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
@@ -792,6 +888,90 @@
 
             <!-- Trigger checkout simulator drawer modal -->
             <button class="checkout-trigger-btn" id="payTuitionBtn">Pay Outstanding Tuition</button>
+          </div>
+
+          <!-- Circular Gauges Panel -->
+          <div class="bkash-gauges-panel">
+            <div class="bkash-gauges-title-row">
+              <h3>My Study Milestones</h3>
+              <span class="gauges-sub-link">Weekly Summary</span>
+            </div>
+            <div class="bkash-gauges-row">
+              <!-- AI Drills Gauge -->
+              <div class="bkash-gauge-item">
+                <div class="bkash-gauge-svg-container">
+                  <svg viewBox="0 0 36 22">
+                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--panel-border)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--bkash-pink)" stroke-width="3" stroke-linecap="round" stroke-dasharray="44" stroke-dashoffset="24.2" id="gaugeAiDrillsPath"/>
+                  </svg>
+                  <div class="bkash-gauge-percentage" id="gaugeAiDrillsPercentage">45%</div>
+                </div>
+                <div class="bkash-gauge-label">AI Drills</div>
+                <div class="bkash-gauge-amount" id="gaugeAiDrillsAmount">9/20 Drills</div>
+              </div>
+
+              <!-- Study Hours Gauge -->
+              <div class="bkash-gauge-item">
+                <div class="bkash-gauge-svg-container">
+                  <svg viewBox="0 0 36 22">
+                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--panel-border)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-dasharray="44" stroke-dashoffset="11" id="gaugeStudyHoursPath"/>
+                  </svg>
+                  <div class="bkash-gauge-percentage" id="gaugeStudyHoursPercentage">75%</div>
+                </div>
+                <div class="bkash-gauge-label">Study Hours</div>
+                <div class="bkash-gauge-amount" id="gaugeStudyHoursAmount">15/20 Hrs</div>
+              </div>
+
+              <!-- XP Streak Gauge -->
+              <div class="bkash-gauge-item">
+                <div class="bkash-gauge-svg-container">
+                  <svg viewBox="0 0 36 22">
+                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--panel-border)" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-dasharray="44" stroke-dashoffset="12.5" id="gaugeXpStreakPath"/>
+                  </svg>
+                  <div class="bkash-gauge-percentage" id="gaugeXpStreakPercentage">71%</div>
+                </div>
+                <div class="bkash-gauge-label">XP Streak</div>
+                <div class="bkash-gauge-amount" id="gaugeXpStreakAmount">5/7 Days</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- list group style options -->
+          <div class="bkash-list-group">
+            <div class="bkash-list-item" onclick="window.open('../parentapp/index.html', '_blank')">
+              <div class="bkash-list-item-left">
+                <div class="bkash-list-item-icon">🛡️</div>
+                <div class="bkash-list-item-meta">
+                  <h4>Linked Parent Portal</h4>
+                  <p>Connect with Parenting Copilot</p>
+                </div>
+              </div>
+              <div class="bkash-list-item-arrow">➔</div>
+            </div>
+            
+            <div class="bkash-list-item" onclick="showToast('Auto Pay is managed by your parent in the Parenting Copilot portal.', 'info')">
+              <div class="bkash-list-item-left">
+                <div class="bkash-list-item-icon">🔄</div>
+                <div class="bkash-list-item-meta">
+                  <h4>Auto Pay School Dues</h4>
+                  <p>Manage automated recurring payments</p>
+                </div>
+              </div>
+              <div class="bkash-list-item-arrow">➔</div>
+            </div>
+            
+            <div class="bkash-list-item" onclick="showToast('No paid receipts yet. Receipts will appear here once tuition is settled.', 'info')" id="receiptsListItem">
+              <div class="bkash-list-item-left">
+                <div class="bkash-list-item-icon">📄</div>
+                <div class="bkash-list-item-meta">
+                  <h4>Receipts and Tokens</h4>
+                  <p>Download official tax invoices</p>
+                </div>
+              </div>
+              <div class="bkash-list-item-arrow">➔</div>
+            </div>
           </div>
         </div>
 
