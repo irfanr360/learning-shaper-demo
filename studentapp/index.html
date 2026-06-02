@@ -242,7 +242,7 @@
                 <div class="service-icon-circle accent-red">🎧</div>
                 <div class="service-label">PrepCast</div>
               </div>
-              <div class="bkash-service-item" onclick="switchTab('focus')">
+              <div class="bkash-service-item" onclick="scrollToFocusTimer()">
                 <div class="service-icon-circle accent-teal">⏱️</div>
                 <div class="service-label">Focus</div>
               </div>
@@ -557,6 +557,117 @@
                 </div>
                 <button class="peer-action-btn nudge" onclick="sendPeerAction('Tanvir', 'Nudge')">🔔 Nudge</button>
               </div>
+            </div>
+          </div>
+
+          <!-- FEATURE: Integrated Study Focus Pomodoro Timer -->
+          <div id="focusTimerDeckCard" class="glass-card" style="margin-top:20px; border: 1px solid var(--accent-color); box-shadow: 0 0 15px rgba(139, 92, 246, 0.15); text-align: left;">
+            <div class="card-title" style="color: var(--accent-color); font-weight:800; display:flex; align-items:center; gap:8px;">
+              <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.2;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Study Focus Timer
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; line-height:1.4;">
+              Drown out environmental distractions, associate active learning goals, and lock in your study sessions.
+            </p>
+            
+            <!-- Circular Timer Ring Frame -->
+            <div class="focus-timer-deck" style="background: rgba(0,0,0,0.15); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.03);">
+              <!-- Mode Switcher Pills -->
+              <div class="focus-mode-switcher" style="display:flex; justify-content:space-around; margin-bottom:15px; background:rgba(0,0,0,0.2); padding:4px; border-radius:8px;">
+                <span class="focus-mode-chip active" id="pomodoroModeWork" onclick="switchPomodoroMode('work')" style="font-size:10px; font-weight:800; padding:6px 12px; border-radius:6px; cursor:pointer; color:var(--text-muted); transition:all 0.2s ease;">Work</span>
+                <span class="focus-mode-chip" id="pomodoroModeShort" onclick="switchPomodoroMode('short')" style="font-size:10px; font-weight:800; padding:6px 12px; border-radius:6px; cursor:pointer; color:var(--text-muted); transition:all 0.2s ease;">Short Break</span>
+                <span class="focus-mode-chip" id="pomodoroModeLong" onclick="switchPomodoroMode('long')" style="font-size:10px; font-weight:800; padding:6px 12px; border-radius:6px; cursor:pointer; color:var(--text-muted); transition:all 0.2s ease;">Long Break</span>
+              </div>
+
+              <!-- SVG Circular Countdown Container -->
+              <div class="timer-visual-wrapper" style="display:flex; align-items:center; justify-content:center; position:relative; width:150px; height:150px; margin: 0 auto 15px auto;">
+                <svg class="timer-ring-svg" viewBox="0 0 200 200" style="width:100%; height:100%; transform: rotate(-90deg);">
+                  <!-- Track ring -->
+                  <circle class="timer-ring-track" cx="100" cy="100" r="88" style="fill:none; stroke:rgba(255,255,255,0.05); stroke-width:8;" />
+                  <!-- Fill ring -->
+                  <circle class="timer-ring-fill" id="timerRingFillCircle" cx="100" cy="100" r="88" stroke-dasharray="552.92" stroke-dashoffset="0" style="fill:none; stroke:var(--accent-color); stroke-width:8; stroke-linecap:round; transition: stroke-dashoffset 1s linear; filter: drop-shadow(0 0 4px var(--accent-color));" />
+                </svg>
+                <!-- Center countdown text values -->
+                <div class="timer-countdown-text" style="position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                  <span class="timer-time-display" id="pomodoroTimeDisplay" style="font-size:24px; font-weight:800; color:#fff; font-family:monospace;">25:00</span>
+                  <span class="timer-status-display" id="pomodoroStatusLabel" style="font-size:8px; font-weight:800; color:var(--accent-color); letter-spacing:1px; margin-top:2px;">STAY FOCUSED</span>
+                </div>
+              </div>
+
+              <!-- Focus Session Task Assocation -->
+              <div class="focus-task-select-box" style="margin-bottom:12px; text-align:left;">
+                <label for="pomodoroTaskSelect" class="focus-label" style="font-size:8px; font-weight:800; color:rgba(255,255,255,0.4); display:block; margin-bottom:4px; letter-spacing:0.5px;">🎯 ASSOCIATED STUDY MILESTONE</label>
+                <select class="focus-select" id="pomodoroTaskSelect" onchange="updatePomodoroActiveTask(this.value)" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--panel-border); border-radius:8px; padding:10px; color:#fff; font-size:11px; outline:none;">
+                  <option value="">-- Select Active Goal --</option>
+                  <option value="Complete Algebra quadratics diagnostic check">Complete Algebra quadratics check</option>
+                  <option value="Forces & Velocity Vectors PrepCast study">Forces & Velocity Vectors PrepCast</option>
+                  <option value="Newtonian Gravity physics revision">Newtonian Gravity physics revision</option>
+                  <option value="Organic Chemistry molecular valency study">Organic Chemistry valency study</option>
+                  <option value="Tuition Fee bkash receipt settlement">Settle tuition fees</option>
+                </select>
+                <div class="focus-active-task-desc" id="pomodoroActiveTaskDisplay" style="font-size:9px; color:var(--text-muted); margin-top:4px; font-style:italic;">Select a milestone to lock in focus mode.</div>
+              </div>
+
+              <!-- Soundscape Ambient Mixer -->
+              <div class="focus-soundscape-box" style="margin-bottom:15px; text-align:left;">
+                <span class="focus-label" style="font-size:8px; font-weight:800; color:rgba(255,255,255,0.4); display:block; margin-bottom:6px; letter-spacing:0.5px;">🎵 DYNAMIC AMBIENT SOUNDSCAPE</span>
+                <div class="soundscape-chips-row" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;">
+                  <button class="sound-chip active" id="soundChip_off" onclick="togglePomodoroSoundscape('off')" style="background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:20px; padding:6px 12px; color:#fff; font-size:10px; cursor:pointer; outline:none; white-space:nowrap; transition:all 0.2s ease;">🔇 Off</button>
+                  <button class="sound-chip" id="soundChip_rain" onclick="togglePomodoroSoundscape('rain')" style="background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:20px; padding:6px 12px; color:#fff; font-size:10px; cursor:pointer; outline:none; white-space:nowrap; transition:all 0.2s ease;">🌧️ Rain</button>
+                  <button class="sound-chip" id="soundChip_waves" onclick="togglePomodoroSoundscape('waves')" style="background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:20px; padding:6px 12px; color:#fff; font-size:10px; cursor:pointer; outline:none; white-space:nowrap; transition:all 0.2s ease;">🌊 Waves</button>
+                  <button class="sound-chip" id="soundChip_hum" onclick="togglePomodoroSoundscape('hum')" style="background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:20px; padding:6px 12px; color:#fff; font-size:10px; cursor:pointer; outline:none; white-space:nowrap; transition:all 0.2s ease;">🧘 Hum</button>
+                </div>
+              </div>
+
+              <!-- Controls Group -->
+              <div class="focus-controls-row" style="display:flex; gap:10px;">
+                <button class="focus-btn-primary" id="pomodoroStartBtn" onclick="togglePomodoroTimer()" style="flex:1; background:var(--accent-color); border:none; border-radius:8px; padding:10px; color:#fff; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s ease; box-shadow:0 4px 10px rgba(139,92,246,0.2);">Start Focus</button>
+                <button class="focus-btn-secondary" onclick="resetPomodoroTimer()" style="background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:8px; padding:10px 16px; color:#fff; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s ease;">Reset</button>
+              </div>
+
+              <!-- Demo Speed / Fast-forward Toggle -->
+              <div class="demo-speed-row" style="margin-top:12px; display:flex; justify-content:center;">
+                <label class="demo-switch-label" for="pomodoroDemoSpeedCheckbox" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="pomodoroDemoSpeedCheckbox" onchange="togglePomodoroDemoSpeed(this.checked)">
+                  <span class="demo-switch-text" style="font-size:9px; color:var(--text-muted); font-weight:700;">⚡ Fast-Forward Demo (1s = 1m)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Stats Dashboard Grid -->
+            <div class="focus-stats-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+              <div class="focus-stats-card glass-card" style="background:rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.03); padding:10px; border-radius:8px; text-align:left;">
+                <span class="stats-label" style="font-size:8px; font-weight:800; color:rgba(255,255,255,0.4); display:block; letter-spacing:0.5px;">🔥 DAILY STREAK</span>
+                <h3 id="pomodoroStreakDisplay" style="font-size:16px; font-weight:800; color:#fff; margin:4px 0 2px 0;">3 Days</h3>
+                <p style="font-size:8px; color:var(--text-muted); margin:0;">Keep it up Aarif!</p>
+              </div>
+              <div class="focus-stats-card glass-card" style="background:rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.03); padding:10px; border-radius:8px; text-align:left;">
+                <span class="stats-label" style="font-size:8px; font-weight:800; color:rgba(255,255,255,0.4); display:block; letter-spacing:0.5px;">⏱️ TOTAL FOCUS</span>
+                <h3 id="pomodoroTotalMinutesDisplay" style="font-size:16px; font-weight:800; color:#fff; margin:4px 0 2px 0;">75 mins</h3>
+                <p style="font-size:8px; color:var(--text-muted); margin:0;">Focused study time</p>
+              </div>
+              <div class="focus-stats-card glass-card" style="grid-column: span 2; background:rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.03); padding:10px; border-radius:8px; text-align:left;">
+                <span class="stats-label" style="font-size:8px; font-weight:800; color:rgba(255,255,255,0.4); display:block; letter-spacing:0.5px;">🎯 COMPLETED SESSIONS</span>
+                <div class="pomodoro-dots-row" id="pomodoroCompletedDotsRow" style="display:flex; gap:6px; margin:6px 0;">
+                  <span class="pomo-dot done" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-color); box-shadow:0 0 4px var(--accent-color);"></span>
+                  <span class="pomo-dot done" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-color); box-shadow:0 0 4px var(--accent-color);"></span>
+                  <span class="pomo-dot done" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-color); box-shadow:0 0 4px var(--accent-color);"></span>
+                  <span class="pomo-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);"></span>
+                  <span class="pomo-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);"></span>
+                </div>
+                <p style="font-size:8px; color:var(--text-muted); margin:4px 0 0 0;" id="pomodoroSessionsFraction">3 of 5 completed today (+25 XP per session)</p>
+              </div>
+            </div>
+
+            <!-- Personalized Focus Coach Insights -->
+            <div class="focus-coach-card glass-card" style="margin-top:12px; background:rgba(139, 92, 246, 0.04); border:1px solid rgba(139, 92, 246, 0.1); padding:10px; border-radius:8px; text-align:left;">
+              <div class="coach-header" style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                <span class="coach-avatar" style="font-size:12px;">🤖</span>
+                <span class="coach-title" style="font-size:8px; font-weight:800; color:var(--accent-color); letter-spacing:0.5px;">AI COGNITIVE FOCUS COACH</span>
+              </div>
+              <p class="coach-tip-text" id="pomodoroCoachTipText" style="font-size:10px; line-height:1.45; color:var(--text-main); margin:0;">"Welcome Aarif! Choose an active learning milestone, pick a synthesized focus soundscape to drown out environmental distractions, and let's lock in!"</p>
             </div>
           </div>
         </div>
@@ -1086,109 +1197,6 @@
           </div>
         </div>
 
-        <!-- ========================================================================
-             7. POMODORO FOCUS TIMER TAB PANEL
-             ======================================================================== -->
-        <div class="tab-content-panel" id="tab-focus">
-          <!-- Circular Timer Ring Frame -->
-          <div class="focus-timer-deck glass-card">
-            <!-- Mode Switcher Pills -->
-            <div class="focus-mode-switcher">
-              <span class="focus-mode-chip active" id="pomodoroModeWork" onclick="switchPomodoroMode('work')">Work</span>
-              <span class="focus-mode-chip" id="pomodoroModeShort" onclick="switchPomodoroMode('short')">Short Break</span>
-              <span class="focus-mode-chip" id="pomodoroModeLong" onclick="switchPomodoroMode('long')">Long Break</span>
-            </div>
-
-            <!-- SVG Circular Countdown Container -->
-            <div class="timer-visual-wrapper">
-              <svg class="timer-ring-svg" viewBox="0 0 200 200">
-                <!-- Track ring -->
-                <circle class="timer-ring-track" cx="100" cy="100" r="88" />
-                <!-- Fill ring -->
-                <circle class="timer-ring-fill" id="timerRingFillCircle" cx="100" cy="100" r="88" stroke-dasharray="552.92" stroke-dashoffset="0" />
-              </svg>
-              <!-- Center countdown text values -->
-              <div class="timer-countdown-text">
-                <span class="timer-time-display" id="pomodoroTimeDisplay">25:00</span>
-                <span class="timer-status-display" id="pomodoroStatusLabel">STAY FOCUSED</span>
-              </div>
-            </div>
-
-            <!-- Focus Session Task Assocation -->
-            <div class="focus-task-select-box">
-              <label for="pomodoroTaskSelect" class="focus-label">🎯 ASSOCIATED STUDY MILESTONE</label>
-              <select class="focus-select" id="pomodoroTaskSelect" onchange="updatePomodoroActiveTask(this.value)">
-                <option value="">-- Select Active Goal --</option>
-                <option value="Complete Algebra quadratics diagnostic check">Complete Algebra quadratics check</option>
-                <option value="Forces & Velocity Vectors PrepCast study">Forces & Velocity Vectors PrepCast</option>
-                <option value="Newtonian Gravity physics revision">Newtonian Gravity physics revision</option>
-                <option value="Organic Chemistry molecular valency study">Organic Chemistry valency study</option>
-                <option value="Tuition Fee bkash receipt settlement">Settle tuition fees</option>
-              </select>
-              <div class="focus-active-task-desc" id="pomodoroActiveTaskDisplay">Select a milestone to lock in focus mode.</div>
-            </div>
-
-            <!-- Soundscape Ambient Mixer -->
-            <div class="focus-soundscape-box">
-              <span class="focus-label">🎵 DYNAMIC AMBIENT SOUNDSCAPE</span>
-              <div class="soundscape-chips-row">
-                <button class="sound-chip active" id="soundChip_off" onclick="togglePomodoroSoundscape('off')">🔇 Off</button>
-                <button class="sound-chip" id="soundChip_rain" onclick="togglePomodoroSoundscape('rain')">🌧️ Rain</button>
-                <button class="sound-chip" id="soundChip_waves" onclick="togglePomodoroSoundscape('waves')">🌊 Waves</button>
-                <button class="sound-chip" id="soundChip_hum" onclick="togglePomodoroSoundscape('hum')">🧘 Hum</button>
-              </div>
-            </div>
-
-            <!-- Controls Group -->
-            <div class="focus-controls-row">
-              <button class="focus-btn-primary" id="pomodoroStartBtn" onclick="togglePomodoroTimer()">Start Focus</button>
-              <button class="focus-btn-secondary" onclick="resetPomodoroTimer()">Reset</button>
-            </div>
-
-            <!-- Demo Speed / Fast-forward Toggle -->
-            <div class="demo-speed-row">
-              <label class="demo-switch-label" for="pomodoroDemoSpeedCheckbox">
-                <input type="checkbox" id="pomodoroDemoSpeedCheckbox" onchange="togglePomodoroDemoSpeed(this.checked)">
-                <span class="demo-switch-text">⚡ Fast-Forward Demo (1s = 1m)</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Stats Dashboard Grid -->
-          <div class="focus-stats-grid">
-            <div class="focus-stats-card glass-card">
-              <span class="stats-label">🔥 DAILY STREAK</span>
-              <h3 id="pomodoroStreakDisplay">3 Days</h3>
-              <p style="font-size:8px; color:var(--text-muted);">Keep it up Aarif!</p>
-            </div>
-            <div class="focus-stats-card glass-card">
-              <span class="stats-label">⏱️ TOTAL FOCUS</span>
-              <h3 id="pomodoroTotalMinutesDisplay">75 mins</h3>
-              <p style="font-size:8px; color:var(--text-muted);">Focused study time</p>
-            </div>
-            <div class="focus-stats-card glass-card" style="grid-column: span 2;">
-              <span class="stats-label">🎯 COMPLETED SESSIONS</span>
-              <div class="pomodoro-dots-row" id="pomodoroCompletedDotsRow">
-                <!-- Completed session circles injected here -->
-                <span class="pomo-dot done"></span>
-                <span class="pomo-dot done"></span>
-                <span class="pomo-dot done"></span>
-                <span class="pomo-dot"></span>
-                <span class="pomo-dot"></span>
-              </div>
-              <p style="font-size:8px; color:var(--text-muted); margin-top: 4px;" id="pomodoroSessionsFraction">3 of 5 completed today (+25 XP per session)</p>
-            </div>
-          </div>
-
-          <!-- Personalized Focus Coach Insights -->
-          <div class="focus-coach-card glass-card">
-            <div class="coach-header">
-              <span class="coach-avatar">🤖</span>
-              <span class="coach-title">AI COGNITIVE FOCUS COACH</span>
-            </div>
-            <p class="coach-tip-text" id="pomodoroCoachTipText">"Welcome Aarif! Choose an active learning milestone, pick a synthesized focus soundscape to drown out environmental distractions, and let's lock in!"</p>
-          </div>
-        </div>
 
         <!-- Fullscreen Anti-Distraction Focus Lockdown Screen -->
         <div class="focus-lockdown-screen" id="focusLockdownScreen" style="display:none;">
@@ -1243,13 +1251,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
           </svg>
           PrepCast
-        </div>
-
-        <div class="nav-item" onclick="switchTab('focus')">
-          <svg viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Focus
         </div>
 
         <div class="nav-item" onclick="switchTab('transport')">

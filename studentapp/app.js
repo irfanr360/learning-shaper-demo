@@ -2905,4 +2905,16 @@ function scrollToClassmateFeed() {
   }
 }
 
+function scrollToFocusTimer() {
+  switchTab('home');
+  setTimeout(() => {
+    const el = document.getElementById('focusTimerDeckCard');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.animation = 'pulse-balance-glow 1.5s infinite alternate';
+      setTimeout(() => { el.style.animation = ''; }, 3000);
+    }
+  }, 100);
+}
+
 
