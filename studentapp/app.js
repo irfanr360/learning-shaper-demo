@@ -27,6 +27,9 @@ let studentState = {
   completedPodcasts: [],
   sleepTimerTimeout: null,
   
+  // Dynamic AI Quiz practice pools
+  activePracticePool: { easy: [], medium: [], hard: [] },
+  
   // Pomodoro Focus Timer State
   pomodoroSecondsLeft: 1500,
   pomodoroMode: 'work',
@@ -41,58 +44,297 @@ let studentState = {
 };
 
 // --- DATASETS ---
-const algebraQuizDrills = {
-  easy: [
-    {
-      id: 'eq1',
-      question: "Factorize completely: <strong>x² - 5x + 6 = 0</strong>. What are the roots?",
-      options: [
-        "A)  x = 1, x = 6",
-        "B)  x = 2, x = 3",
-        "C)  x = -2, x = -3",
-        "D)  x = 5, x = -6"
-      ],
-      correctIndex: 1,
-      hint1: "Find two numbers that multiply to +6 (constant term) and add up to -5 (middle term). Since they multiply to a positive but add to a negative, both roots must be positive values!",
-      hint2: "Factor shape: (x - p)(x - q) = 0. We need -p * -q = +6 and -p - q = -5. These numbers are -2 and -3.",
-      hint3: "Factorized form is (x - 2)(x - 3) = 0. Solving each bracket for zero gives roots: x = 2 and x = 3.",
-      explanation: "Break the middle term: x² - 2x - 3x + 6 = 0. Group terms: x(x - 2) - 3(x - 2) = 0. Therefore, (x - 2)(x - 3) = 0, which gives the roots x = 2 and x = 3."
+const ALL_SUBJECT_QUIZZES = {
+  math: {
+    label: "Mathematics 📐",
+    chapters: {
+      "ch1": {
+        name: "Chapter 1: Quadratic Equations",
+        easy: [
+          {
+            id: 'm1_e1',
+            question: "Factorize completely: <strong>x² - 5x + 6 = 0</strong>. What are the roots?",
+            options: [
+              "A)  x = 1, x = 6",
+              "B)  x = 2, x = 3",
+              "C)  x = -2, x = -3",
+              "D)  x = 5, x = -6"
+            ],
+            correctIndex: 1,
+            hint1: "Find two numbers that multiply to +6 (constant term) and add up to -5 (middle term). Since they multiply to a positive but add to a negative, both roots must be positive values!",
+            hint2: "Factor shape: (x - p)(x - q) = 0. We need -p * -q = +6 and -p - q = -5. These numbers are -2 and -3.",
+            hint3: "Factorized form is (x - 2)(x - 3) = 0. Solving each bracket for zero gives roots: x = 2 and x = 3.",
+            explanation: "Break the middle term: x² - 2x - 3x + 6 = 0. Group terms: x(x - 2) - 3(x - 2) = 0. Therefore, (x - 2)(x - 3) = 0, which gives the roots x = 2 and x = 3."
+          }
+        ],
+        medium: [
+          {
+            id: 'm1_m1',
+            question: "Solve the quadratic equation: <strong>x² - x - 6 = 0</strong>. What are the roots?",
+            options: [
+              "A)  x = 3, x = -2",
+              "B)  x = -3, x = 2",
+              "C)  x = 6, x = -1",
+              "D)  x = 1, x = -6"
+            ],
+            correctIndex: 0,
+            hint1: "We need two numbers that multiply to -6 (constant) and add to -1 (coefficient of x). Since the product is negative, the roots have opposite signs.",
+            hint2: "The numbers are -3 and +2 since (-3) * (+2) = -6 and (-3) + (+2) = -1. Use these to split the middle term.",
+            hint3: "Split: x² - 3x + 2x - 6 = 0. Group: x(x - 3) + 2(x - 3) = 0. Thus, (x - 3)(x + 2) = 0, which gives roots x = 3 and x = -2.",
+            explanation: "Rewrite: x² - 3x + 2x - 6 = 0. Factorize by grouping: x(x - 3) + 2(x - 3) = 0. Thus, (x - 3)(x + 2) = 0, giving roots x = 3 and x = -2."
+          }
+        ],
+        hard: [
+          {
+            id: 'm1_h1',
+            question: "Find the roots of the equation: <strong>2x² - 5x - 3 = 0</strong>.",
+            options: [
+              "A)  x = 3, x = -1/2",
+              "B)  x = -3, x = 1/2",
+              "C)  x = 2, x = -3/2",
+              "D)  x = 3, x = -2"
+            ],
+            correctIndex: 0,
+            hint1: "Use middle-term splitting. Multiply the x² coefficient (2) by the constant (-3) to get -6. Find two numbers that multiply to -6 and add to -5.",
+            hint2: "The numbers are -6 and +1. Split the middle term: 2x² - 6x + x - 3 = 0. Now group and factor out terms.",
+            hint3: "Factor: 2x(x - 3) + 1(x - 3) = 0, giving (2x + 1)(x - 3) = 0. Roots are x = 3 and x = -1/2.",
+            explanation: "Split the middle term: 2x² - 6x + x - 3 = 0. Group: 2x(x - 3) + 1(x - 3) = 0. This factors to (2x + 1)(x - 3) = 0. Roots are x = 3 and x = -1/2."
+          }
+        ]
+      },
+      "ch2": {
+        name: "Chapter 2: Systems of Linear Equations",
+        easy: [
+          {
+            id: 'm2_e1',
+            question: "Solve the linear system for x and y: <strong>x + y = 5</strong> and <strong>x - y = 1</strong>.",
+            options: [
+              "A) x = 3, y = 2",
+              "B) x = 4, y = 1",
+              "C) x = 2, y = 3",
+              "D) x = 5, y = 0"
+            ],
+            correctIndex: 0,
+            hint1: "Try adding the two equations directly. What happens to the y variable when you add +y and -y?",
+            hint2: "Adding them gives: (x + y) + (x - y) = 5 + 1 => 2x = 6. Solve for x.",
+            hint3: "Since 2x = 6, we get x = 3. Substituting x = 3 back into x + y = 5 yields 3 + y = 5 => y = 2.",
+            explanation: "Add both equations: 2x = 6 => x = 3. Substitute x = 3 in the first equation: 3 + y = 5 => y = 2. Thus, x = 3, y = 2."
+          }
+        ],
+        medium: [
+          {
+            id: 'm2_m1',
+            question: "Solve the system: <strong>2x + y = 7</strong> and <strong>x - y = 2</strong>.",
+            options: [
+              "A) x = 3, y = 1",
+              "B) x = 2, y = 3",
+              "C) x = 4, y = -1",
+              "D) x = 3, y = 2"
+            ],
+            correctIndex: 0,
+            hint1: "Notice the y coefficients: +y in the first and -y in the second. Adding the equations will eliminate y.",
+            hint2: "Adding gives: 2x + x = 7 + 2 => 3x = 9. Find the value of x.",
+            hint3: "If 3x = 9, then x = 3. Substituting x = 3 into x - y = 2 gives 3 - y = 2 => y = 1.",
+            explanation: "Add the two equations: 3x = 9 => x = 3. Substituting x = 3 into the second equation: 3 - y = 2 => y = 1. Therefore, x = 3, y = 1."
+          }
+        ],
+        hard: [
+          {
+            id: 'm2_h1',
+            question: "Find the intersection point of: <strong>3x + 2y = 12</strong> and <strong>2x - 3y = -5</strong>.",
+            options: [
+              "A) (2, 3)",
+              "B) (4, 0)",
+              "C) (1, 4.5)",
+              "D) (2, 2)"
+            ],
+            correctIndex: 0,
+            hint1: "Multiply the first equation by 3 and the second by 2. This will equalize the coefficients of y with opposite signs.",
+            hint2: "New system: 9x + 6y = 36 and 4x - 6y = -10. Add them to eliminate y: 13x = 26.",
+            hint3: "Solve 13x = 26 to get x = 2. Substituting x = 2 in the first equation: 6 + 2y = 12 => 2y = 6 => y = 3.",
+            explanation: "Multiply first equation by 3: 9x + 6y = 36. Second by 2: 4x - 6y = -10. Add them: 13x = 26 => x = 2. Substitute x = 2: 3(2) + 2y = 12 => 2y = 6 => y = 3. The point is (2, 3)."
+          }
+        ]
+      }
     }
-  ],
-  medium: [
-    {
-      id: 'eq2',
-      question: "Solve the quadratic equation: <strong>x² - x - 6 = 0</strong>. What are the roots?",
-      options: [
-        "A)  x = 3, x = -2",
-        "B)  x = -3, x = 2",
-        "C)  x = 6, x = -1",
-        "D)  x = 1, x = -6"
-      ],
-      correctIndex: 0,
-      hint1: "We need two numbers that multiply to -6 (constant) and add to -1 (coefficient of x). Since the product is negative, the roots have opposite signs.",
-      hint2: "The numbers are -3 and +2 since (-3) * (+2) = -6 and (-3) + (+2) = -1. Use these to split the middle term.",
-      hint3: "Split: x² - 3x + 2x - 6 = 0. Group: x(x - 3) + 2(x - 3) = 0. Thus, (x - 3)(x + 2) = 0, which gives roots x = 3 and x = -2.",
-      explanation: "Rewrite: x² - 3x + 2x - 6 = 0. Factorize by grouping: x(x - 3) + 2(x - 3) = 0. Thus, (x - 3)(x + 2) = 0, giving roots x = 3 and x = -2."
+  },
+  physics: {
+    label: "Physics 🚀",
+    chapters: {
+      "ch1": {
+        name: "Chapter 1: Newtonian Gravity",
+        easy: [
+          {
+            id: 'p1_e1',
+            question: "According to Newton's Law of Universal Gravitation, force is inversely proportional to what power of distance?",
+            options: [
+              "A) First power (d)",
+              "B) Square of the distance (d²)",
+              "C) Cube of the distance (d³)",
+              "D) Square root of the distance (√d)"
+            ],
+            correctIndex: 1,
+            hint1: "Recall the equation for Newton's gravitational force: F = G(m1*m2)/d².",
+            hint2: "In the denominator of the equation, the separation distance variable d is raised to the power of 2.",
+            hint3: "Because d² is in the denominator, the force scale decreases as the square of the distance increases.",
+            explanation: "Newton's formula is F = G(m₁m₂)/d². Since d² resides in the denominator, force is inversely proportional to the square of the separation distance."
+          }
+        ],
+        medium: [
+          {
+            id: 'p1_m1',
+            question: "If the separation distance between two mass points is tripled (3d), the gravitational force decreases to:",
+            options: [
+              "A) 1/3 of its original value",
+              "B) 1/6 of its original value",
+              "C) 1/9 of its original value",
+              "D) 1/27 of its original value"
+            ],
+            correctIndex: 2,
+            hint1: "Apply the Inverse Square Law: Force is proportional to 1 / d².",
+            hint2: "Substitute 3d for d in the expression 1 / d². This gives 1 / (3d)², which evaluates to 1 / 9d².",
+            hint3: "Thus, tripling the distance reduces the force by a factor of 3 squared, which is 9.",
+            explanation: "By the inverse square law, F is proportional to 1/d². If distance d is replaced by 3d, the force becomes proportional to 1/(3d)² = 1/(9d²), which is exactly 1/9th of the original force."
+          }
+        ],
+        hard: [
+          {
+            id: 'p1_h1',
+            question: "What is the gravitational acceleration g on a planet's surface if its mass is double Earth's mass, but its radius is also doubled (2R)?",
+            options: [
+              "A) g / 2",
+              "B) g",
+              "C) 2g",
+              "D) g / 4"
+            ],
+            correctIndex: 0,
+            hint1: "The formula for surface gravity is g = GM/R².",
+            hint2: "Substitute 2M for M and 2R for R in the planetary gravity equation. This yields: g' = G(2M)/(2R)².",
+            hint3: "Simplify the expression: g' = G(2M)/(4R²) = 0.5 * (GM/R²). Therefore, it is half of Earth's gravity.",
+            explanation: "Surface gravity formula is g = GM/R². For the new planet: g' = G(2M)/(2R)² = G(2M)/(4R²) = 2/4 * (GM/R²) = 0.5g. Therefore, the gravity is cut in half (g/2)."
+          }
+        ]
+      }
     }
-  ],
-  hard: [
-    {
-      id: 'eq3',
-      question: "Find the roots of the equation: <strong>2x² - 5x - 3 = 0</strong>.",
-      options: [
-        "A)  x = 3, x = -1/2",
-        "B)  x = -3, x = 1/2",
-        "C)  x = 2, x = -3/2",
-        "D)  x = 3, x = -2"
-      ],
-      correctIndex: 0,
-      hint1: "Use middle-term splitting. Multiply the x² coefficient (2) by the constant (-3) to get -6. Find two numbers that multiply to -6 and add to -5.",
-      hint2: "The numbers are -6 and +1. Split the middle term: 2x² - 6x + x - 3 = 0. Now group and factor out terms.",
-      hint3: "Factor: 2x(x - 3) + 1(x - 3) = 0, giving (2x + 1)(x - 3) = 0. Roots are x = 3 and x = -1/2.",
-      explanation: "Split the middle term: 2x² - 6x + x - 3 = 0. Group: 2x(x - 3) + 1(x - 3) = 0. This factors to (2x + 1)(x - 3) = 0. Roots are x = 3 and x = -1/2."
+  },
+  chemistry: {
+    label: "Chemistry 🧪",
+    chapters: {
+      "ch1": {
+        name: "Chapter 1: Tetravalent Organic Carbon",
+        easy: [
+          {
+            id: 'c1_e1',
+            question: "What is the valency of a Carbon atom in standard organic molecules, allowing it to form covalent structures?",
+            options: [
+              "A) Divalent (2)",
+              "B) Trivalent (3)",
+              "C) Tetravalent (4)",
+              "D) Pentavalent (5)"
+            ],
+            correctIndex: 2,
+            hint1: "Carbon is located in Group 14 of the Periodic Table. How many valence electrons does it have in its outer shell?",
+            hint2: "It has four valence electrons, meaning it requires four additional electrons to satisfy the octet stability rule.",
+            hint3: "By sharing four pairs of electrons, carbon forms exactly four covalent bonds in compounds like methane (CH4).",
+            explanation: "Carbon has four valence shell electrons. To complete its outer octet, it forms four covalent bonds with surrounding atoms, making it tetravalent."
+          }
+        ],
+        medium: [
+          {
+            id: 'c1_m1',
+            question: "In methane (CH₄), what is the hybridization of the central Carbon atom?",
+            options: [
+              "A) sp",
+              "B) sp²",
+              "C) sp³",
+              "D) dsp²"
+            ],
+            correctIndex: 2,
+            hint1: "Count the number of single sigma bonds formed around the carbon. Methane has 4 single C-H bonds and zero lone pairs.",
+            hint2: "Four electron domains correspond to tetrahedral geometry.",
+            hint3: "Tetrahedral configurations are formed through the hybridization of one s orbital and three p orbitals, yielding sp³.",
+            explanation: "Methane has four single covalent sigma bonds and zero lone pairs surrounding the central carbon atom. This tetrahedral geometry corresponds to sp³ hybridization."
+          }
+        ],
+        hard: [
+          {
+            id: 'c1_h1',
+            question: "What are the theoretical C-H bond angles in a perfectly symmetrical tetrahedral molecule like methane?",
+            options: [
+              "A) 90 degrees",
+              "B) 109.5 degrees",
+              "C) 120 degrees",
+              "D) 180 degrees"
+            ],
+            correctIndex: 1,
+            hint1: "The bonds are distributed in three dimensions to maximize separation and minimize valence shell electron pair repulsions.",
+            hint2: "Because a sphere has 360 degrees, the three-dimensional geometry results in an angle slightly greater than a right angle.",
+            hint3: "This symmetric tetrahedral separation yields a standard bond angle of exactly 109.5 degrees.",
+            explanation: "According to VSEPR theory, four electron pairs around a central atom maximize distance by adopting a tetrahedral geometry, which features bond angles of 109.5 degrees."
+          }
+        ]
+      }
     }
-  ]
+  },
+  english: {
+    label: "English 📝",
+    chapters: {
+      "ch1": {
+        name: "Chapter 1: Active vs Passive Voice",
+        easy: [
+          {
+            id: 'e1_e1',
+            question: "Which of the following sentences is written in the active voice?",
+            options: [
+              "A) The test was written by Aarif.",
+              "B) Aarif wrote the chemistry test.",
+              "C) The test was completed.",
+              "D) By Aarif the test was submitted."
+            ],
+            correctIndex: 1,
+            hint1: "In active voice sentences, the subject performing the action comes first, directly followed by the action verb.",
+            hint2: "Look for the sentence where 'Aarif' (the subject) directly performs the action 'wrote' on the 'chemistry test' (the object).",
+            hint3: "Option B puts the actor before the verb, while Option A and C put the object first and use auxiliary verbs like 'was'.",
+            explanation: "'Aarif wrote the chemistry test' is in the active voice because the grammatical subject ('Aarif') directly performs the action of the verb ('wrote') on the object."
+          }
+        ],
+        medium: [
+          {
+            id: 'e1_m1',
+            question: "Identify the passive counterpart of: 'The teacher compiled the lesson plan.'",
+            options: [
+              "A) The lesson plan was compiled by the teacher.",
+              "B) The teacher was compiling the lesson plan.",
+              "C) Compile the lesson plan, the teacher did.",
+              "D) Compiled is the lesson plan by the teacher."
+            ],
+            correctIndex: 0,
+            hint1: "In a passive voice sentence, the object of the active sentence ('the lesson plan') becomes the grammatical subject.",
+            hint2: "Use a form of the auxiliary verb 'to be' matching the original past tense ('was compiled') and add the agent with the preposition 'by'.",
+            hint3: "This yields: 'The lesson plan' + 'was compiled' + 'by the teacher'.",
+            explanation: "To convert to passive voice, the object 'the lesson plan' becomes the subject, the past tense verb 'compiled' becomes 'was compiled', and the original subject 'the teacher' is added as a prepositional agent: 'by the teacher'."
+          }
+        ],
+        hard: [
+          {
+            id: 'e1_h1',
+            question: "Why would a writer intentionally choose to use the passive voice over the active voice in scientific reporting?",
+            options: [
+              "A) To make the sentence structure longer and more complex.",
+              "B) To emphasize the action or object rather than the individual researcher.",
+              "C) Passive voice is always grammatically superior to active voice.",
+              "D) Active voice cannot support transitively structured verbs."
+            ],
+            correctIndex: 1,
+            hint1: "Scientific reports prioritize neutrality, objectivity, and focus on the experiment and findings over personal pronouns.",
+            hint2: "Writing 'We heated the solution' emphasizes the actors, whereas 'The solution was heated' emphasizes the solution itself.",
+            hint3: "Therefore, passive voice is often used in experimental procedures to obscure the actor and place emphasis directly on the subject of study.",
+            explanation: "Scientific writing often employs passive voice to focus attention directly on the processes, variables, and findings rather than the specific researchers performing the steps."
+          }
+        ]
+      }
+    }
+  }
 };
 
 // --- CORE SYSTEM INITIALIZATION ---
@@ -431,34 +673,145 @@ function toggleMilestone(element, xpReward) {
 }
 
 // --- ADAPTIVE EXAMS AI QUIZ PRACTICE SYSTEM ---
+let currentPracticeSubject = 'math';
+let currentPracticeChapter = 'all';
+
+window.initPracticeSystem = function() {
+  updatePracticeChaptersDropdown();
+  setPracticeSubject('math');
+};
+
+window.updatePracticeChaptersDropdown = function() {
+  const select = document.getElementById('practiceChapterSelect');
+  if (!select) return;
+  
+  select.innerHTML = '<option value="all">📚 Practice All Chapters</option>';
+  
+  const subjectData = ALL_SUBJECT_QUIZZES[currentPracticeSubject];
+  if (subjectData && subjectData.chapters) {
+    Object.keys(subjectData.chapters).forEach(chKey => {
+      const option = document.createElement('option');
+      option.value = chKey;
+      option.innerText = subjectData.chapters[chKey].name;
+      select.appendChild(option);
+    });
+  }
+};
+
+window.setPracticeSubject = function(subject) {
+  currentPracticeSubject = subject;
+  currentPracticeChapter = 'all';
+  
+  const select = document.getElementById('practiceChapterSelect');
+  if (select) select.value = 'all';
+  
+  // Update chip active highlights
+  const chipsContainer = document.getElementById('practiceSubjectChips');
+  if (chipsContainer) {
+    const buttons = chipsContainer.querySelectorAll('button');
+    buttons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('onclick').includes(`'${subject}'`)) {
+        btn.classList.add('active');
+      }
+    });
+  }
+  
+  updatePracticeChaptersDropdown();
+  loadPracticeQuizzes();
+  showToast(`Switched active subject to: ${ALL_SUBJECT_QUIZZES[subject].label}`, 'success');
+};
+
+window.setPracticeChapter = function() {
+  const select = document.getElementById('practiceChapterSelect');
+  if (!select) return;
+  
+  currentPracticeChapter = select.value;
+  loadPracticeQuizzes();
+  const chLabel = currentPracticeChapter === 'all' ? 'All Chapters' : ALL_SUBJECT_QUIZZES[currentPracticeSubject].chapters[currentPracticeChapter].name;
+  showToast(`Loaded questions for: ${chLabel}`, 'success');
+};
+
+window.loadPracticeQuizzes = function() {
+  const subjectData = ALL_SUBJECT_QUIZZES[currentPracticeSubject];
+  let questionsPool = { easy: [], medium: [], hard: [] };
+  
+  if (currentPracticeChapter === 'all') {
+    Object.keys(subjectData.chapters).forEach(chKey => {
+      const ch = subjectData.chapters[chKey];
+      questionsPool.easy = questionsPool.easy.concat(ch.easy || []);
+      questionsPool.medium = questionsPool.medium.concat(ch.medium || []);
+      questionsPool.hard = questionsPool.hard.concat(ch.hard || []);
+    });
+  } else {
+    const ch = subjectData.chapters[currentPracticeChapter];
+    if (ch) {
+      questionsPool.easy = ch.easy || [];
+      questionsPool.medium = ch.medium || [];
+      questionsPool.hard = ch.hard || [];
+    }
+  }
+  
+  studentState.activePracticePool = questionsPool;
+  studentState.currentQuizIndex = 0;
+  
+  renderQuizQuestion();
+};
+
 function setQuizDifficulty(diffLevel) {
   studentState.quizDifficulty = diffLevel;
   studentState.currentQuizIndex = 0;
   
-  // Update UI Difficult Selection Highlights
   document.getElementById('diffEasy').classList.remove('active');
   document.getElementById('diffMedium').classList.remove('active');
   document.getElementById('diffHard').classList.remove('active');
   
-  // Capitalize level selector matching
   const capitalized = diffLevel.charAt(0).toUpperCase() + diffLevel.slice(1);
-  document.getElementById(`diff${capitalized}`).classList.add('active');
+  const el = document.getElementById(`diff${capitalized}`);
+  if (el) el.classList.add('active');
 
   renderQuizQuestion();
   showToast(`AI adapted difficulty to: ${diffLevel.toUpperCase()}`, 'success');
 }
 
 function renderQuizQuestion() {
-  const currentQuiz = algebraQuizDrills[studentState.quizDifficulty][studentState.currentQuizIndex];
+  const pool = studentState.activePracticePool[studentState.quizDifficulty] || [];
+  
+  if (pool.length === 0) {
+    document.getElementById('quizDifficultyBadge').innerText = `${currentPracticeSubject.toUpperCase()} • ${studentState.quizDifficulty.toUpperCase()}`;
+    document.getElementById('quizQuestionText').innerHTML = "No questions available in this chapter at this difficulty level. Try selecting another difficulty or another chapter!";
+    document.getElementById('quizProgressNum').innerText = "Q 0 of 0";
+    document.getElementById('quizOptionsList').innerHTML = '';
+    
+    document.getElementById('quizHintBubble').style.display = 'none';
+    document.getElementById('drillFeedbackPanel').style.display = 'none';
+    
+    const submitBtn = document.getElementById('submitQuizBtn');
+    submitBtn.innerText = "Reset Subject";
+    submitBtn.onclick = () => {
+      setPracticeSubject(currentPracticeSubject);
+    };
+    return;
+  }
+  
+  if (studentState.currentQuizIndex >= pool.length) {
+    studentState.currentQuizIndex = 0;
+  }
+  
+  const currentQuiz = pool[studentState.currentQuizIndex];
   
   // Update Metadata
-  document.getElementById('quizDifficultyBadge').innerText = `QUADRATICS • ${studentState.quizDifficulty.toUpperCase()}`;
-  document.getElementById('quizQuestionText').innerHTML = currentQuiz.question;
+  const subLabel = ALL_SUBJECT_QUIZZES[currentPracticeSubject].label.toUpperCase();
+  const chLabel = currentPracticeChapter === 'all' 
+    ? 'ALL CHAPTERS' 
+    : ALL_SUBJECT_QUIZZES[currentPracticeSubject].chapters[currentPracticeChapter].name.split(':')[0].toUpperCase();
   
-  // Clear choices selections
+  document.getElementById('quizDifficultyBadge').innerText = `${chLabel} • ${studentState.quizDifficulty.toUpperCase()}`;
+  document.getElementById('quizQuestionText').innerHTML = currentQuiz.question;
+  document.getElementById('quizProgressNum').innerText = `Q ${studentState.currentQuizIndex + 1} of ${pool.length}`;
+  
   studentState.selectedQuizOption = null;
   
-  // Render options button layouts
   const optionsList = document.getElementById('quizOptionsList');
   optionsList.innerHTML = '';
   
@@ -470,18 +823,15 @@ function renderQuizQuestion() {
     optionsList.appendChild(btn);
   });
 
-  // Hide hints bubble and feedback lists
   document.getElementById('quizHintBubble').style.display = 'none';
   document.getElementById('drillFeedbackPanel').style.display = 'none';
   
-  // Reset Action CTA button Text
   const submitBtn = document.getElementById('submitQuizBtn');
   submitBtn.innerText = "Submit Answer";
   submitBtn.onclick = handleQuizSubmit;
 }
 
 function selectQuizOption(element, index) {
-  // Clear previous selected highlights
   const buttons = document.querySelectorAll('.option-btn');
   buttons.forEach(btn => btn.classList.remove('selected'));
   
@@ -493,46 +843,47 @@ function setupQuizEngine() {
   const hintBtn = document.getElementById('quizHintBtn');
   const hintBubble = document.getElementById('quizHintBubble');
   
-  hintBtn.addEventListener('click', () => {
-    const isVisible = hintBubble.style.display === 'block';
-    hintBubble.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible) {
-      showHintTier(1); // Default to Tier 1 when opened
-    }
-  });
+  if (hintBtn && hintBubble) {
+    hintBtn.addEventListener('click', () => {
+      const isVisible = hintBubble.style.display === 'block';
+      hintBubble.style.display = isVisible ? 'none' : 'block';
+      if (!isVisible) {
+        showHintTier(1);
+      }
+    });
+  }
+
+  // Initialize practice subject & chapter selection
+  initPracticeSystem();
 }
 
 function handleQuizSubmit() {
+  const pool = studentState.activePracticePool[studentState.quizDifficulty] || [];
+  if (pool.length === 0) return;
+  
   if (studentState.selectedQuizOption === null) {
     showToast('Please select an option to submit!', 'warning');
     return;
   }
 
-  const currentQuiz = algebraQuizDrills[studentState.quizDifficulty][studentState.currentQuizIndex];
+  const currentQuiz = pool[studentState.currentQuizIndex];
   const buttons = document.querySelectorAll('.option-btn');
   const feedbackPanel = document.getElementById('drillFeedbackPanel');
   
-  // Disable option modifications
   buttons.forEach(btn => btn.removeAttribute('onclick'));
   
-  // XP payouts scale based on difficulty
   let xpReward = 30;
   if (studentState.quizDifficulty === 'medium') xpReward = 50;
   else if (studentState.quizDifficulty === 'hard') xpReward = 80;
   
   if (studentState.selectedQuizOption === currentQuiz.correctIndex) {
-    // Correct Action
     buttons[studentState.selectedQuizOption].classList.add('correct-reveal');
     feedbackPanel.className = 'drill-feedback correct';
     feedbackPanel.innerHTML = `🌟 <strong>Correct!</strong> +${xpReward} XP Awarded.<br>${currentQuiz.explanation}`;
     
-    // Confetti Celebratory Burst
     triggerConfettiBurst();
-    
-    // Add XP reward
     addXp(xpReward);
     
-    // Check milestones
     const milestoneMath = document.getElementById('milestoneMath');
     if (milestoneMath && !milestoneMath.classList.contains('completed')) {
       toggleMilestone(milestoneMath, 100);
@@ -540,9 +891,10 @@ function handleQuizSubmit() {
     
     showToast('Excellent! Correct Answer.', 'success');
   } else {
-    // Incorrect Action
     buttons[studentState.selectedQuizOption].classList.add('incorrect-reveal');
-    buttons[currentQuiz.correctIndex].classList.add('correct-reveal'); // Highlight correct answer
+    if (buttons[currentQuiz.correctIndex]) {
+      buttons[currentQuiz.correctIndex].classList.add('correct-reveal');
+    }
     
     feedbackPanel.className = 'drill-feedback incorrect';
     feedbackPanel.innerHTML = `❌ <strong>Incorrect</strong>.<br>Let's review the steps:<br>${currentQuiz.explanation}`;
@@ -550,15 +902,22 @@ function handleQuizSubmit() {
     showToast('Review the AI explanation steps below and try again!', 'warning');
   }
 
-  // Toggle feedback visibility
   feedbackPanel.style.display = 'block';
 
-  // Toggle Action Button text to 'Next Question' or 'Retry'
   const submitBtn = document.getElementById('submitQuizBtn');
-  submitBtn.innerText = "Restart Practice";
-  submitBtn.onclick = () => {
-    renderQuizQuestion();
-  };
+  if (studentState.currentQuizIndex < pool.length - 1) {
+    submitBtn.innerText = "Next Question";
+    submitBtn.onclick = () => {
+      studentState.currentQuizIndex++;
+      renderQuizQuestion();
+    };
+  } else {
+    submitBtn.innerText = "Restart Chapter Practice";
+    submitBtn.onclick = () => {
+      studentState.currentQuizIndex = 0;
+      renderQuizQuestion();
+    };
+  }
 }
 
 // --- HIGH-FIDELITY CONFETTI PARTICLE LAUNCHER ---
@@ -999,7 +1358,11 @@ function setupParabolaSimulation() {
 
 // --- FEATURE 4: 3-TIER HINTS ENGINE ---
 function showHintTier(tierNum) {
-  const currentQuiz = algebraQuizDrills[studentState.quizDifficulty][studentState.currentQuizIndex];
+  const pool = studentState.activePracticePool[studentState.quizDifficulty] || [];
+  if (pool.length === 0) return;
+  const currentQuiz = pool[studentState.currentQuizIndex];
+  if (!currentQuiz) return;
+  
   const hintContent = document.getElementById('hintTierContent');
   if (!hintContent) return;
   

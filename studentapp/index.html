@@ -675,8 +675,30 @@
           <!-- Canvas for celebratory Confetti overlays inside smartphone screen boundary -->
           <canvas id="confetti-canvas"></canvas>
 
+          <!-- Dynamic Subject & Chapter Selection Panel -->
+          <div class="glass-card" style="margin-bottom: 16px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); text-align: left;">
+            <div style="font-size:10px; font-weight:800; color:rgba(255,255,255,0.5); text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <span style="display:inline-block; width:6px; height:6px; background:var(--accent-color); border-radius:50%; box-shadow: 0 0 6px var(--accent-color);"></span>
+              1. Select Active Subject
+            </div>
+            <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none;" id="practiceSubjectChips">
+              <button class="diff-btn active" onclick="setPracticeSubject('math')" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-radius: 20px;">📐 Mathematics</button>
+              <button class="diff-btn" onclick="setPracticeSubject('physics')" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-radius: 20px;">🚀 Physics</button>
+              <button class="diff-btn" onclick="setPracticeSubject('chemistry')" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-radius: 20px;">🧪 Chemistry</button>
+              <button class="diff-btn" onclick="setPracticeSubject('english')" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-radius: 20px;">📝 English</button>
+            </div>
+            
+            <div style="font-size:10px; font-weight:800; color:rgba(255,255,255,0.5); text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+              <span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow: 0 0 6px #10b981;"></span>
+              2. Select Chapter (Optional)
+            </div>
+            <select id="practiceChapterSelect" onchange="setPracticeChapter()" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--panel-border); border-radius:8px; padding:10px; color:#fff; font-size:12px; outline:none; cursor:pointer;">
+              <!-- Dynamically populated chapters select -->
+            </select>
+          </div>
+
           <!-- Adaptive difficulty selector triggers -->
-          <div class="difficulty-selector">
+          <div class="difficulty-selector" style="margin-bottom:16px;">
             <button class="diff-btn active" id="diffEasy" onclick="setQuizDifficulty('easy')">Easy</button>
             <button class="diff-btn" id="diffMedium" onclick="setQuizDifficulty('medium')">Medium</button>
             <button class="diff-btn" id="diffHard" onclick="setQuizDifficulty('hard')">Hard</button>
