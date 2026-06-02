@@ -597,7 +597,7 @@
               <!-- Subject Selection -->
               <div class="form-group" style="margin-bottom:12px;">
                 <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">1. Target Subject</label>
-                <select class="grader-select" id="studioSubjectSelect" style="width: 100%;">
+                <select class="grader-select" id="studioSubjectSelect" style="width: 100%;" onchange="updateStudioTextbook()">
                   <option value="math">Mathematics (Grade 8 Algebra)</option>
                   <option value="physics">Physics (Mechanics)</option>
                   <option value="chemistry">Chemistry (Organic/Inorganic)</option>
@@ -605,15 +605,26 @@
                 </select>
               </div>
 
+              <!-- Target Ingested RAG Textbook -->
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">2. Ingested RAG Textbook (Vector DB)</label>
+                <select class="grader-select" id="studioBookSelect" style="width: 100%; pointer-events: none; opacity: 0.85;">
+                  <option value="math_ncert">📚 NCERT Class 8 Algebraic Foundations (24,800 Chunks Ingested)</option>
+                  <option value="physics_halliday">📚 Fundamentals of Classical Mechanics (38,200 Chunks Ingested)</option>
+                  <option value="chem_morrison">📚 Modern Organic Chemistry Foundations (19,400 Chunks Ingested)</option>
+                  <option value="english_composition">📚 High School Prose & Rhetoric (12,500 Chunks Ingested)</option>
+                </select>
+              </div>
+
               <!-- Chapter Input -->
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">2. Chapter / Topic Title</label>
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">3. Chapter / Topic Title</label>
                 <input type="text" id="studioChapterInput" placeholder="e.g. Newtonian Gravity, Organic Bonds" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:8px; padding:10px; color:#fff; font-size:12px; outline:none;" value="Newtonian Gravity">
               </div>
 
               <!-- Voice selection -->
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">3. Synthetic Voice Avatar</label>
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">4. Synthetic Voice Avatar</label>
                 <select class="grader-select" id="studioVoiceSelect" style="width: 100%;">
                   <option value="Tasnim">Mrs. Tasnim Jahan (Warm & Encouraging)</option>
                   <option value="Arif">Dr. Arif Al-Hasan (Analytical & Measured)</option>
@@ -623,13 +634,38 @@
 
               <!-- AI Prompt -->
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">4. AI Script Prompt Instructions</label>
+                <label style="font-size:11px; margin-bottom:4px; display:block; color:rgba(255,255,255,0.7);">5. AI Script Prompt Instructions</label>
                 <textarea id="studioPromptInput" rows="2" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--panel-border); border-radius:8px; padding:10px; color:#fff; font-size:11px; outline:none; resize:none; line-height:1.4;">Explain the core concepts of Newtonian Gravity with real-world analogies, and include a critical diagnostic retention check.</textarea>
               </div>
 
               <!-- Compiler Action Buttons -->
               <div class="form-group" style="margin-top: 16px;">
                 <button class="action-btn-primary" style="width:100%; margin:0;" onclick="generatePodcastScript()">🤖 Compile AI Educational Script</button>
+              </div>
+
+              <!-- Interactive RAG Chunk Viewer -->
+              <div id="studioRagChunkContainer" style="display:none; margin-top:16px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; font-weight:800; color:#10b981; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                  <span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow: 0 0 6px #10b981;"></span>
+                  Semantic Chunks Retrieved from Vector DB
+                </div>
+                <div id="studioRagChunksList" style="display:flex; flex-direction:column; gap:8px;">
+                  <!-- Dynamically populated fragments -->
+                </div>
+              </div>
+
+              <!-- AI Pipeline Progress Logger Console -->
+              <div id="studioPipelineLogger" style="display:none; margin-top:16px; background:#070d19; border:1px solid #1e293b; border-radius:10px; padding:12px; font-family:monospace; font-size:10px; color:#38bdf8; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                <div style="font-size:10px; font-weight:800; color:#38bdf8; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between;">
+                  <span>⚙️ RAG-TO-PODCAST GENERATION PIPELINE</span>
+                  <span id="studioPipelineTimer">0.0s</span>
+                </div>
+                <div id="studioPipelineLogs" style="display:flex; flex-direction:column; gap:4px; line-height:1.4; max-height:120px; overflow-y:auto; padding-right:4px;">
+                  <!-- Console logs write here dynamically -->
+                </div>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; margin-top:10px; overflow:hidden;">
+                  <div id="studioPipelineBar" style="width:0%; height:100%; background:linear-gradient(90deg, #38bdf8, #10b981); transition: width 0.1s linear;"></div>
+                </div>
               </div>
 
               <!-- Script Preview Area (Hidden initially) -->

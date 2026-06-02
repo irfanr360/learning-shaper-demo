@@ -147,12 +147,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const alertData = JSON.parse(e.newValue);
         if (alertData) {
           showToast(`🎧 New PrepCast released by ${alertData.author || 'Teacher'}: ${alertData.chapter}!`, 'success');
-          // Refresh state
           if (typeof loadSyncedPodcasts === 'function') {
             loadSyncedPodcasts();
           }
+          if (typeof renderPodcastBrowseShelf === 'function') {
+            renderPodcastBrowseShelf('all');
+          }
         }
       } catch (err) {}
+    } else if (e.key === 'school_podcasts_state') {
+      if (typeof renderPodcastBrowseShelf === 'function') {
+        renderPodcastBrowseShelf('all');
+      }
     }
   });
 });

@@ -751,6 +751,42 @@ function simulateParentReplyFallback(teacherText) {
 /* ========================================================================
    AI PREPCAST STUDIO MODULE
    ======================================================================== */
+/* ========================================================================
+   AI PREPCAST STUDIO MODULE - RAG TEXTBOOK PIPELINE
+   ======================================================================== */
+const MOCK_RAG_DATABASE = {
+  math: [
+    { text: "Equations of the form ax² + bx + c = 0 are called quadratic equations, where a ≠ 0. The values of x that satisfy the equation are called its roots. The expression b² - 4ac is defined as the discriminant (D).", page: 74, score: 0.96 },
+    { text: "If D > 0, there are two distinct real roots. If D = 0, there is exactly one real, repeating root. If D < 0, the roots are complex conjugates and no real roots exist. Visually, the parabola touches the x-axis exactly once when D = 0.", page: 76, score: 0.93 },
+    { text: "To factorise quadratics, we can use the method of splitting the middle term, completing the square, or applying the quadratic formula: x = (-b ± √D) / 2a.", page: 79, score: 0.89 }
+  ],
+  physics: [
+    { text: "Newton's Law of Universal Gravitation states that every particle attracts every other particle in the universe with a force proportional to the product of their masses and inversely proportional to the square of their distance: F = G(m₁m₂)/d².", page: 112, score: 0.97 },
+    { text: "The inverse square nature of gravitational force implies that if the separation distance is doubled, the force decreases by a factor of 4. Conversely, if distance is halved, force increases by a factor of 4.", page: 115, score: 0.94 },
+    { text: "Gravitational acceleration g at the surface of a spherical mass is g = GM/R². In standard calculations, G is the gravitational constant: 6.674 × 10⁻¹¹ N m²/kg².", page: 118, score: 0.88 }
+  ],
+  chemistry: [
+    { text: "Carbon is a group 14 element with the atomic number 6. Its electronic configuration is 1s² 2s² 2p², meaning it has four valence electrons. To satisfy the octet rule, carbon forms four covalent bonds in stable organic structures (tetravalency).", page: 144, score: 0.95 },
+    { text: "Covalent bonding involves the mutual sharing of electron pairs between atoms. Single, double, and triple bonds can form, characterized by sp³, sp², and sp hybridizations respectively.", page: 148, score: 0.91 },
+    { text: "The tetrahedral geometry of methane (CH₄) exhibits bond angles of 109.5 degrees, minimizing electron pair repulsion according to VSEPR theory.", page: 152, score: 0.87 }
+  ],
+  english: [
+    { text: "In the active voice, the subject of the sentence performs the action. Example: 'The team completed the research project.' This structure is concise, clear, and powerful, maintaining strong pacing in formal writing.", page: 201, score: 0.96 },
+    { text: "In the passive voice, the subject is acted upon by the verb, often resulting in wordy constructions. Example: 'The research project was completed by the team.' Use active voice to improve clarity.", page: 204, score: 0.92 },
+    { text: "Sentences with transitive verbs can be transformed between active and passive voices. Be careful not to obscure the agent of the action when utilizing passive constructions.", page: 209, score: 0.86 }
+  ]
+};
+
+window.updateStudioTextbook = function() {
+  const subject = document.getElementById("studioSubjectSelect").value;
+  const bookSelect = document.getElementById("studioBookSelect");
+  
+  if (subject === "math") bookSelect.value = "math_ncert";
+  else if (subject === "physics") bookSelect.value = "physics_halliday";
+  else if (subject === "chemistry") bookSelect.value = "chem_morrison";
+  else if (subject === "english") bookSelect.value = "english_composition";
+};
+
 let currentGeneratedQuiz = null;
 
 window.generatePodcastScript = function() {
@@ -764,15 +800,93 @@ window.generatePodcastScript = function() {
     return;
   }
 
-  let authorName = "Mrs. Tasnim Jahan";
-  if (voice === "Arif") authorName = "Dr. Arif Al-Hasan";
-  if (voice === "Rahul") authorName = "Mr. Rahul Amin";
+  // Clear and display chunk viewer & logger console
+  const chunkContainer = document.getElementById("studioRagChunkContainer");
+  const chunkList = document.getElementById("studioRagChunksList");
+  const pipelineLogger = document.getElementById("studioPipelineLogger");
+  const pipelineLogs = document.getElementById("studioPipelineLogs");
+  const pipelineBar = document.getElementById("studioPipelineBar");
+  const pipelineTimer = document.getElementById("studioPipelineTimer");
+  const compilerPreview = document.getElementById("studioCompilerPreview");
 
-  let scriptText = "";
-  let quiz = {};
+  compilerPreview.style.display = "none";
+  chunkContainer.style.display = "block";
+  pipelineLogger.style.display = "block";
+  chunkList.innerHTML = "";
+  pipelineLogs.innerHTML = "";
+  pipelineBar.style.width = "0%";
+  pipelineTimer.innerText = "0.0s";
 
-  if (subject === "math") {
-    scriptText = 
+  // 1. Populate RAG Chunks immediately to show database response
+  const chunks = MOCK_RAG_DATABASE[subject] || [];
+  chunks.forEach((chunk, index) => {
+    const chunkCard = document.createElement("div");
+    chunkCard.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:8px; font-size:10px; line-height:1.4;";
+    chunkCard.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:9px; color:rgba(255,255,255,0.5);">
+        <span style="color:#10b981; font-weight:700;">📄 Chunk #${index + 1} (Page ${chunk.page})</span>
+        <span style="background:rgba(16,185,129,0.15); color:#10b981; padding:1px 4px; border-radius:4px; font-weight:800;">Cosine Match: ${chunk.score}</span>
+      </div>
+      <div style="color:var(--text-main); font-style:italic;">"${chunk.text}"</div>
+    `;
+    chunkList.appendChild(chunkCard);
+  });
+
+  // 2. Perform step-by-step logging animation
+  const logSteps = [
+    { time: 0, text: "🔌 Initializing semantic query to Textbook RAG Store...", progress: 10 },
+    { time: 400, text: `🔍 Query parameters: subject="${subject}", topic="${chapterName}"`, progress: 25 },
+    { time: 800, text: `✅ Retrieved 3 high-confidence context chunks (avg score: ${(chunks.reduce((acc, c)=>acc+c.score,0)/chunks.length).toFixed(2)})`, progress: 45 },
+    { time: 1200, text: "🧠 Bundling retrieved textbook paragraphs with system parameters (4,250 prompt tokens)...", progress: 65 },
+    { time: 1600, text: "🤖 Querying Gemini 1.5 Pro compiler API for dialogue & script generation...", progress: 80 },
+    { time: 2000, text: `🎙️ Splitting dialogue tracks & rendering ElevenLabs TTS voice streams (${voice === 'Arif' ? 'Dr. Arif Al-Hasan' : voice === 'Rahul' ? 'Mr. Rahul Amin' : 'Mrs. Tasnim Jahan'})...`, progress: 95 },
+    { time: 2400, text: "⚡ Script time-coded, midpoint quiz mapped, and playback ready! Pipeline complete.", progress: 100 }
+  ];
+
+  let currentLogIdx = 0;
+  const startTime = Date.now();
+  
+  const logInterval = setInterval(() => {
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    pipelineTimer.innerText = `${elapsed}s`;
+  }, 100);
+
+  function triggerNextLog() {
+    if (currentLogIdx >= logSteps.length) {
+      clearInterval(logInterval);
+      finishCompilation();
+      return;
+    }
+
+    const step = logSteps[currentLogIdx];
+    setTimeout(() => {
+      const logLine = document.createElement("div");
+      logLine.style.cssText = "margin-bottom:2px; display:flex; gap:6px;";
+      logLine.innerHTML = `
+        <span style="color:rgba(255,255,255,0.4); min-width:40px;">[+${(step.time/1000).toFixed(1)}s]</span>
+        <span style="color:${currentLogIdx === logSteps.length - 1 ? '#10b981' : '#38bdf8'};">${step.text}</span>
+      `;
+      pipelineLogs.appendChild(logLine);
+      pipelineLogs.scrollTop = pipelineLogs.scrollHeight;
+      pipelineBar.style.width = `${step.progress}%`;
+
+      currentLogIdx++;
+      triggerNextLog();
+    }, currentLogIdx === 0 ? 0 : logSteps[currentLogIdx].time - logSteps[currentLogIdx - 1].time);
+  }
+
+  triggerNextLog();
+
+  function finishCompilation() {
+    let authorName = "Mrs. Tasnim Jahan";
+    if (voice === "Arif") authorName = "Dr. Arif Al-Hasan";
+    if (voice === "Rahul") authorName = "Mr. Rahul Amin";
+
+    let scriptText = "";
+    let quiz = {};
+
+    if (subject === "math") {
+      scriptText = 
 `Hello prep learners! ${authorName} here. Welcome to our PrepCast session on ${chapterName}.
 Today, we are focusing on solving advanced mathematical equations step-by-step for your upcoming midterm.
 Remember that consistency is key: if you apply the quadratic formula properly, the roots will reveal themselves.
@@ -780,20 +894,20 @@ Let's pause here. Think about what we just discussed: the discriminant. If the d
 [AUDIO PAUSED FOR PREP CHECK] Let's verify: a discriminant equal to zero means the equation has exactly one real, repeating root. If it's negative, they are complex.
 Excellent. Let's move on. Imagine the graph of this function, it's a perfect parabola touching the x-axis at exactly one point.
 Keep this visual in your mind. The vertex of the parabola is the exact point of contact when the discriminant is zero.`;
-    
-    quiz = {
-      question: `For a quadratic equation, if the discriminant <strong>b² - 4ac</strong> is exactly zero, what is the nature of its roots?`,
-      options: [
-        "A) Two distinct real roots",
-        "B) One repeating real root",
-        "C) Two complex/imaginary roots",
-        "D) No roots exist in any domain"
-      ],
-      correctIndex: 1,
-      hint: "Recall that the vertex of the parabola touches the x-axis at exactly one single point, meaning there is only one real root!"
-    };
-  } else if (subject === "physics") {
-    scriptText = 
+      
+      quiz = {
+        question: `For a quadratic equation, if the discriminant <strong>b² - 4ac</strong> is exactly zero, what is the nature of its roots?`,
+        options: [
+          "A) Two distinct real roots",
+          "B) One repeating real root",
+          "C) Two complex/imaginary roots",
+          "D) No roots exist in any domain"
+        ],
+        correctIndex: 1,
+        hint: "Recall that the vertex of the parabola touches the x-axis at exactly one single point, meaning there is only one real root!"
+      };
+    } else if (subject === "physics") {
+      scriptText = 
 `Hello prep learners! This is ${authorName}. Today we are diving into our Physics session on ${chapterName}.
 A key physical concept here is the interaction of force fields. Let's study how this changes relative to distance.
 Remember: as you double the distance, the relative intensity drops to one-quarter of its original value. This is the inverse square law.
@@ -801,20 +915,20 @@ Let's analyze this carefully. If distance is tripled, what happens? It becomes o
 [AUDIO PAUSED FOR PREP CHECK] Let's review: the mathematical formulation of this inverse square law states that force is inversely proportional to the square of the distance.
 This is crucial for understanding gravitational fields, electric charge forces, and even light propagation.
 Always verify the scale factor in your homework. It will save you from easy mistakes on the final paper.`;
-    
-    quiz = {
-      question: `If you double the distance between two masses, what happens to the gravitational force between them according to the Inverse Square Law?`,
-      options: [
-        "A) It is cut in half (1/2)",
-        "B) It drops to one-quarter (1/4)",
-        "C) It is doubled (2x)",
-        "D) It is quadrupled (4x)"
-      ],
-      correctIndex: 1,
-      hint: "Remember that force is proportional to 1 / d². If d becomes 2d, then (2)² is in the denominator, which is 4!"
-    };
-  } else if (subject === "chemistry") {
-    scriptText = 
+      
+      quiz = {
+        question: `If you double the distance between two masses, what happens to the gravitational force between them according to the Inverse Square Law?`,
+        options: [
+          "A) It is cut in half (1/2)",
+          "B) It drops to one-quarter (1/4)",
+          "C) It is doubled (2x)",
+          "D) It is quadrupled (4x)"
+        ],
+        correctIndex: 1,
+        hint: "Remember that force is proportional to 1 / d². If d becomes 2d, then (2)² is in the denominator, which is 4!"
+      };
+    } else if (subject === "chemistry") {
+      scriptText = 
 `Hello chemistry students! ${authorName} here. Let's study ${chapterName} for our upcoming exam.
 We are focusing on molecular structures and bonding configurations that form the basis of organic molecules.
 Covalent bonds represent shared electron pairs. The carbon atom, for example, is tetravalent and forms four bonds.
@@ -822,20 +936,20 @@ Let's pause. Think about carbon's electronic configuration. It has four valence 
 [AUDIO PAUSED FOR PREP CHECK] Let's verify this: because carbon needs four more electrons to complete its octet, it forms four covalent bonds.
 This makes it the core building block of all organic chemistry and complex life structures.
 Remember this tetravallency in all molecular sketches you draw during the exams!`;
-    
-    quiz = {
-      question: `What is the valency of a Carbon atom in organic molecules, enabling it to form stable covalent structures?`,
-      options: [
-        "A) Monovalent (1)",
-        "B) Divalent (2)",
-        "C) Trivalent (3)",
-        "D) Tetravalent (4)"
-      ],
-      correctIndex: 3,
-      hint: "Carbon resides in Group 14 of the periodic table and requires four shared electrons to satisfy the octet rule."
-    };
-  } else {
-    scriptText = 
+      
+      quiz = {
+        question: `What is the valency of a Carbon atom in organic molecules, enabling it to form stable covalent structures?`,
+        options: [
+          "A) Monovalent (1)",
+          "B) Divalent (2)",
+          "C) Trivalent (3)",
+          "D) Tetravalent (4)"
+        ],
+        correctIndex: 3,
+        hint: "Carbon resides in Group 14 of the periodic table and requires four shared electrons to satisfy the octet rule."
+      };
+    } else {
+      scriptText = 
 `Greetings scholars! This is ${authorName} bringing you an analysis of ${chapterName}.
 We are exploring the themes of character development and structural syntax within this famous text.
 Active voice structures bring clarity and power to your writing by putting the doer of the action first.
@@ -843,31 +957,32 @@ Let's pause. Contrast this: 'The teacher published the podcast' versus 'The podc
 [AUDIO PAUSED FOR PREP CHECK] Let's review: the first sentence uses the active voice, which is direct, while the second is passive.
 By prioritizing the subject performing the action, your prose becomes punchy and easy to digest.
 Make sure you identify passive structures in your essay drafts and convert them to active voice where possible.`;
-    
-    quiz = {
-      question: `Which of the following sentences is written in the active voice?`,
-      options: [
-        "A) The exam sheet was scanned by the teacher.",
-        "B) Mrs. Tasnim Jahan published the new podcast.",
-        "C) The classroom exit card was submitted.",
-        "D) Confetti was triggered by the system."
-      ],
-      correctIndex: 1,
-      hint: "Look for the sentence where the subject ('Mrs. Tasnim Jahan') directly performs the action ('published') on the object."
-    };
+      
+      quiz = {
+        question: `Which of the following sentences is written in the active voice?`,
+        options: [
+          "A) The exam sheet was scanned by the teacher.",
+          "B) Mrs. Tasnim Jahan published the new podcast.",
+          "C) The classroom exit card was submitted.",
+          "D) Confetti was triggered by the system."
+        ],
+        correctIndex: 1,
+        hint: "Look for the sentence where the subject ('Mrs. Tasnim Jahan') directly performs the action ('published') on the object."
+      };
+    }
+
+    currentGeneratedQuiz = quiz;
+
+    // Render elements in compiler preview
+    document.getElementById("studioScriptEdit").value = scriptText;
+    document.getElementById("studioQuizQ").innerHTML = quiz.question;
+    document.getElementById("studioQuizOpt").innerText = quiz.options.join(" | ");
+    document.getElementById("studioQuizAns").innerText = quiz.options[quiz.correctIndex];
+    document.getElementById("studioQuizHint").innerText = quiz.hint;
+
+    document.getElementById("studioCompilerPreview").style.display = "block";
+    showToast("🤖 AI educational script & retention quiz synthesized from RAG chunks!", "success");
   }
-
-  currentGeneratedQuiz = quiz;
-
-  // Render elements in compiler preview
-  document.getElementById("studioScriptEdit").value = scriptText;
-  document.getElementById("studioQuizQ").innerHTML = quiz.question;
-  document.getElementById("studioQuizOpt").innerText = quiz.options.join(" | ");
-  document.getElementById("studioQuizAns").innerText = quiz.options[quiz.correctIndex];
-  document.getElementById("studioQuizHint").innerText = quiz.hint;
-
-  document.getElementById("studioCompilerPreview").style.display = "block";
-  showToast("🤖 AI educational script & check synthesized!", "success");
 };
 
 window.publishPodcast = function() {
