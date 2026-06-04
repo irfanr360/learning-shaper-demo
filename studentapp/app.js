@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.key === 'rfid_checkin_event') {
       try {
         const checkin = JSON.parse(e.newValue);
-        if (checkin && checkin.student === 'Aarif Al-Masoom') {
+        if (checkin && checkin.student === studentState.studentName) {
           showToast(`🔔 RFID Check-in recorded at ${checkin.time}: PRESENT`, 'warning');
         }
       } catch (err) {}
@@ -403,6 +403,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  // Initialize dynamic student profile session
+  const currentStudentId = localStorage.getItem('active_student_id') || 'aarif';
+  if (typeof loginAsStudent === 'function') {
+    loginAsStudent(currentStudentId);
+  }
+  
+  // Show login overlay if not active in this session
+  if (!sessionStorage.getItem('student_session_active')) {
+    if (typeof showStudentLoginOverlay === 'function') {
+      showStudentLoginOverlay();
+    }
+  }
 });
 
 // Update top status bar time
@@ -556,7 +569,12 @@ function setupUIEventListeners() {
       receiptSuccessCard.style.display = 'flex';
       
       // Sync payment state to localStorage so Parent App receives it
+      localStorage.setItem(`student_tuition_paid_${studentState.studentId}`, 'true');
+      localStorage.setItem(`student_tuition_dues_${studentState.studentId}`, '0');
       localStorage.setItem('student_tuition_paid', 'true');
+      if (typeof saveStudentProfileState === 'function') {
+        saveStudentProfileState(studentState.studentId, studentState.level, studentState.xp, 0);
+      }
 
       // Trigger milestone completion
       const milestoneItem = document.getElementById('milestoneDrill');
@@ -991,6 +1009,11 @@ function addXp(amount) {
 
   // Update DOM progress meters
   updateXpBar();
+
+  // Save progress persistently
+  if (typeof saveStudentProfileState === 'function') {
+    saveStudentProfileState(studentState.studentId, studentState.level, studentState.xp, studentState.tuitionPaid ? 0 : (STUDENT_PROFILES[studentState.studentId] ? STUDENT_PROFILES[studentState.studentId].dues : 0));
+  }
 }
 
 // Sync XP & Level values dynamically inside DOM
@@ -2135,7 +2158,7 @@ window.syncPodcastActivityToParent = function() {
   const minutesCount = (studentState.audioProgress / 60).toFixed(1);
   
   const data = {
-    studentName: "Aarif Al-Masoom",
+    studentName: studentState.studentName || "Aarif Al-Masoom",
     episodeId: studentState.activePodcast.id,
     title: studentState.activePodcast.chapter,
     subject: studentState.activePodcast.subjectLabel,
@@ -2522,7 +2545,7 @@ window.syncPomodoroActivityToParent = function() {
   if (studentState.pomodoroMode === 'long') totalSeconds = 900;
   
   const payload = {
-    studentName: "Aarif Al-Masoom",
+    studentName: studentState.studentName || "Aarif Al-Masoom",
     mode: studentState.pomodoroMode,
     secondsLeft: studentState.pomodoroSecondsLeft,
     totalSeconds: totalSeconds,
@@ -2916,5 +2939,408 @@ function scrollToFocusTimer() {
     }
   }, 100);
 }
+
+// ========================================================================
+// 8. STUDENT PROFILE AUTHENTICATION & SESSION SWITCHER
+// ========================================================================
+
+const STUDENT_PROFILES = {
+  aarif: {
+    id: 'aarif',
+    name: 'Aarif Al-Masoom',
+    firstName: 'Aarif',
+    grade: 'Grade 8-C',
+    level: 12,
+    xp: 850,
+    maxXp: 1000,
+    pin: '1234',
+    dues: 3500,
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: 'Aarif'
+  },
+  samira: {
+    id: 'samira',
+    name: 'Samira Hossain',
+    firstName: 'Samira',
+    grade: 'Grade 8-A',
+    level: 14,
+    xp: 920,
+    maxXp: 1000,
+    pin: '5678',
+    dues: 0,
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: 'Samira'
+  },
+  tanvir: {
+    id: 'tanvir',
+    name: 'Tanvir Islam',
+    firstName: 'Tanvir',
+    grade: 'Grade 8-B',
+    level: 11,
+    xp: 450,
+    maxXp: 1000,
+    pin: '9012',
+    dues: 1200,
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: 'Tanvir'
+  }
+};
+
+let selectedLoginProfileId = 'aarif';
+let currentTypedPin = '';
+
+function getStudentProfileState(studentId) {
+  const saved = localStorage.getItem(`student_profile_${studentId}_state`);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch(e) {}
+  }
+  return STUDENT_PROFILES[studentId];
+}
+
+function saveStudentProfileState(studentId, level, xp, dues) {
+  const profile = STUDENT_PROFILES[studentId];
+  if (!profile) return;
+  
+  const state = {
+    ...profile,
+    level: level,
+    xp: xp,
+    dues: dues
+  };
+  localStorage.setItem(`student_profile_${studentId}_state`, JSON.stringify(state));
+}
+
+window.selectLoginProfile = function(studentId) {
+  selectedLoginProfileId = studentId;
+  currentTypedPin = '';
+  
+  // Update selected class in profile cards
+  const cards = ['aarif', 'samira', 'tanvir'];
+  cards.forEach(id => {
+    const el = document.getElementById(`loginCard_${id}`);
+    if (el) {
+      el.classList.toggle('selected', id === studentId);
+    }
+  });
+  
+  // Update PIN hint text
+  const hintText = document.getElementById('loginPinHintText');
+  if (hintText) {
+    const names = { aarif: 'Aarif (1234)', samira: 'Samira (5678)', tanvir: 'Tanvir (9012)' };
+    hintText.innerText = `PIN Hint: ${names[studentId]}`;
+  }
+  
+  // Reset pin dots
+  updatePinDotsUI();
+};
+
+window.quickLogin = function(studentId) {
+  if (studentId) {
+    selectLoginProfile(studentId);
+  }
+  const profile = STUDENT_PROFILES[selectedLoginProfileId];
+  if (!profile) return;
+  currentTypedPin = profile.pin;
+  updatePinDotsUI();
+  setTimeout(validateStudentPin, 150);
+};
+
+window.pressLoginPin = function(key) {
+  if (key === 'back') {
+    if (currentTypedPin.length > 0) {
+      currentTypedPin = currentTypedPin.slice(0, -1);
+    }
+  } else if (key === 'submit') {
+    validateStudentPin();
+    return;
+  } else {
+    // Number pressed
+    if (currentTypedPin.length < 4) {
+      currentTypedPin += key;
+    }
+  }
+  
+  updatePinDotsUI();
+  
+  // Auto-submit if 4 digits are entered
+  if (currentTypedPin.length === 4) {
+    setTimeout(validateStudentPin, 150);
+  }
+};
+
+function updatePinDotsUI() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`pinDot${i}`);
+    if (dot) {
+      dot.classList.toggle('filled', i <= currentTypedPin.length);
+    }
+  }
+}
+
+window.validateStudentPin = function() {
+  const profile = STUDENT_PROFILES[selectedLoginProfileId];
+  if (!profile) return;
+  
+  if (currentTypedPin === profile.pin) {
+    // Play dynamic synthetic audio chime
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+      
+      setTimeout(() => {
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+        gain2.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+        osc2.start();
+        osc2.stop(audioCtx.currentTime + 0.2);
+      }, 100);
+    } catch(e) {}
+    
+    // Confetti
+    triggerConfettiBurst();
+    
+    // Log in
+    loginAsStudent(selectedLoginProfileId);
+    
+    // Set session active
+    sessionStorage.setItem('student_session_active', 'true');
+    
+    // Hide overlay
+    const overlay = document.getElementById('studentLoginOverlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 400);
+    }
+    
+    showToast(`Welcome back, ${profile.name}!`, 'success');
+  } else {
+    // Play error buzz
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    } catch (e) {}
+    
+    // Shake elements
+    const wrapper = document.querySelector('.login-pin-dots');
+    if (wrapper) {
+      wrapper.classList.add('login-error-shake');
+      setTimeout(() => {
+        wrapper.classList.remove('login-error-shake');
+      }, 400);
+    }
+    
+    // Reset typed pin
+    currentTypedPin = '';
+    updatePinDotsUI();
+    
+    showToast('Incorrect PIN. Please try again!', 'warning');
+  }
+};
+
+window.loginAsStudent = function(studentId) {
+  selectedLoginProfileId = studentId;
+  const profile = getStudentProfileState(studentId);
+  if (!profile) return;
+  
+  // Update state dictionary
+  studentState.studentId = studentId;
+  studentState.studentName = profile.name;
+  studentState.level = profile.level;
+  studentState.xp = profile.xp;
+  studentState.maxXp = profile.maxXp;
+  
+  // Check if dues were paid in this session/localStorage
+  const localDues = localStorage.getItem(`student_tuition_dues_${studentId}`);
+  if (localDues !== null) {
+    studentState.tuitionPaid = (parseInt(localDues) === 0);
+    profile.dues = parseInt(localDues);
+  } else {
+    studentState.tuitionPaid = (profile.dues === 0);
+  }
+  
+  // Update active student in localStorage
+  localStorage.setItem('active_student_id', studentId);
+  localStorage.setItem('active_student_login_event', JSON.stringify({ studentId: studentId, timestamp: Date.now() }));
+  
+  // Update header/card UI elements:
+  
+  // 1. Username
+  const usernameText = document.getElementById('bkashUsernameText');
+  if (usernameText) usernameText.innerText = profile.name;
+  
+  // 2. Avatar Img
+  const avatarImg = document.getElementById('bkashAvatarImg');
+  if (avatarImg) {
+    avatarImg.src = profile.avatar;
+    avatarImg.alt = profile.name;
+    avatarImg.onerror = function() {
+      this.src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${profile.avatarSeed}`;
+      this.onerror = null;
+    };
+  }
+  
+  // 3. Level badge
+  const levelBadge = document.getElementById('avatarLevelBadge');
+  if (levelBadge) levelBadge.innerText = profile.level;
+  
+  // 4. Card holder name (Tuition tab)
+  const cardHolderSpan = document.querySelector('.bkash-card-holder span');
+  if (cardHolderSpan) cardHolderSpan.innerText = profile.name;
+  
+  // 5. Tuition Dues & Status
+  const tuitionDueAmountText = document.getElementById('tuitionDueAmountText');
+  const tuitionDueItem = document.getElementById('tuitionDueItem');
+  const payTuitionBtn = document.getElementById('payTuitionBtn');
+  
+  if (studentState.tuitionPaid) {
+    if (tuitionDueAmountText) {
+      tuitionDueAmountText.innerText = "৳0 (PAID)";
+      tuitionDueAmountText.style.color = "var(--success-color)";
+    }
+    if (tuitionDueItem) {
+      tuitionDueItem.style.background = "rgba(16, 185, 129, 0.04)";
+      tuitionDueItem.style.borderColor = "rgba(16, 185, 129, 0.2)";
+      tuitionDueItem.querySelector('p').innerHTML = `Paid on May 22, 2026`;
+    }
+    if (payTuitionBtn) {
+      payTuitionBtn.innerText = "Fees Settled";
+      payTuitionBtn.disabled = true;
+    }
+  } else {
+    if (tuitionDueAmountText) {
+      tuitionDueAmountText.innerText = `৳${profile.dues.toLocaleString()}`;
+      tuitionDueAmountText.style.color = ""; // default color
+    }
+    if (tuitionDueItem) {
+      tuitionDueItem.style.background = "";
+      tuitionDueItem.style.borderColor = "";
+      tuitionDueItem.querySelector('p').innerHTML = `Deadline: May 28, 2026 • Status: UNPAID`;
+    }
+    if (payTuitionBtn) {
+      payTuitionBtn.innerText = "Pay Outstanding Tuition";
+      payTuitionBtn.disabled = false;
+    }
+  }
+  
+  // 6. Update AI assistant greetings
+  const chatBodyMessages = document.getElementById('chatBodyMessages');
+  if (chatBodyMessages) {
+    const firstBubble = chatBodyMessages.querySelector('.chat-msg.bot');
+    if (firstBubble) {
+      firstBubble.innerHTML = `Hello ${profile.firstName}! I am your personal Learning Mate AI assistant. Feel free to ask me any math doubts or speak your questions using the microphone button below.`;
+    }
+  }
+  
+  // 7. Update Daily Streak name indicator
+  const streakText = document.getElementById('pomodoroStreakDisplay');
+  if (streakText && streakText.nextElementSibling) {
+    streakText.nextElementSibling.innerText = `Keep it up ${profile.firstName}!`;
+  }
+  
+  // 8. Update Coach Greeting
+  const coachTip = document.getElementById('pomodoroCoachTipText');
+  if (coachTip) {
+    coachTip.innerText = `"Welcome ${profile.firstName}! Choose an active learning milestone, pick a synthesized focus soundscape to drown out environmental distractions, and let's lock in!"`;
+  }
+
+  // 9. Update tuition tab gauges
+  updateTuitionGauges();
+  
+  // 10. Update XP Indicator
+  updateXpBar();
+  
+  // 11. Render classroom leaderboard
+  renderClassroomLeaderboard(studentId);
+};
+
+window.showStudentLoginOverlay = function() {
+  currentTypedPin = '';
+  sessionStorage.removeItem('student_session_active');
+  updatePinDotsUI();
+  
+  const overlay = document.getElementById('studentLoginOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    overlay.classList.remove('hidden');
+  }
+  
+  // Highlight active selected profile
+  selectLoginProfile(selectedLoginProfileId);
+};
+
+window.renderClassroomLeaderboard = function(activeStudentId) {
+  const container = document.getElementById('leaderboardListContainer');
+  if (!container) return;
+  
+  // Calculate dynamic XP for the three profiles based on the active state if it's the current user
+  let aarifXp = (activeStudentId === 'aarif') ? (studentState.level * 1000 + studentState.xp) : (12 * 1000 + 850);
+  let samiraXp = (activeStudentId === 'samira') ? (studentState.level * 1000 + studentState.xp) : (14 * 1000 + 920);
+  let tanvirXp = (activeStudentId === 'tanvir') ? (studentState.level * 1000 + studentState.xp) : (11 * 1000 + 450);
+  
+  const entries = [
+    { id: 'samira', name: 'Samira Hossain', xp: samiraXp, avatar: STUDENT_PROFILES.samira.avatar, avatarSeed: STUDENT_PROFILES.samira.avatarSeed, isYou: activeStudentId === 'samira' },
+    { id: 'rahul', name: 'Rahul Amin', xp: 12950, avatar: '', avatarSeed: 'Rahul', isYou: false },
+    { id: 'aarif', name: 'Aarif Al-Masoom', xp: aarifXp, avatar: STUDENT_PROFILES.aarif.avatar, avatarSeed: STUDENT_PROFILES.aarif.avatarSeed, isYou: activeStudentId === 'aarif' },
+    { id: 'tasnia', name: 'Tasnia Kabir', xp: 11900, avatar: '', avatarSeed: 'Tasnia', isYou: false },
+    { id: 'tanvir', name: 'Tanvir Islam', xp: tanvirXp, avatar: STUDENT_PROFILES.tanvir.avatar, avatarSeed: STUDENT_PROFILES.tanvir.avatarSeed, isYou: activeStudentId === 'tanvir' }
+  ];
+  
+  // Sort entries descending by XP
+  entries.sort((a, b) => b.xp - a.xp);
+  
+  container.innerHTML = '';
+  
+  entries.forEach((entry, idx) => {
+    const item = document.createElement('div');
+    item.className = `leader-item ${entry.isYou ? 'highlight' : ''}`;
+    
+    const rankNum = idx + 1;
+    
+    const imgHtml = entry.avatar 
+      ? `<img src="${entry.avatar}" class="leader-avatar" alt="${entry.name}">`
+      : `<img src="https://api.dicebear.com/7.x/adventurer/svg?seed=${entry.avatarSeed}" class="leader-avatar" alt="${entry.name}">`;
+      
+    item.innerHTML = `
+      <span class="leader-rank">${rankNum}</span>
+      ${imgHtml}
+      <span class="leader-name" style="text-align:left;">${entry.name}${entry.isYou ? ' <strong style="color:rgba(255,255,255,0.9); font-size:8px; text-transform:uppercase; background:rgba(0,0,0,0.25); padding:1px 4px; border-radius:4px;">(You)</strong>' : ''}</span>
+      <span class="leader-xp" ${entry.isYou ? 'id="leaderboardXpText"' : ''}>${entry.xp.toLocaleString()} XP</span>
+    `;
+    
+    container.appendChild(item);
+  });
+};
 
 

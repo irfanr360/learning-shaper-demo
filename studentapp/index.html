@@ -11,6 +11,76 @@
   <!-- Smartphone Simulator Frame Wrapper -->
   <div class="phone-container" id="phoneContainer" data-theme="dark">
     
+    <!-- Redesigned Student Profile Authentication Interface -->
+    <div class="student-login-overlay" id="studentLoginOverlay">
+      <div class="login-header-logo">◈ <span>Learning Mate</span></div>
+      <div class="login-subtitle">Student Login Portal</div>
+
+      <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;">Select student account</div>
+      
+      <!-- Student Selection Profiles Grid -->
+      <div class="student-profiles-grid">
+        <div class="login-profile-card selected" id="loginCard_aarif" onclick="selectLoginProfile('aarif')" ondblclick="quickLogin('aarif')" title="Double click to quick login">
+          <div class="login-avatar-wrapper">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" class="login-avatar-img" alt="Aarif" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif';">
+            <div class="login-avatar-badge" id="loginCardLevel_aarif">12</div>
+          </div>
+          <div class="login-profile-name">Aarif Al-Masoom</div>
+          <div class="login-profile-grade">Grade 8-C</div>
+        </div>
+
+        <div class="login-profile-card" id="loginCard_samira" onclick="selectLoginProfile('samira')" ondblclick="quickLogin('samira')" title="Double click to quick login">
+          <div class="login-avatar-wrapper">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop" class="login-avatar-img" alt="Samira" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Samira';">
+            <div class="login-avatar-badge" id="loginCardLevel_samira">14</div>
+          </div>
+          <div class="login-profile-name">Samira Hossain</div>
+          <div class="login-profile-grade">Grade 8-A</div>
+        </div>
+
+        <div class="login-profile-card" id="loginCard_tanvir" onclick="selectLoginProfile('tanvir')" ondblclick="quickLogin('tanvir')" title="Double click to quick login">
+          <div class="login-avatar-wrapper">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop" class="login-avatar-img" alt="Tanvir" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Tanvir';">
+            <div class="login-avatar-badge" id="loginCardLevel_tanvir">11</div>
+          </div>
+          <div class="login-profile-name">Tanvir Islam</div>
+          <div class="login-profile-grade">Grade 8-B</div>
+        </div>
+      </div>
+
+      <!-- PIN Input Code Field -->
+      <div class="login-pin-display-wrapper">
+        <div class="login-pin-prompt">ENTER 4-DIGIT PIN FOR ACCESS</div>
+        <div class="login-pin-dots">
+          <span class="login-pin-dot" id="pinDot1"></span>
+          <span class="login-pin-dot" id="pinDot2"></span>
+          <span class="login-pin-dot" id="pinDot3"></span>
+          <span class="login-pin-dot" id="pinDot4"></span>
+        </div>
+        <div class="login-pin-hint" id="loginPinHintText">PIN Hint: Aarif (1234)</div>
+        <button class="login-quick-btn" onclick="quickLogin()">⚡ Quick Login</button>
+      </div>
+
+      <!-- Numpad Inputs -->
+      <div class="login-numpad">
+        <button class="login-numpad-btn" onclick="pressLoginPin(1)">1</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(2)">2</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(3)">3</button>
+        
+        <button class="login-numpad-btn" onclick="pressLoginPin(4)">4</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(5)">5</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(6)">6</button>
+        
+        <button class="login-numpad-btn" onclick="pressLoginPin(7)">7</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(8)">8</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(9)">9</button>
+        
+        <button class="login-numpad-btn action-btn" onclick="pressLoginPin('back')">⌫</button>
+        <button class="login-numpad-btn" onclick="pressLoginPin(0)">0</button>
+        <button class="login-numpad-btn success-btn action-btn" onclick="pressLoginPin('submit')">✔</button>
+      </div>
+    </div>
+    
     <!-- Dynamic Island notch at top of frame -->
     <div class="phone-header-island">
       <div class="island-camera"></div>
@@ -201,11 +271,14 @@
           
           <div class="bkash-profile-row">
             <div class="bkash-profile-avatar-wrapper" onclick="document.getElementById('badgesShelfDrawer').classList.add('active')">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Aarif Al-Masoom" class="bkash-avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" id="bkashAvatarImg" alt="Aarif Al-Masoom" class="bkash-avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
               <div class="bkash-avatar-badge" id="avatarLevelBadge">12</div>
             </div>
             <div class="bkash-profile-info">
-              <h3 class="bkash-username">Aarif Al-Masoom</h3>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 class="bkash-username" id="bkashUsernameText">Aarif Al-Masoom</h3>
+                <button onclick="showStudentLoginOverlay()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:4px; padding:2px 5px; color:#fff; font-size:8px; font-weight:800; text-transform:uppercase; cursor:pointer; outline:none; transition:all 0.2s;" onmouseover="this.style.background='var(--bkash-pink)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">Switch</button>
+              </div>
               <button class="bkash-balance-pill" id="tapForBalancePill">
                 <span class="pill-icon">৳</span>
                 <span class="pill-text" id="balancePillText">Tap for Balance</span>
@@ -317,17 +390,6 @@
                 </div>
               </div>
             </div>
-          </div>
-          <!-- Parent Portal Switch Banner -->
-          <div class="glass-card" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(245, 158, 11, 0.12)); border-color: rgba(244, 63, 94, 0.35); padding: 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-            <div style="display:flex; align-items:center; gap:8px">
-              <span style="font-size:16px;">🛡️</span>
-              <div style="text-align:left">
-                <h4 style="font-size:11px; font-weight:800; color:var(--text-main); margin-bottom:1px">Parenting Copilot Link</h4>
-                <p style="font-size:9px; color:var(--text-muted);">Switch to Parenting Copilot Portal</p>
-              </div>
-            </div>
-            <a href="../parentapp/index.html" target="_blank" style="background: var(--accent-color); color:#fff; text-decoration:none; font-size:9px; font-weight:800; padding:6px 12px; border-radius:8px; box-shadow:var(--cosmic-glow); text-align:center;">Switch</a>
           </div>
 
           <!-- Teacher Portal Switch Banner -->
@@ -907,25 +969,8 @@
               </svg>
               Classroom Leaderboard
             </div>
-            <div class="leaderboard-list">
-              <div class="leader-item">
-                <span class="leader-rank">🥇</span>
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=128&auto=format&fit=crop" class="leader-avatar" alt="Samira">
-                <span class="leader-name">Samira Sultana</span>
-                <span class="leader-xp">1,240 XP</span>
-              </div>
-              <div class="leader-item">
-                <span class="leader-rank">🥈</span>
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=128&auto=format&fit=crop" class="leader-avatar" alt="Tanvir">
-                <span class="leader-name">Tanvir Ahmed</span>
-                <span class="leader-xp">1,020 XP</span>
-              </div>
-              <div class="leader-item highlight">
-                <span class="leader-rank">4th</span>
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" class="leader-avatar" alt="Aarif">
-                <span class="leader-name">Aarif Al-Masoom (You)</span>
-                <span class="leader-xp" id="leaderboardXpText">850 XP</span>
-              </div>
+            <div class="leaderboard-list" id="leaderboardListContainer">
+              <!-- Dynamically rendered via app.js -->
             </div>
           </div>
         </div>

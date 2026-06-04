@@ -53,7 +53,7 @@
             <span class="link-icon">🧑‍🎓</span>
             <div>
               <h4>Learning Mate (Student App)</h4>
-              <p>View Aarif's gamified drills & OMR</p>
+              <p id="switcherStudentLinkDesc">View Aarif's gamified drills & OMR</p>
             </div>
           </a>
           <a href="../teacherapp/index.html" class="drawer-link-item">
@@ -90,12 +90,12 @@
         <div class="profile-card">
           <div class="profile-avatar-row">
             <div class="avatar-wrapper">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Aarif Al-Masoom" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
-              <div class="avatar-badge">12</div>
+              <img id="parentAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Aarif Al-Masoom" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif'; this.onerror=null;">
+              <div class="avatar-badge" id="parentAvatarBadge">12</div>
             </div>
             <div class="student-info">
-              <h3>Aarif Al-Masoom</h3>
-              <p>
+              <h3 id="parentStudentName">Aarif Al-Masoom</h3>
+              <p id="parentStudentGrade">
                 <span class="school-tag">St. Gregory High School</span> • Grade 8-C
               </p>
               <span class="sync-status-indicator">● Child App Linked</span>
@@ -210,13 +210,15 @@
                 <button class="nudge-btn" onclick="sendNudge('Algebra Drill'); event.stopPropagation();">Nudge</button>
               </div>
 
-              <div class="digest-task-item completed" onclick="toggleTask(this, 0)">
+              <div class="digest-task-item" id="digestTaskTuition" onclick="toggleTask(this, 0)">
                 <div class="task-checkbox"></div>
                 <div class="task-details">
                   <h4>Settle May Tuition Dues</h4>
-                  <p>Amount: ৳3,500 • Secured via MFS</p>
+                  <p id="digestTaskTuitionText">Amount: ৳3,500 • Secured via MFS</p>
                 </div>
-                <span class="task-done-badge">Paid</span>
+                <div class="task-badge-wrapper" id="digestTaskTuitionBadge" style="display:flex; align-items:center;">
+                  <button class="nudge-btn" onclick="sendNudge('Tuition Dues'); event.stopPropagation();">Nudge</button>
+                </div>
               </div>
             </div>
           </div>

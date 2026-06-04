@@ -3501,6 +3501,242 @@ body {
   font-weight: bold;
 }
 
+/* ========================================================================
+   STUDENT PROFILE LOGIN OVERLAY STYLES
+   ======================================================================== */
+.student-login-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top left, #1a0833, #080312);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 45px 20px 20px 20px;
+  overflow-y: auto;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  scrollbar-width: none;
+}
+.student-login-overlay::-webkit-scrollbar {
+  display: none;
+}
+.student-login-overlay.hidden {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+.login-header-logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-family: 'Fraunces', serif;
+}
+.login-header-logo span {
+  color: var(--bkash-pink);
+}
+.login-subtitle {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 25px;
+}
+.student-profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 25px;
+}
+.login-profile-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.login-profile-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.login-profile-card.selected {
+  background: rgba(226, 18, 81, 0.08);
+  border-color: var(--bkash-pink);
+  box-shadow: 0 0 15px rgba(226, 18, 81, 0.3);
+}
+.login-avatar-wrapper {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 8px;
+}
+.login-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  object-fit: cover;
+  transition: border-color 0.3s;
+}
+.login-profile-card.selected .login-avatar-img {
+  border-color: var(--bkash-pink);
+}
+.login-avatar-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: var(--bkash-pink);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #000;
+}
+.login-profile-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.login-profile-grade {
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.login-pin-display-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 25px;
+}
+.login-pin-prompt {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.login-pin-dots {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 8px;
+}
+.login-pin-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.15s ease;
+}
+.login-pin-dot.filled {
+  background: var(--bkash-pink);
+  border-color: var(--bkash-pink);
+  box-shadow: 0 0 8px var(--bkash-pink);
+  transform: scale(1.1);
+}
+.login-pin-hint {
+  font-size: 9px;
+  font-style: italic;
+  color: var(--bkash-pink);
+  opacity: 0.85;
+}
+.login-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 240px;
+}
+.login-numpad-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 0 auto;
+  transition: all 0.15s ease;
+  border-style: solid;
+}
+.login-numpad-btn:active {
+  background: rgba(226, 18, 81, 0.2);
+  border-color: var(--bkash-pink);
+  transform: scale(0.9);
+}
+.login-numpad-btn.action-btn {
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.login-numpad-btn.success-btn {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+.login-numpad-btn.success-btn:active {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #10b981;
+}
+.login-error-shake {
+  animation: shake 0.4s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+}
+
+.login-quick-btn {
+  margin-top: 12px;
+  background: rgba(226, 18, 81, 0.15);
+  border: 1px solid var(--bkash-pink);
+  border-radius: 20px;
+  color: #fff;
+  padding: 6px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(226, 18, 81, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.login-quick-btn:hover {
+  background: var(--bkash-pink);
+  box-shadow: 0 0 15px rgba(226, 18, 81, 0.5);
+}
+
+
 
 
 

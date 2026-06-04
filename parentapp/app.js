@@ -4,6 +4,246 @@
 ========================================================================
 */
 
+const STUDENT_PROFILES = {
+  aarif: {
+    id: 'aarif',
+    name: 'Aarif Al-Masoom',
+    grade: 'Grade 8-C',
+    level: 12,
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: 'Aarif',
+    parentName: 'Mr. Al-Masoom',
+    dues: 3500,
+    algebraMastery: '45%',
+    score: '12/15',
+    briefing: 'Good morning! Aarif has successfully arrived at school. His latest Math Midterm OMR results are released (**12/15** marks, **45% quadratics mastery**). Tuition dues of ৳3,500 are pending. I\'ve compiled supportive action items below.',
+    briefingPaid: 'Good morning! Aarif has successfully arrived at school. His latest Math Midterm OMR results are released (**12/15** marks, **45% quadratics mastery**). Tuition bills have been settled successfully. I\'ve compiled supportive action items below.'
+  },
+  samira: {
+    id: 'samira',
+    name: 'Samira Hossain',
+    grade: 'Grade 8-A',
+    level: 14,
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: 'Samira',
+    parentName: 'Mrs. Hossain',
+    dues: 0,
+    algebraMastery: '91%',
+    score: '14/15',
+    briefing: 'Good morning! Samira has successfully arrived at school. Her latest Math Midterm OMR results are released (**14/15** marks, **91% quadratics mastery**). No tuition bills are outstanding. I\'ve compiled supportive action items below.',
+    briefingPaid: 'Good morning! Samira has successfully arrived at school. Her latest Math Midterm OMR results are released (**14/15** marks, **91% quadratics mastery**). No tuition bills are outstanding. I\'ve compiled supportive action items below.'
+  },
+  tanvir: {
+    id: 'tanvir',
+    name: 'Tanvir Islam',
+    grade: 'Grade 8-B',
+    level: 11,
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: 'Tanvir',
+    parentName: 'Mr. Islam',
+    dues: 1200,
+    algebraMastery: '54%',
+    score: '11/15',
+    briefing: 'Good morning! Tanvir has successfully arrived at school. His latest Math Midterm OMR results are released (**11/15** marks, **54% quadratics mastery**). Tuition dues of ৳1,200 are pending. I\'ve compiled supportive action items below.',
+    briefingPaid: 'Good morning! Tanvir has successfully arrived at school. His latest Math Midterm OMR results are released (**11/15** marks, **54% quadratics mastery**). Tuition bills have been settled successfully. I\'ve compiled supportive action items below.'
+  }
+};
+
+let activeStudentId = localStorage.getItem('active_student_id') || 'aarif';
+
+function getCurrentChatKey() {
+  const activeId = localStorage.getItem('active_student_id') || 'aarif';
+  return `parent_teacher_chat_${activeId}`;
+}
+
+function syncActiveStudent(studentId) {
+  activeStudentId = studentId;
+  const profile = STUDENT_PROFILES[studentId];
+  if (!profile) return;
+  
+  // 1. Update Profile Card
+  const avatarImg = document.getElementById("parentAvatarImg");
+  const avatarBadge = document.getElementById("parentAvatarBadge");
+  const studentName = document.getElementById("parentStudentName");
+  const studentGrade = document.getElementById("parentStudentGrade");
+  
+  if (avatarImg) {
+    avatarImg.src = profile.avatar;
+    avatarImg.alt = profile.name;
+    avatarImg.onerror = function() {
+      this.src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${profile.avatarSeed}`;
+      this.onerror = null;
+    };
+  }
+  if (avatarBadge) avatarBadge.textContent = profile.level;
+  if (studentName) studentName.textContent = profile.name;
+  if (studentGrade) {
+    studentGrade.innerHTML = `<span class="school-tag">St. Gregory High School</span> • ${profile.grade}`;
+  }
+  
+  // 2. Update Briefing Text
+  const briefingText = document.getElementById("copilotBriefingText");
+  if (briefingText) {
+    const isPaid = localStorage.getItem(`student_tuition_paid_${studentId}`) === 'true' || profile.dues === 0;
+    briefingText.innerHTML = isPaid ? profile.briefingPaid : profile.briefing;
+  }
+  
+  // 3. Update Study Focus description
+  const activeFocusTitle = document.querySelector("#parentFocusMonitorCard .card-title span");
+  if (activeFocusTitle) {
+    activeFocusTitle.innerHTML = `⏱️ ${profile.name.split(' ')[0]}'s Live Study Focus`;
+  }
+  const focusDesc = document.querySelector("#tab-home p.section-desc");
+  if (focusDesc && focusDesc.textContent.includes("Supervise")) {
+    focusDesc.textContent = `Supervise ${profile.name.split(' ')[0]}'s deep learning session in real-time. Cheering nudges keep motivation locked in!`;
+  }
+  
+  // 4. Update Nudge Custom message input placeholder/value
+  const nudgeInput = document.getElementById("parentNudgeCustomMsg");
+  if (nudgeInput) {
+    nudgeInput.value = `Keep it up ${profile.name.split(' ')[0]}! Super proud of your focus! ❤️`;
+  }
+  
+  // 5. Update study focus distribution description
+  const studyDistributionDesc = document.querySelector("#tab-home div.glass-card:nth-of-type(3) p.section-desc");
+  if (studyDistributionDesc) {
+    studyDistributionDesc.textContent = `Active study focus distribution across ${profile.name.split(' ')[0]}'s online learning modules:`;
+  }
+  
+  // 6. Update Milestones checklist description
+  const milestonesDesc = document.querySelector("#tab-home div.glass-card:nth-of-type(4) p.section-desc");
+  if (milestonesDesc && milestonesDesc.textContent.includes("Weekly targets")) {
+    milestonesDesc.textContent = `Weekly targets synchronized in real-time with ${profile.name.split(' ')[0]}'s Learning Mate. Toggle status to supervise completion:`;
+  }
+  
+  // 7. Update Offline games description
+  const offlineGamesDesc = document.querySelector("#tab-home div.glass-card:nth-of-type(5) p.section-desc");
+  if (offlineGamesDesc && offlineGamesDesc.textContent.includes("Suggest offline")) {
+    offlineGamesDesc.textContent = `Suggest offline interactive learning games based on ${profile.name.split(' ')[0]}'s weekly curriculums:`;
+  }
+  const offlineGamesRatioText = document.querySelector("#tab-home div.quest-card p");
+  if (offlineGamesRatioText && offlineGamesRatioText.textContent.includes("Turn grocery")) {
+    offlineGamesRatioText.innerHTML = `Turn grocery shopping into a math tournament. Give ${profile.name.split(' ')[0]} ৳500 and a list of items with discount percentages. Let him calculate the final pricing using ratios.`;
+  }
+  
+  // 8. Update Podcast concept tracker description
+  const podcastTrackerDesc = document.querySelector("#tab-home div.glass-card:nth-of-type(6) p.section-desc");
+  if (podcastTrackerDesc && podcastTrackerDesc.textContent.includes("Track")) {
+    podcastTrackerDesc.textContent = `Track ${profile.name.split(' ')[0]}'s active academic listening sessions and concept prep checklist in real-time:`;
+  }
+  
+  // 9. Update dinner prompt heading or description
+  const dinnerPromptHeading = document.getElementById("dinnerPromptText");
+  if (dinnerPromptHeading) {
+    dinnerPromptHeading.textContent = `"Instead of asking 'How was school?', ask ${profile.name.split(' ')[0]}: 'What was the toughest bubble to fill in your mock OMR test today?'"`;
+  }
+
+  // 10. Update Lego drawer tips name references
+  const legoFactoringText = document.querySelector("#legoTipsDrawer p");
+  if (legoFactoringText && legoFactoringText.textContent.includes("Help")) {
+    legoFactoringText.innerHTML = `Help ${profile.name.split(' ')[0]} visualize quadratic factoring <strong>(x + 2)(x + 3) = x² + 5x + 6</strong> using colored lego block grids at home:`;
+  }
+  
+  // 11. Switcher Link Desc
+  const switcherLinkDesc = document.getElementById("switcherStudentLinkDesc");
+  if (switcherLinkDesc) {
+    switcherLinkDesc.textContent = `View ${profile.name.split(' ')[0]}'s gamified drills & OMR`;
+  }
+  
+  // 12. Tuition task item in digest
+  const tuitionTask = document.getElementById("digestTaskTuition");
+  const tuitionTaskText = document.getElementById("digestTaskTuitionText");
+  const tuitionTaskBadge = document.getElementById("digestTaskTuitionBadge");
+  
+  if (tuitionTask && tuitionTaskText && tuitionTaskBadge) {
+    const isPaid = localStorage.getItem(`student_tuition_paid_${studentId}`) === 'true' || profile.dues === 0;
+    if (isPaid) {
+      tuitionTask.classList.add("completed");
+      tuitionTaskText.textContent = `Amount: ৳${(profile.dues || 3500).toLocaleString()} • Secured via MFS`;
+      tuitionTaskBadge.innerHTML = `<span class="task-done-badge">Paid</span>`;
+    } else {
+      tuitionTask.classList.remove("completed");
+      tuitionTaskText.textContent = `Amount: ৳${profile.dues.toLocaleString()} • Secured via MFS`;
+      tuitionTaskBadge.innerHTML = `<button class="nudge-btn" onclick="sendNudge('Tuition Dues'); event.stopPropagation();">Nudge</button>`;
+    }
+  }
+
+  // 13. Load dynamic alerts timeline
+  initAlertsTimeline();
+  
+  // 14. Load chat logs
+  const key = getCurrentChatKey();
+  if (!localStorage.getItem(key)) {
+    const initialChats = [
+      { sender: "teacher", text: `Hello ${profile.parentName}! I am ${profile.name.split(' ')[0]}'s class coordinator. Welcome to the direct Parent communication channel.`, time: "14:02" },
+      { sender: "teacher", text: studentId === 'aarif' 
+        ? `While Aarif is making progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his Learning Mate app today.`
+        : studentId === 'samira'
+          ? `Samira is performing outstandingly in Algebra (91%). She had minor gaps in circle theorems, but overall her progress is excellent. Please encourage her to continue her good work.`
+          : `Tanvir has demonstrated exceptional spatial skills in Trigonometry (92%). However, his algebra speed needs a bit of reinforcement. Please encourage him to complete some algebraic timed drills.`, time: "14:04" }
+    ];
+    localStorage.setItem(key, JSON.stringify(initialChats));
+  }
+  loadChatLogs();
+  
+  // 15. Update parent focus monitor
+  const initialFocus = localStorage.getItem('student_pomodoro_activity');
+  if (initialFocus) {
+    try {
+      const act = JSON.parse(initialFocus);
+      if (act.studentName === profile.name) {
+        updateParentFocusUI(act);
+      } else {
+        updateParentFocusUI(null);
+      }
+    } catch(e) {
+      updateParentFocusUI(null);
+    }
+  } else {
+    updateParentFocusUI(null);
+  }
+  
+  // 16. Update parent podcast tracker
+  const initialPodcast = localStorage.getItem('student_podcast_activity');
+  if (initialPodcast) {
+    try {
+      const act = JSON.parse(initialPodcast);
+      if (act.studentName === profile.name) {
+        updateParentPodcastUI(act);
+      } else {
+        resetParentPodcastUI();
+      }
+    } catch(e) {
+      resetParentPodcastUI();
+    }
+  } else {
+    resetParentPodcastUI();
+  }
+}
+
+function resetParentPodcastUI() {
+  const subjectEl = document.getElementById("parentPodcastSubject");
+  const statusEl = document.getElementById("parentPodcastLiveStatus");
+  const titleEl = document.getElementById("parentPodcastTitle");
+  const progressEl = document.getElementById("parentPodcastProgressBar");
+  const progressTextEl = document.getElementById("parentPodcastProgressText");
+  const timeTextEl = document.getElementById("parentPodcastTimeText");
+  const dialogueEl = document.getElementById("parentPodcastDinnerDialogue");
+  
+  if (subjectEl) subjectEl.textContent = "NO ACTIVE BROADCAST";
+  if (statusEl) {
+    statusEl.textContent = "Idle 💤";
+    statusEl.style.background = "rgba(255,255,255,0.05)";
+    statusEl.style.color = "var(--text-muted)";
+    statusEl.style.borderColor = "rgba(255,255,255,0.1)";
+  }
+  if (titleEl) titleEl.textContent = "No podcast guide active";
+  if (progressEl) progressEl.style.width = "0%";
+  if (progressTextEl) progressTextEl.textContent = "0% Complete";
+  if (timeTextEl) timeTextEl.textContent = "0.0 mins listened";
+  if (dialogueEl) dialogueEl.style.display = "none";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Synchronize Phone Simulator Clock
   updateSimulatorTime();
@@ -28,6 +268,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initAlertsTimeline();
   setupParentPodcastListener();
   setupParentFocusMonitor(); // Initialize real-time study focus monitoring widget!
+
+  // Initial student sync
+  syncActiveStudent(activeStudentId);
 });
 
 /* ========================================================================
@@ -241,10 +484,9 @@ function setupCallbackWorkflow() {
 /* ========================================================================
    LOCAL STORAGE CHAT SYNC ENGINE (REAL-TIME BIDIRECTIONAL MFS)
    ======================================================================== */
-const CHAT_STORAGE_KEY = "parent_teacher_chat";
-
 function appendMessageToStorage(sender, text) {
-  const logs = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+  const key = getCurrentChatKey();
+  const logs = JSON.parse(localStorage.getItem(key) || "[]");
   const now = new Date();
   let hours = now.getHours();
   let minutes = now.getMinutes();
@@ -257,14 +499,15 @@ function appendMessageToStorage(sender, text) {
     time: `${hours}:${minutes}`
   });
 
-  localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(logs));
+  localStorage.setItem(key, JSON.stringify(logs));
 }
 
 function loadChatLogs() {
   const stream = document.getElementById("chatMessagesStream");
   if (!stream) return;
 
-  const logs = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+  const key = getCurrentChatKey();
+  const logs = JSON.parse(localStorage.getItem(key) || "[]");
   stream.innerHTML = "";
 
   logs.forEach(msg => {
@@ -292,12 +535,19 @@ function setupChatMessenger() {
   if (!sendBtn || !input || !stream) return;
 
   // Initialize localStorage logs if empty
-  if (!localStorage.getItem(CHAT_STORAGE_KEY)) {
+  const key = getCurrentChatKey();
+  if (!localStorage.getItem(key)) {
+    const activeId = localStorage.getItem('active_student_id') || 'aarif';
+    const profile = STUDENT_PROFILES[activeId] || STUDENT_PROFILES.aarif;
     const initialChats = [
-      { sender: "teacher", text: "Hello Mr. Al-Masoom! I am Aarif's class coordinator. Welcome to the direct Parent communication channel.", time: "14:02" },
-      { sender: "teacher", text: "While Aarif is making progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his Learning Mate app today.", time: "14:04" }
+      { sender: "teacher", text: `Hello ${profile.parentName}! I am ${profile.name.split(' ')[0]}'s class coordinator. Welcome to the direct Parent communication channel.`, time: "14:02" },
+      { sender: "teacher", text: activeId === 'aarif'
+        ? "While Aarif is making progress in his Geometry assessments, his recent mock Algebra OMR scans showed a drop to 45%. We highly recommend encouraging him to open the AI Practice drills inside his Learning Mate app today."
+        : activeId === 'samira'
+          ? "Samira is performing outstandingly in Algebra (91%). She had minor gaps in circle theorems, but overall her progress is excellent. Please encourage her to continue her good work."
+          : "Tanvir has demonstrated exceptional spatial skills in Trigonometry (92%). However, his algebra speed needs a bit of reinforcement. Please encourage him to complete some algebraic timed drills.", time: "14:04" }
     ];
-    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(initialChats));
+    localStorage.setItem(key, JSON.stringify(initialChats));
   }
 
   // Load chat messages
@@ -305,7 +555,7 @@ function setupChatMessenger() {
 
   // Listen to cross-window storage events!
   window.addEventListener("storage", (e) => {
-    if (e.key === CHAT_STORAGE_KEY) {
+    if (e.key === getCurrentChatKey()) {
       loadChatLogs();
       // Show alerts indicator if in a different tab
       const chatPanel = document.getElementById("tab-chat");
@@ -313,6 +563,13 @@ function setupChatMessenger() {
         const badge = document.querySelector(".alert-nav-badge");
         if (badge) badge.style.display = "flex";
       }
+    } else if (e.key === 'active_student_login_event') {
+      try {
+        const data = JSON.parse(e.newValue);
+        if (data && data.studentId) {
+          syncActiveStudent(data.studentId);
+        }
+      } catch(err) {}
     } else if (e.key === 'weekly_milestones_state') {
       drawParentMilestones();
     } else if (e.key === 'active_lesson_plan_topic') {
@@ -320,21 +577,23 @@ function setupChatMessenger() {
     } else if (e.key === 'rfid_checkin_event') {
       try {
         const data = JSON.parse(e.newValue);
-        if (data && data.student === "Aarif Al-Masoom") {
-          showToast(`🔔 RFID: Aarif arrived at school at ${data.time}!`, "success");
-          appendAlert("RFID Check-In PRESENT", `Aarif arrived safely at St. Gregory High School. Gate-In RFID tap logged at ${data.time}.`, "info");
+        const profile = STUDENT_PROFILES[activeStudentId];
+        if (data && (data.student === profile.name || data.student === "Aarif Al-Masoom")) {
+          showToast(`🔔 RFID: ${profile.name.split(' ')[0]} arrived at school at ${data.time}!`, "success");
+          appendAlert("RFID Check-In PRESENT", `${profile.name} arrived safely at St. Gregory High School. Gate-In RFID tap logged at ${data.time}.`, "info");
         }
       } catch(err) {}
     } else if (e.key === 'released_grades_feedback') {
       try {
         const data = JSON.parse(e.newValue);
+        const profile = STUDENT_PROFILES[activeStudentId];
         showToast("🧑‍🏫 Mrs. Tasnim Jahan released new OMR grades!", "warning");
-        appendAlert("OMR Performance Feedback Released", `Math Midterm results released: Aarif scored ${data.score || '12/15'}. Teacher comments: "${data.feedback || 'Good attempt'}"`, "warning");
+        appendAlert("OMR Performance Feedback Released", `Math Midterm results released: ${profile.name.split(' ')[0]} scored ${data.score || profile.score}. Teacher comments: "${data.feedback || 'Good attempt'}"`, "warning");
         
         // Update Copilot brief
         const briefing = document.getElementById("copilotBriefingText");
         if (briefing) {
-          briefing.innerHTML = `Good morning! Aarif has successfully arrived at school. His latest Math Midterm OMR results are released (**${data.score || '12/15'}** marks, **quadratics mastery: 45%**). Teacher released feedback notes: <em>"${data.feedback || ''}"</em>`;
+          briefing.innerHTML = `Good morning! ${profile.name.split(' ')[0]} has successfully arrived at school. His latest Math Midterm OMR results are released (**${data.score || profile.score}** marks, **quadratics mastery: ${profile.algebraMastery}**). Teacher released feedback notes: <em>"${data.feedback || ''}"</em>`;
         }
       } catch(err) {
         showToast("🧑‍🏫 Mrs. Tasnim Jahan released new OMR grades!", "warning");
@@ -347,19 +606,10 @@ function setupChatMessenger() {
         appendAlert("Study Content Recommended", `Smart dispatcher suggested: "${data.title || 'Algebra worksheet'}" for target subject "${data.topic || 'Algebra'}"`, "info");
       } catch(err) {}
     } else if (e.key === 'student_tuition_paid') {
-      showToast("💳 Tuition fees of ৳3,500 settled successfully!", "success");
-      // Find tuition item in digest checklist and mark completed!
-      const items = document.querySelectorAll(".digest-task-item");
-      items.forEach(item => {
-        if (item.innerText.includes("Tuition")) {
-          item.classList.add("completed");
-        }
-      });
-      // Update Copilot briefing text to reflect paid tuition!
-      const briefing = document.getElementById("copilotBriefingText");
-      if (briefing) {
-        briefing.innerHTML = briefing.innerHTML.replace("Tuition bills of ৳3,500 are pending.", "Tuition bills have been settled successfully.");
-      }
+      const profile = STUDENT_PROFILES[activeStudentId];
+      localStorage.setItem(`student_tuition_paid_${activeStudentId}`, 'true');
+      showToast(`💳 Tuition fees of ৳${(profile.dues || 3500).toLocaleString()} settled successfully!`, "success");
+      syncActiveStudent(activeStudentId);
     }
   });
 
@@ -385,18 +635,20 @@ function setupChatMessenger() {
   function simulateTeacherReply(parentText) {
     const lowercaseText = parentText.toLowerCase();
     let replyText = "";
+    const profile = STUDENT_PROFILES[activeStudentId];
+    const sName = profile.name.split(' ')[0];
 
     // Dialog matching engine
     if (lowercaseText.includes("algebra") || lowercaseText.includes("math") || lowercaseText.includes("grade") || lowercaseText.includes("fail") || lowercaseText.includes("score")) {
-      replyText = "Aarif is extremely capable, but mock OMR reviews show he is guessing some quadratic factorization steps. The AI drills I set up are active on his portal. Supporting him to finish those will boost him back up!";
+      replyText = `${sName} is extremely capable, but mock OMR reviews show some guess work in quadratic factorization steps. The AI drills I set up are active on the portal. Supporting completion of those will boost the grades!`;
     } else if (lowercaseText.includes("safe") || lowercaseText.includes("where") || lowercaseText.includes("bus") || lowercaseText.includes("school") || lowercaseText.includes("transit")) {
-      replyText = "Yes, Aarif arrived safely at school on Bus #14 this morning at 08:15 AM. His attendance is logged as present, and he is currently attending classes in Grade 8-C.";
+      replyText = `Yes, ${sName} arrived safely at school on Bus #14 this morning at 08:15 AM. The attendance is logged as present, and ${profile.name.split(' ')[0]} is currently attending classes in ${profile.grade}.`;
     } else if (lowercaseText.includes("callback") || lowercaseText.includes("call") || lowercaseText.includes("appointment") || lowercaseText.includes("meet")) {
       replyText = "I have filed your callback appointment! I am available tomorrow at 11:30 AM or Friday afternoon at 2:00 PM. Let me know what works best.";
     } else if (lowercaseText.includes("hello") || lowercaseText.includes("hi") || lowercaseText.includes("hey")) {
-      replyText = "Hello! I am monitoring Aarif's daily metrics. Let me know if you have questions about his homework logs or next week's exam schedules.";
+      replyText = `Hello! I am monitoring ${sName}'s daily metrics. Let me know if you have questions about homework logs or next week's exam schedules.`;
     } else {
-      replyText = "Thank you for the message! I am keeping a close eye on Aarif's progress in class. By keeping his daily task digests complete, we can ensure he stays perfectly prepared.";
+      replyText = `Thank you for the message! I am keeping a close eye on ${sName}'s progress in class. By keeping daily task digests complete, we can ensure perfect preparation.`;
     }
 
     // Typing Delay Simulation
