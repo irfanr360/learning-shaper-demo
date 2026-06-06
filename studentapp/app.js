@@ -473,8 +473,8 @@ function switchTab(tabId) {
     // Simple matching index checking
     const name = item.innerText.trim().toLowerCase();
     if (name === 'ai practice' && tabId === 'practice') item.classList.add('active');
-    else if (name === 'bus' && tabId === 'transport') item.classList.add('active');
     else if (name === 'prepcast' && tabId === 'podcast') item.classList.add('active');
+    else if (name === 'others' && (tabId === 'others' || tabId === 'transport' || tabId === 'tuition')) item.classList.add('active');
     else if (name === tabId) item.classList.add('active');
   });
 
