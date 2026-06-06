@@ -493,21 +493,23 @@ function setupUIEventListeners() {
   // OMR Re-evaluation request
   const recheckBtn = document.getElementById('recheckBtn');
   const statusBadge = document.getElementById('recheckStatusBadge');
-  recheckBtn.addEventListener('click', () => {
-    if (studentState.recheckFiled) return;
-    
-    recheckBtn.innerText = "Submitting File...";
-    recheckBtn.disabled = true;
-    
-    setTimeout(() => {
-      studentState.recheckFiled = true;
-      recheckBtn.style.display = 'none';
-      statusBadge.style.display = 'block';
-      showToast('OMR sheet re-evaluation request submitted to coordinator!', 'success');
-      localStorage.setItem('student_recheck_filed', 'true');
-      addXp(30); // XP reward for interacting
-    }, 1500);
-  });
+  if (recheckBtn) {
+    recheckBtn.addEventListener('click', () => {
+      if (studentState.recheckFiled) return;
+      
+      recheckBtn.innerText = "Submitting File...";
+      recheckBtn.disabled = true;
+      
+      setTimeout(() => {
+        studentState.recheckFiled = true;
+        recheckBtn.style.display = 'none';
+        if (statusBadge) statusBadge.style.display = 'block';
+        showToast('OMR sheet re-evaluation request submitted to coordinator!', 'success');
+        localStorage.setItem('student_recheck_filed', 'true');
+        addXp(30); // XP reward for interacting
+      }, 1500);
+    });
+  }
 
   // Tuition Pay trigger drawer
   const payTuitionBtn = document.getElementById('payTuitionBtn');

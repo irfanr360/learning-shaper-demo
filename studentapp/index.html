@@ -307,10 +307,7 @@
                 <div class="service-icon-circle accent-purple">📐</div>
                 <div class="service-label">AI Practice</div>
               </div>
-              <div class="bkash-service-item" onclick="switchTab('exams')">
-                <div class="service-icon-circle accent-blue">📝</div>
-                <div class="service-label">OMR Exams</div>
-              </div>
+
               <div class="bkash-service-item" onclick="switchTab('podcast')">
                 <div class="service-icon-circle accent-red">🎧</div>
                 <div class="service-label">PrepCast</div>
@@ -367,17 +364,7 @@
                   <p>Complete drills for +150 XP</p>
                 </div>
               </div>
-              <!-- Offer Card 3 -->
-              <div class="bkash-offer-card" onclick="switchTab('exams')">
-                <div class="bkash-offer-cover">
-                  📝
-                  <span class="bkash-offer-badge">Exam</span>
-                </div>
-                <div class="bkash-offer-details">
-                  <h4>Midterm Recheck</h4>
-                  <p>Verify your OMR scan accuracy</p>
-                </div>
-              </div>
+
               <!-- Offer Card 4 -->
               <div class="bkash-offer-card" onclick="switchTab('focus')">
                 <div class="bkash-offer-cover">
@@ -734,112 +721,7 @@
           </div>
         </div>
 
-        <!-- ========================================================================
-             TAB 2: EXAMS PANEL (OMR Review)
-             ======================================================================== -->
-        <div class="tab-content-panel" id="tab-exams">
-          
-          <div class="glass-card">
-            <div class="card-title">
-              <svg viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Maths Term Midterm Review
-            </div>
-            
-            <!-- Midterm Summary -->
-            <div class="exam-header">
-              <div class="exam-info">
-                <h4>Mathematics (Theory + OMR)</h4>
-                <p>Scanned on May 18, 2026</p>
-              </div>
-              <div class="exam-badge-score">12/15</div>
-            </div>
 
-            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
-              You answered **12 questions correctly** out of 15. The digital carbon scanner detected two missed marks and one incorrect bubble. Click below to inspect your sheet.
-            </p>
-
-            <!-- Digital OMR Inspector bubble grid -->
-            <div class="omr-sheet-inspector">
-              <div class="omr-grid-header">
-                <span>Q#</span>
-                <div style="display:flex; justify-content:space-between; padding-right:10px; width:100%">
-                  <span>[ A ]</span>
-                  <span>[ B ]</span>
-                  <span>[ C ]</span>
-                  <span>[ D ]</span>
-                </div>
-              </div>
-              
-              <!-- Row 1: Correct (B) -->
-              <div class="omr-question-row" onclick="explainOMRQuestion(1)" style="cursor:pointer;">
-                <span class="omr-num">Q1</span>
-                <div class="omr-bubbles">
-                  <div class="bubble">A</div>
-                  <div class="bubble correct">B</div>
-                  <div class="bubble">C</div>
-                  <div class="bubble">D</div>
-                </div>
-              </div>
-
-              <!-- Row 2: Incorrect marked A, correct was C -->
-              <div class="omr-question-row" onclick="explainOMRQuestion(2)" style="cursor:pointer;">
-                <span class="omr-num">Q2</span>
-                <div class="omr-bubbles">
-                  <div class="bubble incorrect">A</div>
-                  <div class="bubble">B</div>
-                  <div class="bubble missed-correct">C</div>
-                  <div class="bubble">D</div>
-                </div>
-              </div>
-
-              <!-- Row 3: Correct (A) -->
-              <div class="omr-question-row" onclick="explainOMRQuestion(3)" style="cursor:pointer;">
-                <span class="omr-num">Q3</span>
-                <div class="omr-bubbles">
-                  <div class="bubble correct">A</div>
-                  <div class="bubble">B</div>
-                  <div class="bubble">C</div>
-                  <div class="bubble">D</div>
-                </div>
-              </div>
-
-              <!-- Row 4: Correct (D) -->
-              <div class="omr-question-row" onclick="explainOMRQuestion(4)" style="cursor:pointer;">
-                <span class="omr-num">Q4</span>
-                <div class="omr-bubbles">
-                  <div class="bubble">A</div>
-                  <div class="bubble">B</div>
-                  <div class="bubble">C</div>
-                  <div class="bubble correct">D</div>
-                </div>
-              </div>
-
-              <!-- Row 5: Unmarked correctly shown missed in D -->
-              <div class="omr-question-row" onclick="explainOMRQuestion(5)" style="cursor:pointer;">
-                <span class="omr-num">Q5</span>
-                <div class="omr-bubbles">
-                  <div class="bubble">A</div>
-                  <div class="bubble">B</div>
-                  <div class="bubble">C</div>
-                  <div class="bubble missed-correct">D</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recheck drawer workflow trigger -->
-            <button class="recheck-btn" id="recheckBtn">
-              <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              File Re-evaluation Request
-            </button>
-            <div class="recheck-status-badge" id="recheckStatusBadge">
-              ⏳ Request Status: Pending Coordinator Verification
-            </div>
-          </div>
-        </div>
 
         <!-- ========================================================================
              TAB 3: AI PRACTICE (Quizzes, XP, Leaderboard)
@@ -1276,12 +1158,7 @@
           Home
         </div>
         
-        <div class="nav-item" onclick="switchTab('exams')">
-          <svg viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          Exams
-        </div>
+
 
         <div class="nav-item" onclick="switchTab('practice')">
           <svg viewBox="0 0 24 24">
@@ -1370,26 +1247,7 @@
     </div>
   </div>
 
-  <!-- OMR Click-to-Explain Drawer -->
-  <div class="omr-explainer-drawer" id="omrExplainerDrawer">
-    <div class="drawer-sheet">
-      <div class="sheet-header">
-        <h3 id="omrExplainerTitle">OMR Question Review</h3>
-        <button class="sheet-close-btn" onclick="closeOMRExplainer()">✕</button>
-      </div>
-      <div style="padding: 16px 0; text-align: left; color: var(--text-main);">
-        <h4 style="font-size: 13px; font-weight: 800; margin-bottom: 8px;" id="omrExplainerTopic">Topic: Quadratics</h4>
-        <p style="font-size: 12px; line-height: 1.5; margin-bottom: 12px;" id="omrExplainerDesc">Mistake analysis details...</p>
-        <div style="background: rgba(220, 38, 38, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(220, 38, 38, 0.2); font-size: 11px; margin-bottom: 12px; color: var(--error-color);" id="omrExplainerMistake">
-          Your Answer: A • Correct: C
-        </div>
-        <div style="background: rgba(30, 99, 245, 0.08); padding: 10px; border-radius: 8px; border: 1px solid var(--panel-border); font-size: 11px;">
-          <strong>AI Recommended Study:</strong><br>
-          <span id="omrExplainerRemedy">Practice middle-term factorization drills.</span>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- AI Podcast Active Listening Prep Check Quiz Modal -->
   <div class="podcast-quiz-modal" id="podcastQuizModal" style="display:none;">
