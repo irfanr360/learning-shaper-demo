@@ -316,14 +316,6 @@
                 <div class="service-icon-circle accent-teal">⏱️</div>
                 <div class="service-label">Focus</div>
               </div>
-              <div class="bkash-service-item" onclick="switchTab('transport')">
-                <div class="service-icon-circle accent-orange">🚌</div>
-                <div class="service-label">Live Bus</div>
-              </div>
-              <div class="bkash-service-item" onclick="switchTab('tuition')">
-                <div class="service-icon-circle accent-pink">৳</div>
-                <div class="service-label">Tuition</div>
-              </div>
               <div class="bkash-service-item" onclick="document.getElementById('badgesShelfDrawer').classList.add('active')">
                 <div class="service-icon-circle accent-gold">🏆</div>
                 <div class="service-label">Badges</div>
@@ -456,7 +448,7 @@
               </div>
               <div class="milestone-item" id="milestoneDrill" onclick="toggleMilestone(this, 50)">
                 <div class="milestone-checkbox"></div>
-                <span class="milestone-text">Settle Outstanding tuition fees</span>
+                <span class="milestone-text">Complete 10 drills in AI Practice</span>
                 <span class="milestone-reward">+50 XP</span>
               </div>
               <div class="milestone-item" id="milestoneMath" onclick="toggleMilestone(this, 100)">
@@ -857,183 +849,7 @@
           </div>
         </div>
 
-        <!-- ========================================================================
-             TAB 4: TRANSPORT PANEL (Stops & Real-time vehicle lines)
-             ======================================================================== -->
-        <div class="tab-content-panel" id="tab-transport">
-          <div class="transport-card">
-            <div class="card-title">
-              <svg viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177V18.75m0-11.177L12 3.75m0 0l-3 3m3-3v15" />
-              </svg>
-              School Transport Bus #14
-            </div>
 
-            <!-- ETA visual pulsing -->
-            <div class="bus-eta-circle-box">
-              <div class="eta-loader">
-                <div class="eta-pulse-glowing"></div>
-                <div class="eta-pulse-inner"></div>
-                <span class="eta-time-text" id="busEtaText">08</span>
-              </div>
-              <div class="eta-details">
-                <h4>Approaching Dhanmondi Stop</h4>
-                <p id="busSubEtaText">Estimated arrival in 8 mins</p>
-              </div>
-            </div>
-
-            <!-- Bus Route Dotted SVG Track crawl mapping -->
-            <div class="route-map-box">
-              <div class="route-progress-line"></div>
-              <div class="route-progress-fill" id="busRouteProgressFill" style="width: 40%"></div>
-              
-              <!-- Stop indicators -->
-              <div class="route-stop-point passed" style="left: 10%"></div>
-              <div class="route-stop-label" style="left: 10%">Science Lab</div>
-
-              <div class="route-stop-point passed" style="left: 40%"></div>
-              <div class="route-stop-label" style="left: 40%">City College</div>
-
-              <div class="route-stop-point destination" style="left: 85%"></div>
-              <div class="route-stop-label" style="left: 85%; color: var(--warning-color)">Dhanmondi</div>
-
-              <!-- Bus tracking icon marker -->
-              <div class="route-bus-marker" id="busRouteMarker" style="left: 40%">
-                <svg viewBox="0 0 24 24">
-                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H6.5c-.66 0-1.21.42-1.42.99L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 6h11l1.39 4H5.11L6.5 6zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ========================================================================
-             TAB 5: TUITION PANEL (Outstanding Billing)
-             ======================================================================== -->
-        <div class="tab-content-panel" id="tab-tuition">
-          <!-- Mock Student ID Debit Card -->
-          <div class="bkash-ledger-card">
-            <div class="bkash-card-header">
-              <div class="bkash-card-logo">Learning Mate</div>
-              <div class="bkash-card-type">STUDENT CARD</div>
-            </div>
-            <div class="bkash-card-number">4321 8765 0987 2026</div>
-            <div class="bkash-card-footer">
-              <div class="bkash-card-holder">
-                <label>Card Holder</label>
-                <span>Aarif Al-Masoom</span>
-              </div>
-              <div class="bkash-card-bank-icon">🎓</div>
-            </div>
-          </div>
-
-          <!-- Billing & School Dues Action Card -->
-          <div class="glass-card" style="margin-bottom: 16px;">
-            <div class="card-title">
-              <svg viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-              </svg>
-              Billing & School Dues
-            </div>
-            
-            <div class="dues-list">
-              <div class="due-item-box" id="tuitionDueItem">
-                <div class="due-details">
-                  <h4>May 2026 Academic Dues</h4>
-                  <p>Deadline: May 28, 2026 • Status: UNPAID</p>
-                </div>
-                <div class="due-amount" id="tuitionDueAmountText">৳3,500</div>
-              </div>
-            </div>
-
-            <!-- Trigger checkout simulator drawer modal -->
-            <button class="checkout-trigger-btn" id="payTuitionBtn">Pay Outstanding Tuition</button>
-          </div>
-
-          <!-- Circular Gauges Panel -->
-          <div class="bkash-gauges-panel">
-            <div class="bkash-gauges-title-row">
-              <h3>My Study Milestones</h3>
-              <span class="gauges-sub-link">Weekly Summary</span>
-            </div>
-            <div class="bkash-gauges-row">
-              <!-- AI Drills Gauge -->
-              <div class="bkash-gauge-item">
-                <div class="bkash-gauge-svg-container">
-                  <svg viewBox="0 0 36 22">
-                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--panel-border)" stroke-width="3" stroke-linecap="round"/>
-                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--bkash-pink)" stroke-width="3" stroke-linecap="round" stroke-dasharray="44" stroke-dashoffset="24.2" id="gaugeAiDrillsPath"/>
-                  </svg>
-                  <div class="bkash-gauge-percentage" id="gaugeAiDrillsPercentage">45%</div>
-                </div>
-                <div class="bkash-gauge-label">AI Drills</div>
-                <div class="bkash-gauge-amount" id="gaugeAiDrillsAmount">9/20 Drills</div>
-              </div>
-
-              <!-- Study Hours Gauge -->
-              <div class="bkash-gauge-item">
-                <div class="bkash-gauge-svg-container">
-                  <svg viewBox="0 0 36 22">
-                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--panel-border)" stroke-width="3" stroke-linecap="round"/>
-                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-dasharray="44" stroke-dashoffset="11" id="gaugeStudyHoursPath"/>
-                  </svg>
-                  <div class="bkash-gauge-percentage" id="gaugeStudyHoursPercentage">75%</div>
-                </div>
-                <div class="bkash-gauge-label">Study Hours</div>
-                <div class="bkash-gauge-amount" id="gaugeStudyHoursAmount">15/20 Hrs</div>
-              </div>
-
-              <!-- XP Streak Gauge -->
-              <div class="bkash-gauge-item">
-                <div class="bkash-gauge-svg-container">
-                  <svg viewBox="0 0 36 22">
-                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="var(--panel-border)" stroke-width="3" stroke-linecap="round"/>
-                    <path d="M 4 18 A 14 14 0 0 1 32 18" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-dasharray="44" stroke-dashoffset="12.5" id="gaugeXpStreakPath"/>
-                  </svg>
-                  <div class="bkash-gauge-percentage" id="gaugeXpStreakPercentage">71%</div>
-                </div>
-                <div class="bkash-gauge-label">XP Streak</div>
-                <div class="bkash-gauge-amount" id="gaugeXpStreakAmount">5/7 Days</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- list group style options -->
-          <div class="bkash-list-group">
-            <div class="bkash-list-item" onclick="window.open('../parentapp/index.html', '_blank')">
-              <div class="bkash-list-item-left">
-                <div class="bkash-list-item-icon">🛡️</div>
-                <div class="bkash-list-item-meta">
-                  <h4>Linked Parent Portal</h4>
-                  <p>Connect with Parenting Copilot</p>
-                </div>
-              </div>
-              <div class="bkash-list-item-arrow">➔</div>
-            </div>
-            
-            <div class="bkash-list-item" onclick="showToast('Auto Pay is managed by your parent in the Parenting Copilot portal.', 'info')">
-              <div class="bkash-list-item-left">
-                <div class="bkash-list-item-icon">🔄</div>
-                <div class="bkash-list-item-meta">
-                  <h4>Auto Pay School Dues</h4>
-                  <p>Manage automated recurring payments</p>
-                </div>
-              </div>
-              <div class="bkash-list-item-arrow">➔</div>
-            </div>
-            
-            <div class="bkash-list-item" onclick="showToast('No paid receipts yet. Receipts will appear here once tuition is settled.', 'info')" id="receiptsListItem">
-              <div class="bkash-list-item-left">
-                <div class="bkash-list-item-icon">📄</div>
-                <div class="bkash-list-item-meta">
-                  <h4>Receipts and Tokens</h4>
-                  <p>Download official tax invoices</p>
-                </div>
-              </div>
-              <div class="bkash-list-item-arrow">➔</div>
-            </div>
-          </div>
-        </div>
 
         <!-- ========================================================================
              TAB 6: PREPCAST PODCAST PANEL
@@ -1138,27 +954,7 @@
             </div>
 
             <div class="bkash-list-group">
-              <div class="bkash-list-item" onclick="switchTab('transport')">
-                <div class="bkash-list-item-left">
-                  <div class="bkash-list-item-icon">🚌</div>
-                  <div class="bkash-list-item-meta">
-                    <h4>School Transport (Bus)</h4>
-                    <p>Real-time vehicle tracking & route mapping</p>
-                  </div>
-                </div>
-                <div class="bkash-list-item-arrow">➔</div>
-              </div>
 
-              <div class="bkash-list-item" onclick="switchTab('tuition')">
-                <div class="bkash-list-item-left">
-                  <div class="bkash-list-item-icon">৳</div>
-                  <div class="bkash-list-item-meta">
-                    <h4>Tuition Outstanding Billing</h4>
-                    <p>MFS payment, invoice history & billing status</p>
-                  </div>
-                </div>
-                <div class="bkash-list-item-arrow">➔</div>
-              </div>
 
               <div class="bkash-list-item" onclick="showStudentLoginOverlay()">
                 <div class="bkash-list-item-left">
