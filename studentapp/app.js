@@ -2956,6 +2956,9 @@ const STUDENT_PROFILES = {
     xp: 850,
     maxXp: 1000,
     pin: '1234',
+    otp: '1234',
+    phone: '+8801712345678',
+    email: 'aarif@school.edu',
     dues: 3500,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
     avatarSeed: 'Aarif'
@@ -2969,6 +2972,9 @@ const STUDENT_PROFILES = {
     xp: 920,
     maxXp: 1000,
     pin: '5678',
+    otp: '5678',
+    phone: '+8801756781234',
+    email: 'samira@school.edu',
     dues: 0,
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop',
     avatarSeed: 'Samira'
@@ -2982,6 +2988,9 @@ const STUDENT_PROFILES = {
     xp: 450,
     maxXp: 1000,
     pin: '9012',
+    otp: '9012',
+    phone: '+8801790123456',
+    email: 'tanvir@school.edu',
     dues: 1200,
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
     avatarSeed: 'Tanvir'
@@ -3014,79 +3023,229 @@ function saveStudentProfileState(studentId, level, xp, dues) {
   localStorage.setItem(`student_profile_${studentId}_state`, JSON.stringify(state));
 }
 
-window.selectLoginProfile = function(studentId) {
-  selectedLoginProfileId = studentId;
-  currentTypedPin = '';
+// OTP Wizard variables
+let authMethod = 'phone';
+let authTarget = '';
+let generatedOtp = '';
+let countdownSeconds = 180;
+let countdownTimer = null;
+
+window.setAuthMethod = function(method) {
+  authMethod = method;
+  const tabPhone = document.getElementById('methodTabPhone');
+  const tabEmail = document.getElementById('methodTabEmail');
+  const groupPhone = document.getElementById('groupPhone');
+  const groupEmail = document.getElementById('groupEmail');
   
-  // Update selected class in profile cards
-  const cards = ['aarif', 'samira', 'tanvir'];
-  cards.forEach(id => {
-    const el = document.getElementById(`loginCard_${id}`);
-    if (el) {
-      el.classList.toggle('selected', id === studentId);
-    }
-  });
-  
-  // Update PIN hint text
-  const hintText = document.getElementById('loginPinHintText');
-  if (hintText) {
-    const names = { aarif: 'Aarif (1234)', samira: 'Samira (5678)', tanvir: 'Tanvir (9012)' };
-    hintText.innerText = `PIN Hint: ${names[studentId]}`;
-  }
-  
-  // Reset pin dots
-  updatePinDotsUI();
+  if (tabPhone) tabPhone.classList.toggle('active', method === 'phone');
+  if (tabEmail) tabEmail.classList.toggle('active', method === 'email');
+  if (groupPhone) groupPhone.style.display = method === 'phone' ? 'block' : 'none';
+  if (groupEmail) groupEmail.style.display = method === 'email' ? 'block' : 'none';
 };
 
-window.quickLogin = function(studentId) {
-  if (studentId) {
-    selectLoginProfile(studentId);
+window.autofillTesterCreds = function(phone, email) {
+  const phoneInput = document.getElementById('otpPhoneInput');
+  const emailInput = document.getElementById('otpEmailInput');
+  if (authMethod === 'phone' && phoneInput) {
+    phoneInput.value = phone.replace('+880', '');
+    phoneInput.focus();
+  } else if (authMethod === 'email' && emailInput) {
+    emailInput.value = email;
+    emailInput.focus();
   }
-  const profile = STUDENT_PROFILES[selectedLoginProfileId];
-  if (!profile) return;
-  currentTypedPin = profile.pin;
-  updatePinDotsUI();
-  setTimeout(validateStudentPin, 150);
 };
 
-window.pressLoginPin = function(key) {
-  if (key === 'back') {
-    if (currentTypedPin.length > 0) {
-      currentTypedPin = currentTypedPin.slice(0, -1);
+window.goToStep = function(step) {
+  const step1 = document.getElementById('otpStep1');
+  const step2 = document.getElementById('otpStep2');
+  const step3 = document.getElementById('otpStep3');
+  
+  if (step1) step1.style.display = step === 1 ? 'flex' : 'none';
+  if (step2) step2.style.display = step === 2 ? 'flex' : 'none';
+  if (step3) step3.style.display = step === 3 ? 'flex' : 'none';
+  
+  if (step === 2) {
+    // Auto-focus first digit slot
+    setTimeout(() => {
+      const slot = document.getElementById('otpSlot1');
+      if (slot) {
+        slot.focus();
+        slot.select();
+      }
+    }, 100);
+  }
+};
+
+window.handleOtpSlotKeyUp = function(event, slotIndex) {
+  const currentSlot = document.getElementById(`otpSlot${slotIndex}`);
+  const val = currentSlot.value;
+  
+  if (event.key === 'Backspace') {
+    if (slotIndex > 1 && val.length === 0) {
+      const prevSlot = document.getElementById(`otpSlot${slotIndex - 1}`);
+      if (prevSlot) {
+        prevSlot.focus();
+        prevSlot.select();
+      }
     }
-  } else if (key === 'submit') {
-    validateStudentPin();
-    return;
+  } else if (val.length >= 1) {
+    if (slotIndex < 4) {
+      const nextSlot = document.getElementById(`otpSlot${slotIndex + 1}`);
+      if (nextSlot) {
+        nextSlot.focus();
+        nextSlot.select();
+      }
+    } else if (slotIndex === 4) {
+      // Auto-submit OTP check
+      verifyOtpCode();
+    }
+  }
+};
+
+window.sendOtpCode = function() {
+  const phoneInput = document.getElementById('otpPhoneInput');
+  const emailInput = document.getElementById('otpEmailInput');
+  
+  if (authMethod === 'phone') {
+    const phoneVal = phoneInput.value.trim();
+    if (!phoneVal || phoneVal.length < 10) {
+      showToast('Please enter a valid 10-digit phone number', 'warning');
+      return;
+    }
+    authTarget = '+880' + phoneVal;
   } else {
-    // Number pressed
-    if (currentTypedPin.length < 4) {
-      currentTypedPin += key;
+    const emailVal = emailInput.value.trim();
+    if (!emailVal || !emailVal.includes('@')) {
+      showToast('Please enter a valid email address', 'warning');
+      return;
+    }
+    authTarget = emailVal;
+  }
+  
+  // Find matching profile for preset OTP, otherwise generate random 4-digit code
+  let matchedProfile = null;
+  for (const id in STUDENT_PROFILES) {
+    const p = STUDENT_PROFILES[id];
+    if (authMethod === 'phone' && p.phone === authTarget) {
+      matchedProfile = p;
+      break;
+    } else if (authMethod === 'email' && p.email.toLowerCase() === authTarget.toLowerCase()) {
+      matchedProfile = p;
+      break;
     }
   }
   
-  updatePinDotsUI();
-  
-  // Auto-submit if 4 digits are entered
-  if (currentTypedPin.length === 4) {
-    setTimeout(validateStudentPin, 150);
+  if (matchedProfile) {
+    generatedOtp = matchedProfile.otp;
+  } else {
+    // Generate random 4-digit code
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
   }
+  
+  // Set Display Target
+  const targetDisplay = document.getElementById('otpTargetDisplay');
+  if (targetDisplay) targetDisplay.innerText = authTarget;
+  
+  // Clear any existing digit slot values
+  for (let i = 1; i <= 4; i++) {
+    const slot = document.getElementById(`otpSlot${i}`);
+    if (slot) slot.value = '';
+  }
+  
+  // Show Step 2
+  goToStep(2);
+  
+  // Trigger Mock Notification Bar
+  triggerMockNotificationAlert();
+  
+  // Start countdown timer
+  startOtpTimer();
+  
+  showToast('Verification code dispatched successfully!', 'success');
 };
 
-function updatePinDotsUI() {
-  for (let i = 1; i <= 4; i++) {
-    const dot = document.getElementById(`pinDot${i}`);
-    if (dot) {
-      dot.classList.toggle('filled', i <= currentTypedPin.length);
+window.resendOtpCode = function() {
+  // Re-generate OTP code
+  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  
+  // Check if it matches a registered student's phone/email and restore their specific OTP
+  for (const id in STUDENT_PROFILES) {
+    const p = STUDENT_PROFILES[id];
+    if ((authMethod === 'phone' && p.phone === authTarget) || (authMethod === 'email' && p.email.toLowerCase() === authTarget.toLowerCase())) {
+      generatedOtp = p.otp;
+      break;
     }
+  }
+  
+  triggerMockNotificationAlert();
+  startOtpTimer();
+  showToast('New verification code sent!', 'success');
+};
+
+function triggerMockNotificationAlert() {
+  const alertBar = document.getElementById('mockNotificationAlert');
+  const notifyTitle = document.getElementById('notificationTitle');
+  const notifyText = document.getElementById('notificationText');
+  
+  if (alertBar && notifyTitle && notifyText) {
+    notifyTitle.innerText = authMethod === 'phone' ? 'SMS Message' : 'Email Message';
+    notifyText.innerHTML = authMethod === 'phone'
+      ? `💬 [Learning Mate] Your verification code is: <strong>${generatedOtp}</strong>`
+      : `📧 [Learning Mate] Your login verification OTP is: <strong>${generatedOtp}</strong>`;
+      
+    alertBar.style.display = 'flex';
+    alertBar.classList.remove('slide-out');
+    
+    // Auto slide out after 7 seconds
+    setTimeout(() => {
+      alertBar.classList.add('slide-out');
+      setTimeout(() => {
+        alertBar.style.display = 'none';
+      }, 400);
+    }, 7000);
   }
 }
 
-window.validateStudentPin = function() {
-  const profile = STUDENT_PROFILES[selectedLoginProfileId];
-  if (!profile) return;
+function startOtpTimer() {
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownSeconds = 180;
   
-  if (currentTypedPin === profile.pin) {
-    // Play dynamic synthetic audio chime
+  const timerText = document.getElementById('otpTimerText');
+  const resendBtn = document.getElementById('otpResendBtn');
+  if (resendBtn) resendBtn.disabled = true;
+  
+  countdownTimer = setInterval(() => {
+    countdownSeconds -= 1;
+    
+    if (timerText) {
+      const minutes = Math.floor(countdownSeconds / 60);
+      const seconds = countdownSeconds % 60;
+      const minStr = minutes < 10 ? `0${minutes}` : minutes;
+      const secStr = seconds < 10 ? `0${seconds}` : seconds;
+      timerText.innerText = `${minStr}:${secStr}`;
+    }
+    
+    if (countdownSeconds <= 0) {
+      clearInterval(countdownTimer);
+      if (resendBtn) resendBtn.disabled = false;
+    }
+  }, 1000);
+}
+
+window.verifyOtpCode = function() {
+  let enteredCode = '';
+  for (let i = 1; i <= 4; i++) {
+    const slot = document.getElementById(`otpSlot${i}`);
+    enteredCode += slot ? slot.value : '';
+  }
+  
+  if (enteredCode.length < 4) {
+    showToast('Please enter all 4 digits of the OTP code', 'warning');
+    return;
+  }
+  
+  if (enteredCode === generatedOtp) {
+    // Play success chime
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3120,22 +3279,38 @@ window.validateStudentPin = function() {
     // Confetti
     triggerConfettiBurst();
     
-    // Log in
-    loginAsStudent(selectedLoginProfileId);
+    // Clear timer
+    if (countdownTimer) clearInterval(countdownTimer);
     
-    // Set session active
-    sessionStorage.setItem('student_session_active', 'true');
-    
-    // Hide overlay
-    const overlay = document.getElementById('studentLoginOverlay');
-    if (overlay) {
-      overlay.classList.add('hidden');
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 400);
+    // Search registered profiles to check if matched
+    let matchedProfileId = null;
+    for (const id in STUDENT_PROFILES) {
+      const p = STUDENT_PROFILES[id];
+      if ((authMethod === 'phone' && p.phone === authTarget) || (authMethod === 'email' && p.email.toLowerCase() === authTarget.toLowerCase())) {
+        matchedProfileId = id;
+        break;
+      }
     }
     
-    showToast(`Welcome back, ${profile.name}!`, 'success');
+    if (matchedProfileId) {
+      // Log in immediately
+      loginAsStudent(matchedProfileId);
+      sessionStorage.setItem('student_session_active', 'true');
+      
+      // Hide overlay
+      const overlay = document.getElementById('studentLoginOverlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 400);
+      }
+      showToast(`Welcome back, ${STUDENT_PROFILES[matchedProfileId].name}!`, 'success');
+    } else {
+      // Transition to Step 3: Registration for new profile
+      goToStep(3);
+      showToast('OTP verified! Complete registration details to continue.', 'success');
+    }
   } else {
     // Play error buzz
     try {
@@ -3154,8 +3329,8 @@ window.validateStudentPin = function() {
       osc.stop(audioCtx.currentTime + 0.3);
     } catch (e) {}
     
-    // Shake elements
-    const wrapper = document.querySelector('.login-pin-dots');
+    // Shake inputs
+    const wrapper = document.querySelector('.otp-digits-grid');
     if (wrapper) {
       wrapper.classList.add('login-error-shake');
       setTimeout(() => {
@@ -3163,12 +3338,72 @@ window.validateStudentPin = function() {
       }, 400);
     }
     
-    // Reset typed pin
-    currentTypedPin = '';
-    updatePinDotsUI();
+    // Reset inputs
+    for (let i = 1; i <= 4; i++) {
+      const slot = document.getElementById(`otpSlot${i}`);
+      if (slot) slot.value = '';
+    }
+    const firstSlot = document.getElementById('otpSlot1');
+    if (firstSlot) firstSlot.focus();
     
-    showToast('Incorrect PIN. Please try again!', 'warning');
+    showToast('Incorrect verification code. Please check and try again!', 'warning');
   }
+};
+
+window.registerAndLogin = function() {
+  const nameInput = document.getElementById('regNameInput');
+  const gradeInput = document.getElementById('regGradeInput');
+  
+  const nameVal = nameInput ? nameInput.value.trim() : '';
+  const gradeVal = gradeInput ? gradeInput.value : 'Grade 8-A';
+  
+  if (!nameVal) {
+    showToast('Please enter your full name', 'warning');
+    return;
+  }
+  
+  // Create unique student id
+  const customStudentId = 'new_' + Date.now();
+  const firstName = nameVal.split(' ')[0];
+  
+  // Register inside STUDENT_PROFILES dynamically
+  STUDENT_PROFILES[customStudentId] = {
+    id: customStudentId,
+    name: nameVal,
+    firstName: firstName,
+    grade: gradeVal,
+    level: 1,
+    xp: 0,
+    maxXp: 100,
+    pin: '0000',
+    otp: '0000',
+    phone: authMethod === 'phone' ? authTarget : '',
+    email: authMethod === 'email' ? authTarget : '',
+    dues: 0,
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&auto=format&fit=crop',
+    avatarSeed: firstName
+  };
+  
+  // Save dynamic profile state
+  saveStudentProfileState(customStudentId, 1, 0, 0);
+  
+  // Log in as this student
+  loginAsStudent(customStudentId);
+  sessionStorage.setItem('student_session_active', 'true');
+  
+  // Hide overlay
+  const overlay = document.getElementById('studentLoginOverlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 400);
+  }
+  
+  // Confetti
+  triggerConfettiBurst();
+  
+  showToast(`Welcome to Learning Mate, ${firstName}!`, 'success');
 };
 
 window.loginAsStudent = function(studentId) {
@@ -3288,18 +3523,34 @@ window.loginAsStudent = function(studentId) {
 };
 
 window.showStudentLoginOverlay = function() {
-  currentTypedPin = '';
   sessionStorage.removeItem('student_session_active');
-  updatePinDotsUI();
+  
+  // Clear any active timers
+  if (countdownTimer) clearInterval(countdownTimer);
+  
+  // Hide alert
+  const alertBar = document.getElementById('mockNotificationAlert');
+  if (alertBar) alertBar.style.display = 'none';
+  
+  // Reset inputs
+  const phoneInput = document.getElementById('otpPhoneInput');
+  const emailInput = document.getElementById('otpEmailInput');
+  const nameInput = document.getElementById('regNameInput');
+  if (phoneInput) phoneInput.value = '';
+  if (emailInput) emailInput.value = '';
+  if (nameInput) nameInput.value = '';
+  
+  // Reset method
+  setAuthMethod('phone');
+  
+  // Go to step 1
+  goToStep(1);
   
   const overlay = document.getElementById('studentLoginOverlay');
   if (overlay) {
     overlay.style.display = 'flex';
     overlay.classList.remove('hidden');
   }
-  
-  // Highlight active selected profile
-  selectLoginProfile(selectedLoginProfileId);
 };
 
 window.renderClassroomLeaderboard = function(activeStudentId) {

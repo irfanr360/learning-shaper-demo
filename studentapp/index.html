@@ -11,73 +11,109 @@
   <!-- Smartphone Simulator Frame Wrapper -->
   <div class="phone-container" id="phoneContainer" data-theme="dark">
     
-    <!-- Redesigned Student Profile Authentication Interface -->
+    <!-- Redesigned Student Profile Authentication Interface (OTP-Based Login) -->
     <div class="student-login-overlay" id="studentLoginOverlay">
+      <!-- Mock Slide-down Notification Bar for SMS/Email OTP (simulated native device alert) -->
+      <div class="mock-notification-alert" id="mockNotificationAlert" style="display:none;">
+        <div class="notification-icon">💬</div>
+        <div class="notification-content">
+          <h4 id="notificationTitle">SMS Message</h4>
+          <p id="notificationText">[Learning Mate] Your verification OTP code is 1234</p>
+        </div>
+      </div>
+
       <div class="login-header-logo">◈ <span>Learning Mate</span></div>
       <div class="login-subtitle">Student Login Portal</div>
 
-      <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;">Select student account</div>
-      
-      <!-- Student Selection Profiles Grid -->
-      <div class="student-profiles-grid">
-        <div class="login-profile-card selected" id="loginCard_aarif" onclick="selectLoginProfile('aarif')" ondblclick="quickLogin('aarif')" title="Double click to quick login">
-          <div class="login-avatar-wrapper">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" class="login-avatar-img" alt="Aarif" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Aarif';">
-            <div class="login-avatar-badge" id="loginCardLevel_aarif">12</div>
-          </div>
-          <div class="login-profile-name">Aarif Al-Masoom</div>
-          <div class="login-profile-grade">Grade 8-C</div>
+      <!-- STEP 1: CONTACT METHOD PANEL -->
+      <div class="otp-step-panel active" id="otpStep1">
+        <!-- Auth Selector Toggle (Phone vs Email) -->
+        <div class="otp-method-selector">
+          <div class="otp-method-tab active" id="methodTabPhone" onclick="setAuthMethod('phone')">Phone</div>
+          <div class="otp-method-tab" id="methodTabEmail" onclick="setAuthMethod('email')">Email</div>
         </div>
 
-        <div class="login-profile-card" id="loginCard_samira" onclick="selectLoginProfile('samira')" ondblclick="quickLogin('samira')" title="Double click to quick login">
-          <div class="login-avatar-wrapper">
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop" class="login-avatar-img" alt="Samira" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Samira';">
-            <div class="login-avatar-badge" id="loginCardLevel_samira">14</div>
+        <!-- Phone Field Input -->
+        <div class="otp-input-group" id="groupPhone">
+          <label class="otp-field-label">Phone Number</label>
+          <div class="otp-phone-wrapper">
+            <span class="otp-phone-prefix">+880</span>
+            <input type="tel" class="otp-text-input" id="otpPhoneInput" placeholder="1712345678" maxlength="10">
           </div>
-          <div class="login-profile-name">Samira Hossain</div>
-          <div class="login-profile-grade">Grade 8-A</div>
         </div>
 
-        <div class="login-profile-card" id="loginCard_tanvir" onclick="selectLoginProfile('tanvir')" ondblclick="quickLogin('tanvir')" title="Double click to quick login">
-          <div class="login-avatar-wrapper">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop" class="login-avatar-img" alt="Tanvir" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Tanvir';">
-            <div class="login-avatar-badge" id="loginCardLevel_tanvir">11</div>
+        <!-- Email Field Input -->
+        <div class="otp-input-group" id="groupEmail" style="display: none;">
+          <label class="otp-field-label">Email Address</label>
+          <input type="email" class="otp-text-input" id="otpEmailInput" placeholder="aarif@school.edu">
+        </div>
+
+        <button class="otp-submit-btn" onclick="sendOtpCode()">Send Verification Code</button>
+
+        <!-- Help/Hint Cards for Testers -->
+        <div class="otp-tester-hints">
+          <div style="font-size: 9px; font-weight: 800; color: var(--bkash-pink); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Registered Students (for testing)</div>
+          <div class="tester-hint-row" onclick="autofillTesterCreds('+8801712345678', 'aarif@school.edu')">
+            <span>Aarif Al-Masoom</span>
+            <code>01712345678</code>
           </div>
-          <div class="login-profile-name">Tanvir Islam</div>
-          <div class="login-profile-grade">Grade 8-B</div>
+          <div class="tester-hint-row" onclick="autofillTesterCreds('+8801756781234', 'samira@school.edu')">
+            <span>Samira Hossain</span>
+            <code>01756781234</code>
+          </div>
+          <div class="tester-hint-row" onclick="autofillTesterCreds('+8801790123456', 'tanvir@school.edu')">
+            <span>Tanvir Islam</span>
+            <code>01790123456</code>
+          </div>
         </div>
       </div>
 
-      <!-- PIN Input Code Field -->
-      <div class="login-pin-display-wrapper">
-        <div class="login-pin-prompt">ENTER 4-DIGIT PIN FOR ACCESS</div>
-        <div class="login-pin-dots">
-          <span class="login-pin-dot" id="pinDot1"></span>
-          <span class="login-pin-dot" id="pinDot2"></span>
-          <span class="login-pin-dot" id="pinDot3"></span>
-          <span class="login-pin-dot" id="pinDot4"></span>
+      <!-- STEP 2: ENTER OTP PANEL -->
+      <div class="otp-step-panel" id="otpStep2" style="display: none;">
+        <div class="otp-verify-sub">A 4-digit verification code was sent to:</div>
+        <div class="otp-target-display" id="otpTargetDisplay">+880 1712-345678</div>
+
+        <!-- Grid of 4 Slots -->
+        <div class="otp-digits-grid">
+          <input type="tel" class="otp-digit-slot" id="otpSlot1" maxlength="1" onkeyup="handleOtpSlotKeyUp(event, 1)" onfocus="this.select()">
+          <input type="tel" class="otp-digit-slot" id="otpSlot2" maxlength="1" onkeyup="handleOtpSlotKeyUp(event, 2)" onfocus="this.select()">
+          <input type="tel" class="otp-digit-slot" id="otpSlot3" maxlength="1" onkeyup="handleOtpSlotKeyUp(event, 3)" onfocus="this.select()">
+          <input type="tel" class="otp-digit-slot" id="otpSlot4" maxlength="1" onkeyup="handleOtpSlotKeyUp(event, 4)" onfocus="this.select()">
         </div>
-        <div class="login-pin-hint" id="loginPinHintText">PIN Hint: Aarif (1234)</div>
-        <button class="login-quick-btn" onclick="quickLogin()">⚡ Quick Login</button>
+
+        <div class="otp-timer-box">
+          Resend code in <span id="otpTimerText">03:00</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; width: 100%; margin-top: 15px;">
+          <button class="otp-action-btn secondary" onclick="goToStep(1)">Back</button>
+          <button class="otp-action-btn primary" onclick="verifyOtpCode()">Verify & Login</button>
+        </div>
+
+        <button class="otp-resend-btn" id="otpResendBtn" onclick="resendOtpCode()" disabled>Resend Code</button>
       </div>
 
-      <!-- Numpad Inputs -->
-      <div class="login-numpad">
-        <button class="login-numpad-btn" onclick="pressLoginPin(1)">1</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(2)">2</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(3)">3</button>
-        
-        <button class="login-numpad-btn" onclick="pressLoginPin(4)">4</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(5)">5</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(6)">6</button>
-        
-        <button class="login-numpad-btn" onclick="pressLoginPin(7)">7</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(8)">8</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(9)">9</button>
-        
-        <button class="login-numpad-btn action-btn" onclick="pressLoginPin('back')">⌫</button>
-        <button class="login-numpad-btn" onclick="pressLoginPin(0)">0</button>
-        <button class="login-numpad-btn success-btn action-btn" onclick="pressLoginPin('submit')">✔</button>
+      <!-- STEP 3: NEW STUDENT REGISTRATION -->
+      <div class="otp-step-panel" id="otpStep3" style="display: none;">
+        <div class="otp-verify-sub" style="margin-bottom: 20px;">Welcome! Set up your profile details below:</div>
+
+        <div class="otp-input-group">
+          <label class="otp-field-label">Student Full Name</label>
+          <input type="text" class="otp-text-input" id="regNameInput" placeholder="e.g., Zarin Tasnim">
+        </div>
+
+        <div class="otp-input-group">
+          <label class="otp-field-label">Grade / Classroom Section</label>
+          <select class="otp-select-input" id="regGradeInput">
+            <option value="Grade 8-A">Grade 8-A</option>
+            <option value="Grade 8-B">Grade 8-B</option>
+            <option value="Grade 8-C">Grade 8-C</option>
+            <option value="Grade 9-A">Grade 9-A</option>
+            <option value="Grade 9-B">Grade 9-B</option>
+          </select>
+        </div>
+
+        <button class="otp-submit-btn" onclick="registerAndLogin()">Complete Setup & Login</button>
       </div>
     </div>
     
