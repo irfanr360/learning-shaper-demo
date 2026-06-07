@@ -113,10 +113,42 @@
           </select>
         </div>
 
+        <div class="otp-input-group" style="position: relative;">
+          <label class="otp-field-label">School Name (Link subscriber school)</label>
+          <input type="text" class="otp-text-input" id="regSchoolInput" placeholder="Search school name..." oninput="handleSchoolSearch(event, 'regSuggestions')" autocomplete="off" style="border: 1.5px solid rgba(255,255,255,0.08); width: 100%;">
+          <div class="school-autocomplete-suggestions" id="regSuggestions" style="display: none;"></div>
+          <span style="font-size: 8px; color: var(--text-muted); margin-top: 4px;">Hint: Type "St. Gregory" to unlock full classroom tools.</span>
+        </div>
+
         <button class="otp-submit-btn" onclick="registerAndLogin()">Complete Setup & Login</button>
       </div>
     </div>
-    
+
+    <!-- School Link Overlay Dialog for Public Students -->
+    <div class="payment-modal" id="schoolLinkModal" style="display:none; z-index: 11000;">
+      <div class="payment-sheet" style="padding: 20px;">
+        <div class="sheet-header" style="margin-bottom: 20px;">
+          <h3 style="margin: 0; color: #fff; font-size: 16px; font-weight: 800;">Link School Account</h3>
+          <button class="sheet-close-btn" onclick="closeSchoolLinkModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+            <svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <p class="otp-verify-sub" style="text-align: left; margin-bottom: 15px; font-weight: 600; line-height: 1.4;">Link your school to unlock the classroom rankings leaderboard and classmates activity feed!</p>
+        
+        <div class="otp-input-group" style="position: relative; margin-bottom: 25px;">
+          <label class="otp-field-label">School Name</label>
+          <input type="text" class="otp-text-input" id="modalSchoolInput" placeholder="Type school name..." oninput="handleSchoolSearch(event, 'modalSuggestions')" autocomplete="off" style="border: 1.5px solid rgba(255,255,255,0.08); width: 100%;">
+          <div class="school-autocomplete-suggestions" id="modalSuggestions" style="display: none;"></div>
+          <span style="font-size: 8.5px; color: var(--text-muted); margin-top: 6px; display: block;">Hint: Search and select <strong>St. Gregory High School</strong> to simulate matching a subscriber school.</span>
+        </div>
+        
+        <button class="otp-submit-btn" onclick="linkSchoolExecute()">Verify & Link School</button>
+      </div>
+    </div>
+
     <!-- Dynamic Island notch at top of frame -->
     <div class="phone-header-island">
       <div class="island-camera"></div>
@@ -872,7 +904,7 @@
           </div>
 
           <!-- Gamified Peer Classroom leaderboard -->
-          <div class="glass-card" style="margin-top:20px">
+          <div class="glass-card" id="classroomLeaderboardCard" style="margin-top:20px">
             <div class="card-title">
               <svg viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.75a1.125 1.125 0 01-1.125-1.125V13.5m.75-12h2.25a2.25 2.25 0 012.25 2.25V7.5a2.25 2.25 0 01-2.25 2.25h-.75a1.125 1.125 0 01-1.125-1.125V1.5z" />
@@ -988,9 +1020,17 @@
               </svg>
               Others & Settings
             </div>
-
             <div class="bkash-list-group">
-
+              <div class="bkash-list-item" id="linkSchoolListItem" onclick="openSchoolLinkModal()" style="display: none;">
+                <div class="bkash-list-item-left">
+                  <div class="bkash-list-item-icon">🏫</div>
+                  <div class="bkash-list-item-meta">
+                    <h4>Link School Account</h4>
+                    <p>Connect with your subscriber school</p>
+                  </div>
+                </div>
+                <div class="bkash-list-item-arrow">➔</div>
+              </div>
 
               <div class="bkash-list-item" onclick="showStudentLoginOverlay()">
                 <div class="bkash-list-item-left">

@@ -40,7 +40,9 @@ let studentState = {
   pomodoroStreak: 3,
   pomodoroSoundscape: 'off',
   pomodoroDemoSpeed: false,
-  pomodoroTimerInterval: null
+  pomodoroTimerInterval: null,
+  isOutsideSystem: false,
+  schoolName: 'St. Gregory High School'
 };
 
 // --- DATASETS ---
@@ -2961,7 +2963,9 @@ const STUDENT_PROFILES = {
     email: 'aarif@school.edu',
     dues: 3500,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
-    avatarSeed: 'Aarif'
+    avatarSeed: 'Aarif',
+    isOutsideSystem: false,
+    schoolName: 'St. Gregory High School'
   },
   samira: {
     id: 'samira',
@@ -2977,7 +2981,9 @@ const STUDENT_PROFILES = {
     email: 'samira@school.edu',
     dues: 0,
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop',
-    avatarSeed: 'Samira'
+    avatarSeed: 'Samira',
+    isOutsideSystem: false,
+    schoolName: 'St. Gregory High School'
   },
   tanvir: {
     id: 'tanvir',
@@ -2993,7 +2999,9 @@ const STUDENT_PROFILES = {
     email: 'tanvir@school.edu',
     dues: 1200,
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
-    avatarSeed: 'Tanvir'
+    avatarSeed: 'Tanvir',
+    isOutsideSystem: false,
+    schoolName: 'St. Gregory High School'
   }
 };
 
@@ -3004,18 +3012,33 @@ function getStudentProfileState(studentId) {
   const saved = localStorage.getItem(`student_profile_${studentId}_state`);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (parsed.isOutsideSystem === undefined) {
+        parsed.isOutsideSystem = false;
+        parsed.schoolName = 'St. Gregory High School';
+      }
+      return parsed;
     } catch(e) {}
   }
-  return STUDENT_PROFILES[studentId];
+  const defaultProfile = STUDENT_PROFILES[studentId];
+  if (defaultProfile) {
+    if (defaultProfile.isOutsideSystem === undefined) {
+      defaultProfile.isOutsideSystem = false;
+      defaultProfile.schoolName = 'St. Gregory High School';
+    }
+    return defaultProfile;
+  }
+  return null;
 }
 
 function saveStudentProfileState(studentId, level, xp, dues) {
-  const profile = STUDENT_PROFILES[studentId];
-  if (!profile) return;
+  const defaultProfile = STUDENT_PROFILES[studentId];
+  if (!defaultProfile) return;
+  
+  const currentState = getStudentProfileState(studentId) || defaultProfile;
   
   const state = {
-    ...profile,
+    ...currentState,
     level: level,
     xp: xp,
     dues: dues
@@ -3350,17 +3373,39 @@ window.verifyOtpCode = function() {
   }
 };
 
+const AVAILABLE_SCHOOLS = [
+  { name: 'St. Gregory High School', isSubscriber: true },
+  { name: 'St. Joseph Higher Secondary School', isSubscriber: true },
+  { name: 'Maple Leaf International School', isSubscriber: false },
+  { name: 'Sunnydale School', isSubscriber: false },
+  { name: 'Scholastica School', isSubscriber: false }
+];
+
 window.registerAndLogin = function() {
   const nameInput = document.getElementById('regNameInput');
   const gradeInput = document.getElementById('regGradeInput');
+  const schoolInput = document.getElementById('regSchoolInput');
   
   const nameVal = nameInput ? nameInput.value.trim() : '';
   const gradeVal = gradeInput ? gradeInput.value : 'Grade 8-A';
+  const schoolVal = schoolInput ? schoolInput.value.trim() : '';
   
   if (!nameVal) {
     showToast('Please enter your full name', 'warning');
     return;
   }
+  
+  const finalSchoolName = schoolVal || 'Maple Leaf International School';
+  
+  let isSubscriber = false;
+  const matchedSchool = AVAILABLE_SCHOOLS.find(s => s.name.toLowerCase() === finalSchoolName.toLowerCase());
+  if (matchedSchool) {
+    isSubscriber = matchedSchool.isSubscriber;
+  } else {
+    isSubscriber = (finalSchoolName.toLowerCase().includes('gregory') || finalSchoolName.toLowerCase().includes('joseph'));
+  }
+  
+  const isOutside = !isSubscriber;
   
   // Create unique student id
   const customStudentId = 'new_' + Date.now();
@@ -3381,7 +3426,9 @@ window.registerAndLogin = function() {
     email: authMethod === 'email' ? authTarget : '',
     dues: 0,
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&auto=format&fit=crop',
-    avatarSeed: firstName
+    avatarSeed: firstName,
+    schoolName: finalSchoolName,
+    isOutsideSystem: isOutside
   };
   
   // Save dynamic profile state
@@ -3417,6 +3464,10 @@ window.loginAsStudent = function(studentId) {
   studentState.level = profile.level;
   studentState.xp = profile.xp;
   studentState.maxXp = profile.maxXp;
+  
+  // Load Outside System / school link state
+  studentState.isOutsideSystem = profile.isOutsideSystem === true || profile.isOutsideSystem === 'true';
+  studentState.schoolName = profile.schoolName || 'St. Gregory High School';
   
   // Check if dues were paid in this session/localStorage
   const localDues = localStorage.getItem(`student_tuition_dues_${studentId}`);
@@ -3520,6 +3571,9 @@ window.loginAsStudent = function(studentId) {
   
   // 11. Render classroom leaderboard
   renderClassroomLeaderboard(studentId);
+  
+  // 12. Toggle display of school specific features
+  updateDashboardSystemMode();
 };
 
 window.showStudentLoginOverlay = function() {
@@ -3594,6 +3648,153 @@ window.renderClassroomLeaderboard = function(activeStudentId) {
     
     container.appendChild(item);
   });
+};
+
+// ========================================================================
+// 9. SCHOOL LINKING & OUTSIDE SYSTEM DASHBOARD HELPERS
+// ========================================================================
+
+window.updateDashboardSystemMode = function() {
+  const isOutside = studentState.isOutsideSystem === true || studentState.isOutsideSystem === 'true';
+  
+  // Toggle Leaderboard Card
+  const leaderboardCard = document.getElementById('classroomLeaderboardCard');
+  if (leaderboardCard) {
+    leaderboardCard.style.display = isOutside ? 'none' : 'block';
+  }
+  
+  // Toggle Activity Feed Card
+  const activityFeedCard = document.getElementById('classmateActivityFeedCard');
+  if (activityFeedCard) {
+    activityFeedCard.style.display = isOutside ? 'none' : 'block';
+  }
+  
+  // Toggle settings item: Link School Account
+  const linkSchoolListItem = document.getElementById('linkSchoolListItem');
+  if (linkSchoolListItem) {
+    linkSchoolListItem.style.display = isOutside ? 'flex' : 'none';
+  }
+};
+
+window.handleSchoolSearch = function(event, suggestionsId) {
+  const query = event.target.value.trim().toLowerCase();
+  const container = document.getElementById(suggestionsId);
+  if (!container) return;
+  
+  if (!query) {
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  
+  const matches = AVAILABLE_SCHOOLS.filter(school => school.name.toLowerCase().includes(query));
+  
+  if (matches.length === 0) {
+    container.style.display = 'block';
+    container.innerHTML = '<div class="school-suggestion-item" style="color: var(--text-muted); cursor: default;">No matching school found</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  matches.forEach(school => {
+    const item = document.createElement('div');
+    item.className = `school-suggestion-item ${school.isSubscriber ? 'subscriber' : ''}`;
+    item.innerHTML = `${school.name} ${school.isSubscriber ? '<span style="color: var(--bkash-pink); font-size: 8.5px; margin-left: 5px;">(Subscriber)</span>' : ''}`;
+    item.onclick = function() {
+      window.selectSchoolSuggestion(school.name, school.isSubscriber, suggestionsId);
+    };
+    container.appendChild(item);
+  });
+  container.style.display = 'block';
+};
+
+window.selectSchoolSuggestion = function(schoolName, isSubscriber, suggestionsId) {
+  const container = document.getElementById(suggestionsId);
+  if (container) {
+    container.style.display = 'none';
+    container.innerHTML = '';
+  }
+  
+  let inputId = '';
+  if (suggestionsId === 'regSuggestions') {
+    inputId = 'regSchoolInput';
+  } else if (suggestionsId === 'modalSuggestions') {
+    inputId = 'modalSchoolInput';
+  }
+  
+  const input = document.getElementById(inputId);
+  if (input) {
+    input.value = schoolName;
+  }
+};
+
+window.openSchoolLinkModal = function() {
+  const modal = document.getElementById('schoolLinkModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+  const modalInput = document.getElementById('modalSchoolInput');
+  if (modalInput) {
+    modalInput.value = '';
+    modalInput.focus();
+  }
+  const suggestions = document.getElementById('modalSuggestions');
+  if (suggestions) {
+    suggestions.style.display = 'none';
+    suggestions.innerHTML = '';
+  }
+};
+
+window.closeSchoolLinkModal = function() {
+  const modal = document.getElementById('schoolLinkModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+};
+
+window.linkSchoolExecute = function() {
+  const schoolInput = document.getElementById('modalSchoolInput');
+  const schoolVal = schoolInput ? schoolInput.value.trim() : '';
+  
+  if (!schoolVal) {
+    showToast('Please select or type a school name', 'warning');
+    return;
+  }
+  
+  let isSubscriber = false;
+  const matched = AVAILABLE_SCHOOLS.find(s => s.name.toLowerCase() === schoolVal.toLowerCase());
+  if (matched) {
+    isSubscriber = matched.isSubscriber;
+  } else {
+    isSubscriber = (schoolVal.toLowerCase().includes('gregory') || schoolVal.toLowerCase().includes('joseph'));
+  }
+  
+  const studentId = studentState.studentId;
+  const profile = getStudentProfileState(studentId);
+  if (!profile) return;
+  
+  profile.schoolName = schoolVal;
+  profile.isOutsideSystem = !isSubscriber;
+  
+  // Save updated profile state
+  localStorage.setItem(`student_profile_${studentId}_state`, JSON.stringify(profile));
+  
+  // Update current studentState
+  studentState.isOutsideSystem = !isSubscriber;
+  studentState.schoolName = schoolVal;
+  
+  // Close Modal
+  closeSchoolLinkModal();
+  
+  // Update Dashboard
+  updateDashboardSystemMode();
+  
+  if (isSubscriber) {
+    triggerConfettiBurst();
+    showToast(`Successfully linked to subscriber school: ${schoolVal}!`, 'success');
+  } else {
+    showToast(`Linked school to ${schoolVal}. Note: This school is not an active subscriber.`, 'info');
+  }
 };
 
 

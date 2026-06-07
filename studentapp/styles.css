@@ -3884,8 +3884,38 @@ input.otp-text-input {
   75% { transform: translateX(-4px); }
 }
 
-
-
-
-
-
+/* --- School Autocomplete & Search suggestions --- */
+.school-autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(18, 8, 30, 0.98);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  max-height: 140px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+.school-suggestion-item {
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.2s ease;
+}
+.school-suggestion-item:last-child {
+  border-bottom: none;
+}
+.school-suggestion-item:hover {
+  background: rgba(226, 18, 81, 0.15);
+  color: var(--bkash-pink);
+}
+.school-suggestion-item.subscriber {
+  border-left: 3.5px solid var(--bkash-pink);
+}
