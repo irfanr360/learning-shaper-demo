@@ -3661,15 +3661,13 @@ window.renderClassroomLeaderboard = function(activeStudentId) {
 window.updateDashboardSystemMode = function() {
   const isOutside = studentState.isOutsideSystem === true || studentState.isOutsideSystem === 'true';
   
-  const leaderboardCard = document.getElementById('classroomLeaderboardCard');
   const activityFeedCard = document.getElementById('classmateActivityFeedCard');
   
   if (isOutside) {
-    [leaderboardCard, activityFeedCard].forEach(card => {
-      if (!card) return;
-      card.classList.add('locked-card');
+    if (activityFeedCard) {
+      activityFeedCard.classList.add('locked-card');
       
-      let overlay = card.querySelector('.locked-overlay');
+      let overlay = activityFeedCard.querySelector('.locked-overlay');
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.className = 'locked-overlay';
@@ -3684,18 +3682,17 @@ window.updateDashboardSystemMode = function() {
           e.stopPropagation();
           window.openSchoolLinkModal();
         };
-        card.appendChild(overlay);
+        activityFeedCard.appendChild(overlay);
       }
-    });
+    }
   } else {
-    [leaderboardCard, activityFeedCard].forEach(card => {
-      if (!card) return;
-      card.classList.remove('locked-card');
-      const overlay = card.querySelector('.locked-overlay');
+    if (activityFeedCard) {
+      activityFeedCard.classList.remove('locked-card');
+      const overlay = activityFeedCard.querySelector('.locked-overlay');
       if (overlay) {
         overlay.remove();
       }
-    });
+    }
   }
   
   // Toggle settings item: Link School Account
