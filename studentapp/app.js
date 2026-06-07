@@ -3657,16 +3657,41 @@ window.renderClassroomLeaderboard = function(activeStudentId) {
 window.updateDashboardSystemMode = function() {
   const isOutside = studentState.isOutsideSystem === true || studentState.isOutsideSystem === 'true';
   
-  // Toggle Leaderboard Card
   const leaderboardCard = document.getElementById('classroomLeaderboardCard');
-  if (leaderboardCard) {
-    leaderboardCard.style.display = isOutside ? 'none' : 'block';
-  }
-  
-  // Toggle Activity Feed Card
   const activityFeedCard = document.getElementById('classmateActivityFeedCard');
-  if (activityFeedCard) {
-    activityFeedCard.style.display = isOutside ? 'none' : 'block';
+  
+  if (isOutside) {
+    [leaderboardCard, activityFeedCard].forEach(card => {
+      if (!card) return;
+      card.classList.add('locked-card');
+      
+      let overlay = card.querySelector('.locked-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'locked-overlay';
+        overlay.innerHTML = `
+          <div class="locked-overlay-content">
+            <div class="locked-overlay-icon">🔒</div>
+            <div class="locked-overlay-title">CLASSROOM FEATURE LOCKED</div>
+            <div class="locked-overlay-sub">Your school is not currently linked. Tap to link your school.</div>
+          </div>
+        `;
+        overlay.onclick = function(e) {
+          e.stopPropagation();
+          window.openSchoolLinkModal();
+        };
+        card.appendChild(overlay);
+      }
+    });
+  } else {
+    [leaderboardCard, activityFeedCard].forEach(card => {
+      if (!card) return;
+      card.classList.remove('locked-card');
+      const overlay = card.querySelector('.locked-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
+    });
   }
   
   // Toggle settings item: Link School Account
@@ -3743,6 +3768,10 @@ window.openSchoolLinkModal = function() {
     suggestions.style.display = 'none';
     suggestions.innerHTML = '';
   }
+  const errorBox = document.getElementById('modalSchoolErrorBox');
+  if (errorBox) {
+    errorBox.style.display = 'none';
+  }
 };
 
 window.closeSchoolLinkModal = function() {
@@ -3769,18 +3798,38 @@ window.linkSchoolExecute = function() {
     isSubscriber = (schoolVal.toLowerCase().includes('gregory') || schoolVal.toLowerCase().includes('joseph'));
   }
   
+  const errorBox = document.getElementById('modalSchoolErrorBox');
+  
+  if (!isSubscriber) {
+    // Show error / contact prompt box
+    if (errorBox) {
+      errorBox.style.display = 'block';
+      errorBox.classList.add('locked-shake');
+      setTimeout(() => {
+        errorBox.classList.remove('locked-shake');
+      }, 400);
+    }
+    showToast('School is not subscribed. See options below.', 'warning');
+    return;
+  }
+  
+  // Subscriber flow
+  if (errorBox) {
+    errorBox.style.display = 'none';
+  }
+  
   const studentId = studentState.studentId;
   const profile = getStudentProfileState(studentId);
   if (!profile) return;
   
   profile.schoolName = schoolVal;
-  profile.isOutsideSystem = !isSubscriber;
+  profile.isOutsideSystem = false;
   
   // Save updated profile state
   localStorage.setItem(`student_profile_${studentId}_state`, JSON.stringify(profile));
   
   // Update current studentState
-  studentState.isOutsideSystem = !isSubscriber;
+  studentState.isOutsideSystem = false;
   studentState.schoolName = schoolVal;
   
   // Close Modal
@@ -3789,12 +3838,16 @@ window.linkSchoolExecute = function() {
   // Update Dashboard
   updateDashboardSystemMode();
   
-  if (isSubscriber) {
-    triggerConfettiBurst();
-    showToast(`Successfully linked to subscriber school: ${schoolVal}!`, 'success');
-  } else {
-    showToast(`Linked school to ${schoolVal}. Note: This school is not an active subscriber.`, 'info');
-  }
+  triggerConfettiBurst();
+  showToast(`Successfully linked to subscriber school: ${schoolVal}!`, 'success');
+};
+
+window.contactSchoolAuthority = function() {
+  showToast('📬 Notification sent to school authority to subscribe!', 'success');
+};
+
+window.contactUsAdmin = function() {
+  showToast('📞 Direct contact requested with Learning Mate team!', 'info');
 };
 
 
