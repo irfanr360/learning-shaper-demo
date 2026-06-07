@@ -25,6 +25,26 @@
       <div class="login-header-logo">◈ <span>Learning Mate</span></div>
       <div class="login-subtitle">Student Login Portal</div>
 
+      <!-- School Selector Banner (Switch between OTP and School credentials) -->
+      <div class="school-select-banner" style="background: rgba(226, 18, 81, 0.08); border: 1px solid rgba(226, 18, 81, 0.2); border-radius: 12px; padding: 12px; margin: 15px 15px 5px 15px; text-align: left; position: relative;">
+        <h5 style="color: #fff; margin: 0 0 6px 0; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+          <span>🏫</span> Partner School Login
+        </h5>
+        <p style="color: var(--text-muted); margin: 0 0 10px 0; font-size: 9.5px; line-height: 1.4;">
+          Are you a student at one of our partner subscriber schools? Select your school to log in with school credentials.
+        </p>
+        <div style="position: relative;">
+          <select id="loginSchoolSelector" class="otp-select-input" onchange="handleLoginSchoolChange(this)" style="width: 100%; font-size: 11px; padding: 8px 10px; background: rgba(18, 8, 30, 0.95); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff;">
+            <option value="">-- Select School --</option>
+            <option value="St. Gregory High School">St. Gregory High School</option>
+            <option value="St. Joseph Higher Secondary School">St. Joseph Higher Secondary School</option>
+            <option value="Maple Leaf International School">Maple Leaf International School</option>
+            <option value="Sunnydale School">Sunnydale School</option>
+            <option value="Scholastica School">Scholastica School</option>
+          </select>
+        </div>
+      </div>
+
       <!-- STEP 1: CONTACT METHOD PANEL -->
       <div class="otp-step-panel active" id="otpStep1">
         <!-- Auth Selector Toggle (Phone vs Email) -->
@@ -121,6 +141,60 @@
         </div>
 
         <button class="otp-submit-btn" onclick="registerAndLogin()">Complete Setup & Login</button>
+      </div>
+
+      <!-- SCHOOL CREDENTIALS LOGIN PANEL -->
+      <div class="otp-step-panel" id="schoolLoginPanel" style="display: none; padding: 15px;">
+        <div style="text-align: left; margin-bottom: 15px;">
+          <span style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bkash-pink); font-weight: 800;">Log In via School Credentials</span>
+          <h4 id="schoolLoginTitle" style="color: #fff; margin: 4px 0 0 0; font-size: 14px; font-weight: 800;">St. Gregory High School</h4>
+        </div>
+
+        <!-- Non-subscriber Warning (initially hidden) -->
+        <div id="schoolLoginWarningBox" style="display: none; background: rgba(226, 18, 81, 0.08); border: 1.5px solid rgba(226, 18, 81, 0.3); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: left;">
+          <h5 style="color: var(--bkash-pink); margin: 0 0 4px 0; font-size: 11px; font-weight: 800;">🏫 School Not Subscribed</h5>
+          <p style="color: var(--text-muted); margin: 0; font-size: 9.5px; font-weight: 600; line-height: 1.4;">
+            This school is not an active subscriber. Only subscriber schools support roll number login. Please onboard as a public student using Phone/Email OTP instead.
+          </p>
+        </div>
+
+        <!-- Inputs Group for Subscriber schools -->
+        <div id="schoolLoginFieldsGroup">
+          <div class="otp-input-group">
+            <label class="otp-field-label">Class / Grade</label>
+            <select class="otp-select-input" id="schoolLoginClassInput" style="width:100%;">
+              <option value="Grade 8">Grade 8</option>
+              <option value="Grade 9">Grade 9</option>
+            </select>
+          </div>
+
+          <div class="otp-input-group">
+            <label class="otp-field-label">Section</label>
+            <select class="otp-select-input" id="schoolLoginSectionInput" style="width:100%;">
+              <option value="A">Section A</option>
+              <option value="B">Section B</option>
+              <option value="C">Section C</option>
+            </select>
+          </div>
+
+          <div class="otp-input-group">
+            <label class="otp-field-label">Roll Number</label>
+            <input type="number" class="otp-text-input" id="schoolLoginRollInput" placeholder="e.g., 12" style="width:100%;">
+          </div>
+
+          <div class="otp-input-group">
+            <label class="otp-field-label">4-Digit PIN</label>
+            <input type="password" class="otp-text-input" id="schoolLoginPinInput" placeholder="••••" maxlength="4" style="width:100%;">
+          </div>
+
+          <button class="otp-submit-btn" onclick="authenticateSchoolCredentials()">Authenticate & Log In</button>
+        </div>
+
+        <div style="margin-top: 15px; text-align: center;">
+          <button class="otp-resend-btn" onclick="backToOtpLogin()" style="font-size: 10px; font-weight: 700; color: var(--text-muted); cursor: pointer; background: none; border: none; text-decoration: underline;">
+            ← Log in with Phone / Email OTP
+          </button>
+        </div>
       </div>
     </div>
 

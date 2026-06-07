@@ -2965,7 +2965,8 @@ const STUDENT_PROFILES = {
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
     avatarSeed: 'Aarif',
     isOutsideSystem: false,
-    schoolName: 'St. Gregory High School'
+    schoolName: 'St. Gregory High School',
+    roll: '12'
   },
   samira: {
     id: 'samira',
@@ -2983,7 +2984,8 @@ const STUDENT_PROFILES = {
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop',
     avatarSeed: 'Samira',
     isOutsideSystem: false,
-    schoolName: 'St. Gregory High School'
+    schoolName: 'St. Gregory High School',
+    roll: '5'
   },
   tanvir: {
     id: 'tanvir',
@@ -3001,7 +3003,8 @@ const STUDENT_PROFILES = {
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
     avatarSeed: 'Tanvir',
     isOutsideSystem: false,
-    schoolName: 'St. Gregory High School'
+    schoolName: 'St. Gregory High School',
+    roll: '18'
   }
 };
 
@@ -3428,7 +3431,8 @@ window.registerAndLogin = function() {
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&auto=format&fit=crop',
     avatarSeed: firstName,
     schoolName: finalSchoolName,
-    isOutsideSystem: isOutside
+    isOutsideSystem: isOutside,
+    roll: String(Math.floor(Math.random() * 50) + 20)
   };
   
   // Save dynamic profile state
@@ -3848,6 +3852,114 @@ window.contactSchoolAuthority = function() {
 
 window.contactUsAdmin = function() {
   showToast('📞 Direct contact requested with Learning Mate team!', 'info');
+};
+
+window.handleLoginSchoolChange = function(selectElement) {
+  const schoolName = selectElement.value;
+  if (!schoolName) return;
+  
+  // Hide other steps
+  document.getElementById('otpStep1').style.display = 'none';
+  document.getElementById('otpStep2').style.display = 'none';
+  document.getElementById('otpStep3').style.display = 'none';
+  
+  // Show school login panel
+  const panel = document.getElementById('schoolLoginPanel');
+  panel.style.display = 'block';
+  
+  // Set title
+  document.getElementById('schoolLoginTitle').innerText = schoolName;
+  
+  // Check if subscriber
+  let isSubscriber = false;
+  const matched = AVAILABLE_SCHOOLS.find(s => s.name.toLowerCase() === schoolName.toLowerCase());
+  if (matched) {
+    isSubscriber = matched.isSubscriber;
+  } else {
+    isSubscriber = (schoolName.toLowerCase().includes('gregory') || schoolName.toLowerCase().includes('joseph'));
+  }
+  
+  const fields = document.getElementById('schoolLoginFieldsGroup');
+  const warning = document.getElementById('schoolLoginWarningBox');
+  
+  if (isSubscriber) {
+    fields.style.display = 'block';
+    warning.style.display = 'none';
+    
+    // Clear credentials fields
+    document.getElementById('schoolLoginRollInput').value = '';
+    document.getElementById('schoolLoginPinInput').value = '';
+  } else {
+    fields.style.display = 'none';
+    warning.style.display = 'block';
+  }
+};
+
+window.backToOtpLogin = function() {
+  document.getElementById('schoolLoginPanel').style.display = 'none';
+  document.getElementById('otpStep1').style.display = 'block';
+  
+  const selector = document.getElementById('loginSchoolSelector');
+  if (selector) {
+    selector.value = '';
+  }
+};
+
+window.authenticateSchoolCredentials = function() {
+  const schoolName = document.getElementById('schoolLoginTitle').innerText;
+  const classVal = document.getElementById('schoolLoginClassInput').value;
+  const sectionVal = document.getElementById('schoolLoginSectionInput').value;
+  const targetGrade = `${classVal}-${sectionVal}`;
+  const rollVal = document.getElementById('schoolLoginRollInput').value.trim();
+  const pinVal = document.getElementById('schoolLoginPinInput').value.trim();
+  
+  if (!rollVal || !pinVal) {
+    showToast('Please enter both roll number and PIN', 'warning');
+    return;
+  }
+  
+  let matchedProfile = null;
+  
+  // Scan keys in STUDENT_PROFILES
+  for (const id in STUDENT_PROFILES) {
+    const profile = getStudentProfileState(id);
+    if (profile) {
+      const sMatch = (profile.schoolName || '').toLowerCase() === schoolName.toLowerCase();
+      const gMatch = (profile.grade || '').toLowerCase() === targetGrade.toLowerCase();
+      const rMatch = String(profile.roll || '') === String(rollVal);
+      const pMatch = String(profile.pin || '') === String(pinVal);
+      
+      if (sMatch && gMatch && rMatch && pMatch) {
+        matchedProfile = profile;
+        break;
+      }
+    }
+  }
+  
+  if (matchedProfile) {
+    loginAsStudent(matchedProfile.id);
+    sessionStorage.setItem('student_session_active', 'true');
+    
+    const overlay = document.getElementById('studentLoginOverlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 400);
+    }
+    
+    triggerConfettiBurst();
+    showToast(`Welcome back, ${matchedProfile.name}!`, 'success');
+  } else {
+    const fields = document.getElementById('schoolLoginFieldsGroup');
+    if (fields) {
+      fields.classList.add('login-error-shake');
+      setTimeout(() => {
+        fields.classList.remove('login-error-shake');
+      }, 400);
+    }
+    showToast('Incorrect school credentials. Please check Class, Roll and PIN.', 'warning');
+  }
 };
 
 
