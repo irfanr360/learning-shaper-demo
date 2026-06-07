@@ -3674,8 +3674,8 @@ window.updateDashboardSystemMode = function() {
         overlay.innerHTML = `
           <div class="locked-overlay-content">
             <div class="locked-overlay-icon">🔒</div>
-            <div class="locked-overlay-title">CLASSROOM FEATURE LOCKED</div>
-            <div class="locked-overlay-sub">Your school is not currently linked. Tap to link your school.</div>
+            <div class="locked-overlay-title">LIVE CLASS UPDATES LOCKED</div>
+            <div class="locked-overlay-sub">You have access to curriculum content via AI Practice and Prep Cast, but the live class feed is inactive until your school joins Learning Shaper. Tap to link your school.</div>
           </div>
         `;
         overlay.onclick = function(e) {
